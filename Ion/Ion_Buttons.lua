@@ -2412,13 +2412,23 @@ function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 	if (action1 == 0) then
 		return
 	else
-		local mountSpellID = Mounts[action1]
-		local mountID = SpellIDToJournalIndex[mountSpellID]
-		local mountName,_, mountIcon = C_MountJournal.GetMountInfo(mountID)
-		self.data.macro_Text = "#autowrite\n/cast "..mountName..";"
-		self.data.macro_Auto = mountName..";"
-		self.data.macro_Icon = mountIcon
-		self.data.macro_Name = mountName
+		--The Summon Random Mount from the Mount Journal 
+		if action1 == 268435455 then
+			self.data.macro_Text = "#autowrite\n/run C_MountJournal.Summon(0);"
+			self.data.macro_Auto = "Random Mount;"
+			self.data.macro_Icon = "Interface\\ICONS\\ACHIEVEMENT_GUILDPERK_MOUNTUP"
+			self.data.macro_Name = "Random Mount"
+		--Any other mount from the Journal
+		else
+			local mountSpellID = Mounts[action1]
+			local mountID = SpellIDToJournalIndex[mountSpellID]
+			local mountName,_, mountIcon = C_MountJournal.GetMountInfo(mountID)
+			self.data.macro_Text = "#autowrite\n/cast "..mountName..";"
+			self.data.macro_Auto = mountName..";"
+			self.data.macro_Icon = mountIcon
+			self.data.macro_Name = mountName
+		end
+
 		self.data.macro_Watch = false
 		self.data.macro_Equip = false
 		self.data.macro_Note = ""
@@ -2631,11 +2641,6 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 	if (InCombatLockdown()) then return end
 
 	local cursorType, action1, action2, ID = GetCursorInfo()
---print(GetCursorInfo())
-	--for i=1,select("#",GetCursorInfo()) do
-	--	print(i..": "..select(i,GetCursorInfo()))
-	--end
-
 	local texture = self.iconframeicon:GetTexture()
 
 	if (self:MACRO_HasAction()) then
