@@ -1,7 +1,8 @@
-## Interface: 50400
+## Interface: 60000
 ## Title: Ion: Bag Bar
 ## Author: Maul
-## Version: Hydrogen-4
+## X-Credits-Maintainer: SLOKnightfall
+## Version: WoD-Beta-Update
 ## Notes: Bag bar for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion
