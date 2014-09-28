@@ -1,5 +1,5 @@
-﻿--Ion Status Bars, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Ion Status Bars, a World of Warcraft® user interface addon.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 local ION, GDB, CDB, PEW = Ion
 
@@ -301,75 +301,104 @@ local function repstrings_Update(line)
 
 	if (GetNumFactions() > 0) then
 
-		local _, name, ID, min, max, value, isHeader, hasRep, standing, colors
+		local _, name, ID, min, max, value, isHeader, hasRep, factionID, standing, colors		
+		local fID, fRep, fMaxRep, fName, fText, fTexture, fTextLevel, fThreshold, nextFThreshold
 
 		wipe(RepWatch)
 
 		for i=1, GetNumFactions() do
 
-			name, _, ID, min, max, value, _, _, isHeader, _, hasRep = GetFactionInfo(i)
+			name, _, ID, min, max, value, _, _, isHeader, _, hasRep, _, _, factionID = GetFactionInfo(i)
+			
+			fID, fRep, fMaxRep, fName, fText, fTexture, fTextLevel, fThreshold, nextFThreshold = GetFriendshipReputation(factionID)
 
 			if ((not isHeader or hasRep) and not IsFactionInactive(i) and not (isHeader and ID == 8)) then
+			
+				if (fID) then
+				
+					colors = BarRepColors[ID+2]; standing = fTextLevel
 
-				colors = BarRepColors[ID]; standing = (colors.l):gsub("^%a%p", "")
-
-				if (not RepWatch[i]) then
-					RepWatch[i] = {}
-				end
-
-				RepWatch[i].rep = name.." - "..standing
-				RepWatch[i].current = (value-min).."/"..(max-min)
-				RepWatch[i].percent = floor(((value-min)/(max-min))*100).."%"
-				RepWatch[i].rephour = "---"
-				RepWatch[i].min = min
-				RepWatch[i].max = max
-				RepWatch[i].value = value
-				RepWatch[i].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
-				RepWatch[i].r = colors.r
-				RepWatch[i].g = colors.g
-				RepWatch[i].b = colors.b
-				RepWatch[i].l = colors.l
-
-				if (line and (line):find(name) or CDB.autoWatch == i) then
-
-					if (not RepWatch[0]) then
-						RepWatch[0] = {}
+					if (not RepWatch[i]) then
+						RepWatch[i] = {}
 					end
 
-					RepWatch[0].rep = name.." - "..standing
-					RepWatch[0].current = (value-min).."/"..(max-min)
-					RepWatch[0].percent = floor(((value-min)/(max-min))*100).."%"
-					RepWatch[0].rephour = "---"
-					RepWatch[0].min = min
-					RepWatch[0].max = max
-					RepWatch[0].value = value
-					RepWatch[0].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
-					RepWatch[0].r = colors.r
-					RepWatch[0].g = colors.g
-					RepWatch[0].b = colors.b
-					RepWatch[0].l = colors.l
+					RepWatch[i].rep = name.." - "..standing
+					RepWatch[i].current = (value-min).."/"..(max-min)
+					RepWatch[i].percent = floor(((value-min)/(max-min))*100).."%"
+					RepWatch[i].rephour = "---"
+					RepWatch[i].min = min
+					RepWatch[i].max = max
+					RepWatch[i].value = value
+					RepWatch[i].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
+					RepWatch[i].r = colors.r
+					RepWatch[i].g = colors.g
+					RepWatch[i].b = colors.b
+					RepWatch[i].l = "z"..colors.l
 
-					--[[
-					if (line and (line):find(name)) then
+					if (line and (line):find(name) or CDB.autoWatch == i) then
 
-						local gain = tonumber(line:match("%d+"))
-
-						if (gain) then
-
-							if (not Session[name]) then
-								Session[name] = GetTime()
-							end
-
-							local rephour = (gain/(GetTime()-Session[name]))*3600
-
-							RepWatch[0].rephour = rephour.."/hour"
-
-							print(rephour)
+						if (not RepWatch[0]) then
+							RepWatch[0] = {}
 						end
-					end
-					-]]
 
-					CDB.autoWatch = i
+						RepWatch[0].rep = name.." - "..standing
+						RepWatch[0].current = (value-min).."/"..(max-min)
+						RepWatch[0].percent = floor(((value-min)/(max-min))*100).."%"
+						RepWatch[0].rephour = "---"
+						RepWatch[0].min = min
+						RepWatch[0].max = max
+						RepWatch[0].value = value
+						RepWatch[0].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
+						RepWatch[0].r = colors.r
+						RepWatch[0].g = colors.g
+						RepWatch[0].b = colors.b
+						RepWatch[0].l = "z"..colors.l
+
+						CDB.autoWatch = i
+					end				
+				
+				else
+
+					colors = BarRepColors[ID]; standing = (colors.l):gsub("^%a%p", "")
+
+					if (not RepWatch[i]) then
+						RepWatch[i] = {}
+					end
+
+					RepWatch[i].rep = name.." - "..standing
+					RepWatch[i].current = (value-min).."/"..(max-min)
+					RepWatch[i].percent = floor(((value-min)/(max-min))*100).."%"
+					RepWatch[i].rephour = "---"
+					RepWatch[i].min = min
+					RepWatch[i].max = max
+					RepWatch[i].value = value
+					RepWatch[i].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
+					RepWatch[i].r = colors.r
+					RepWatch[i].g = colors.g
+					RepWatch[i].b = colors.b
+					RepWatch[i].l = colors.l
+
+					if (line and (line):find(name) or CDB.autoWatch == i) then
+
+						if (not RepWatch[0]) then
+							RepWatch[0] = {}
+						end
+
+						RepWatch[0].rep = name.." - "..standing
+						RepWatch[0].current = (value-min).."/"..(max-min)
+						RepWatch[0].percent = floor(((value-min)/(max-min))*100).."%"
+						RepWatch[0].rephour = "---"
+						RepWatch[0].min = min
+						RepWatch[0].max = max
+						RepWatch[0].value = value
+						RepWatch[0].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
+						RepWatch[0].r = colors.r
+						RepWatch[0].g = colors.g
+						RepWatch[0].b = colors.b
+						RepWatch[0].l = colors.l
+
+						CDB.autoWatch = i
+					end
 				end
 			end
 		end
@@ -423,8 +452,23 @@ local function repDropDown_Initialize(frame)
 		info.checked = checked
 
 		UIDropDownMenu_AddButton(info)
+		
+		wipe(info)
+		
+		info.arg1 = nil
+		info.arg2 = nil
+		info.text = " "
+		info.func = function() end
+		info.value = nil
+		info.checked = nil
+		info.notClickable = true
+		info.notCheckable = 1
 
-		local data, _, ID, text = {}
+		UIDropDownMenu_AddButton(info)			
+		
+		wipe(info)
+
+		local data, order, ID, text, friends = {}
 
 		for k,v in pairs(RepWatch) do
 
@@ -436,7 +480,7 @@ local function repDropDown_Initialize(frame)
 					percent = "0"..percent
 				end
 
-				tinsert(data, v.l..percent..":"..k..":".."|cff"..v.hex..v.rep.." - "..v.percent.."|r")
+				tinsert(data, v.l..percent..";"..k..";".."|cff"..v.hex..v.rep.." - "..v.percent.."|r")
 			end
 		end
 
@@ -444,7 +488,37 @@ local function repDropDown_Initialize(frame)
 
 		for k,v in ipairs(data) do
 
-			_, ID, text = (":"):split(v)
+			order, ID, text = (";"):split(v)
+			
+			if (order:find("^z") and not friends) then
+			
+				info.arg1 = nil
+				info.arg2 = nil
+				info.text = " "
+				info.func = function() end
+				info.value = nil
+				info.checked = nil
+				info.notClickable = true
+				info.notCheckable = 1
+
+				UIDropDownMenu_AddButton(info)			
+			
+				info.arg1 = nil
+				info.arg2 = nil
+				info.text = "Friends"
+				info.func = function() end
+				info.value = nil
+				info.checked = nil
+				info.notClickable = true
+				info.notCheckable = 1
+				info.leftPadding = 17
+
+				UIDropDownMenu_AddButton(info)
+				
+				wipe(info)
+			
+				friends = true
+			end
 
 			ID = tonumber(ID)
 
@@ -463,8 +537,12 @@ local function repDropDown_Initialize(frame)
 
 			info.value = ID
 			info.checked = checked
+			info.notClickable = nil
+			info.notCheckable = nil
 
 			UIDropDownMenu_AddButton(info)
+			
+			wipe(info)
 		end
 	end
 end

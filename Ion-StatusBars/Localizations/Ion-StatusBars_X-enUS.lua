@@ -1,5 +1,5 @@
 ﻿--Ion, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 local L = LibStub("AceLocale-3.0"):NewLocale("IonStatusBars", "enUS", true)
 
