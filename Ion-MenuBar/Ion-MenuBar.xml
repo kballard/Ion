@@ -122,36 +122,6 @@
 			</OnEvent>
 		</Scripts>
 	</Button>
-
-	<Button name="IonPVPButton" inherits="MainMenuBarMicroButton" parent="UIParent">
-		<Layers>
-			<Layer level="OVERLAY">
-		                <Texture name="$parentFaction">
-					<Size x="36" y="36"/>
-					<Anchors>
-						<Anchor point="TOP">
-							<Offset x="6" y="-30"/>
-						</Anchor>
-					</Anchors>
-				</Texture>
-			</Layer>
-		</Layers>
-		<Scripts>
-			<OnLoad>
-				Ion.PVPButton_OnLoad(self)
-			</OnLoad>
-			<OnEvent>
-				Ion.PVPButton_OnEvent(self, event, ...)
-			</OnEvent>
-			<OnMouseDown>
-				Ion.PVPButton_OnMouseDown(self)
-			</OnMouseDown>
-			<OnMouseUp>
-				Ion.PVPButton_OnMouseUp(self)
-			</OnMouseUp>
-		</Scripts>
-	</Button>
-
 	<Button name="IonLFDButton" inherits="MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>

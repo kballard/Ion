@@ -138,7 +138,7 @@ local function updateMicroButtons()
 
 	end
 
-	if (IonQuestLogButton and QuestLogFrame:IsShown()) then
+	if (IonQuestLogButton and QuestMapFrame:IsShown()) then
 
 		IonQuestLogButton:SetButtonState("PUSHED", 1)
 
@@ -157,7 +157,7 @@ local function updateMicroButtons()
 		IonLatencyButton:SetButtonState("NORMAL")
 		ION.LatencyButton_SetNormal(IonLatencyButton)
 	end
-
+--[[
 	if (IonPVPButton and PVPUIFrame and PVPUIFrame:IsShown()) then
 
 		IonPVPButton:SetButtonState("PUSHED", 1)
@@ -189,7 +189,7 @@ local function updateMicroButtons()
 			ION.PVPButton_SetNormal(IonPVPButton)
 		end
 	end
-
+]]--
 	if (IonGuildButton and ((GuildFrame and GuildFrame:IsShown()) or (LookingForGuildFrame and LookingForGuildFrame:IsShown()))) then
 
 		IonGuildButton:SetButtonState("PUSHED", 1)
@@ -490,7 +490,7 @@ function ION.QuestLogButton_OnEvent(self, event, ...)
 end
 
 function ION.QuestLogButton_OnClick(self)
-	ToggleFrame(QuestLogFrame)
+	ToggleQuestLog()
 end
 
 --		IonGuildButton.tabard:SetPoint("TOPLEFT", -1, -1) IonGuildButton.tabard:SetAlpha(0.5)
@@ -521,7 +521,7 @@ function ION.GuildButton_OnEvent(self, event, ...)
 		updateMicroButtons()
 	end
 end
-
+--[[
 function ION.PVPButton_OnLoad(self)
 
 	self:RegisterEvent("UPDATE_BINDINGS")
@@ -610,7 +610,7 @@ function ION.PVPButton_SetNormal(self)
 	self.faction:SetPoint("TOP", self, "TOP", 6, -30)
 	self.faction:SetAlpha(1.0)
 end
-
+]]--
 function ION.LFDButton_OnLoad(self)
 
 	self:RegisterEvent("UPDATE_BINDINGS")
