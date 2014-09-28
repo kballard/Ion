@@ -1026,10 +1026,10 @@ function ION:UpdateIconIndex()
 
 	for k,v in ipairs(temp) do
 
-		icon = "INTERFACE\\ICONS\\"..v:upper()
+		--icon = "INTERFACE\\ICONS\\"..v:upper()
 
-   		if (not icons[icon:upper()]) then
-   			ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+   		if (not icons[v]) then
+   			ICONS[#ICONS+1] = v; icons[v] = true
    		end
    	end
 

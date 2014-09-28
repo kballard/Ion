@@ -515,7 +515,7 @@ local function updateAuraInfo(unit)
 		end
 
 		-- temp fix to detect mighty morphing power spells
-		    if (uai_spellID == 48517) then morphSpells[8921] = 93402
+		 if (uai_spellID == 48517) then morphSpells[8921] = 93402
 		elseif (uai_spellID == 81206) then morphSpells[88625] = 88685
 		elseif (uai_spellID == 81207) then morphSpells[88625] = 88682
 		elseif (uai_spellID == 81208) then morphSpells[88625] = 88684
@@ -679,7 +679,7 @@ function BUTTON:MACRO_UpdateData(...)
    		if (ud_spell and ud_spellcmd:find("/castsequence")) then
      			ud__, ud_item, ud_spell = QueryCastSequence(ud_spell)
      		elseif (ud_spell) then
-     		     	if (#ud_spell < 1) then
+     		  	if (#ud_spell < 1) then
      				ud_spell = nil
      			elseif(GetItemInfo(ud_spell) or ItemCache[ud_spell]) then
      				ud_item = ud_spell; ud_spell = nil
@@ -865,7 +865,12 @@ function BUTTON:MACRO_SetItemIcon(item)
 		end
 
 		if (texture) then
-			self.iconframeicon:SetTexture(texture)
+			if(type(texture) == "number") then
+				self.iconframeicon:SetToFileData(texture);
+			else
+				self.iconframeicon:SetTexture(texture)
+			end
+			--self.iconframeicon:SetTexture(texture)
 		else
 			self.iconframeicon:SetTexture("INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK")
 		end
@@ -875,7 +880,11 @@ function BUTTON:MACRO_SetItemIcon(item)
 		if (self.data.macro_Icon == "BLANK") then
 			self.iconframeicon:SetTexture("")
 		else
-			self.iconframeicon:SetTexture(self.data.macro_Icon)
+			if(type(self.data.macro_Icon) == "number") then
+				self.iconframeicon:SetToFileData(self.data.macro_Icon);
+			else
+				self.iconframeicon:SetTexture(self.data.macro_Icon)
+			end
 		end
 	else
 
@@ -970,8 +979,11 @@ function BUTTON:MACRO_UpdateIcon(...)
 			end
 
 		elseif (self.data.macro_Icon) then
-
-			self.iconframeicon:SetTexture(self.data.macro_Icon)
+			if(type(self.data.macro_Icon) == "number") then
+				self.iconframeicon:SetToFileData(self.data.macro_Icon);
+			else
+				self.iconframeicon:SetTexture(self.data.macro_Icon)
+			end
 
 		else
 
@@ -1910,6 +1922,518 @@ function BUTTON:MACRO_PlaceBlizzEquipSet(action1)
 		ClearCursor(); SetCursor(nil)
 	end
 end
+--hack workarround to pair mount index with cursor id
+--will need to be updated every time a new mount is added
+
+local Mounts = { -- [mount index] = spellID
+	[6] = 458, -- Brown Horse
+	[7] = 459, -- Gray Wolf
+	[8] = 468, -- White Stallion
+	[9] = 470, -- Black Stallion
+	[11] = 472, -- Pinto
+	[12] = 578, -- Black Wolf
+	[13] = 579, -- Red Wolf
+	[14] = 580, -- Timber Wolf
+	[15] = 581, -- Winter Wolf
+	[17] = 5784, -- Felsteed
+	[18] = 6648, -- Chestnut Mare
+	[19] = 6653, -- Dire Wolf
+	[20] = 6654, -- Brown Wolf
+	[21] = 6777, -- Gray Ram
+	[22] = 6896, -- Black Ram
+	[24] = 6898, -- White Ram
+	[25] = 6899, -- Brown Ram
+	[26] = 8394, -- Striped Frostsaber
+	[27] = 8395, -- Emerald Raptor
+	[28] = 8980, -- Skeletal Horse
+	[31] = 10789, -- Spotted Frostsaber
+	[34] = 10793, -- Striped Nightsaber
+	[35] = 10795, -- Ivory Raptor
+	[36] = 10796, -- Turquoise Raptor
+	[38] = 10799, -- Violet Raptor
+	[39] = 10873, -- Red Mechanostrider
+	[40] = 10969, -- Blue Mechanostrider
+	[41] = 13819, -- Warhorse
+	[42] = 15779, -- White Mechanostrider Mod B
+	[43] = 15780, -- Green Mechanostrider
+	[45] = 16055, -- Black Nightsaber
+	[46] = 16056, -- Ancient Frostsaber
+	[50] = 16080, -- Red Wolf
+	[51] = 16081, -- Arctic Wolf
+	[52] = 16082, -- Palomino
+	[53] = 16083, -- White Stallion
+	[54] = 16084, -- Mottled Red Raptor
+	[55] = 17229, -- Winterspring Frostsaber
+	[56] = 17450, -- Ivory Raptor
+	[57] = 17453, -- Green Mechanostrider
+	[58] = 17454, -- Unpainted Mechanostrider
+	[62] = 17459, -- Icy Blue Mechanostrider Mod A
+	[63] = 17460, -- Frost Ram
+	[64] = 17461, -- Black Ram
+	[65] = 17462, -- Red Skeletal Horse
+	[66] = 17463, -- Blue Skeletal Horse
+	[67] = 17464, -- Brown Skeletal Horse
+	[68] = 17465, -- Green Skeletal Warhorse
+	[69] = 17481, -- Rivendare's Deathcharger
+	[70] = 18363, -- Riding Kodo
+	[71] = 18989, -- Gray Kodo
+	[72] = 18990, -- Brown Kodo
+	[73] = 18991, -- Green Kodo
+	[74] = 18992, -- Teal Kodo
+	[75] = 22717, -- Black War Steed
+	[76] = 22718, -- Black War Kodo
+	[77] = 22719, -- Black Battlestrider
+	[78] = 22720, -- Black War Ram
+	[79] = 22721, -- Black War Raptor
+	[80] = 22722, -- Red Skeletal Warhorse
+	[81] = 22723, -- Black War Tiger
+	[82] = 22724, -- Black War Wolf
+	[83] = 23161, -- Dreadsteed
+	[84] = 23214, -- Charger
+	[85] = 23219, -- Swift Mistsaber
+	[87] = 23221, -- Swift Frostsaber
+	[88] = 23222, -- Swift Yellow Mechanostrider
+	[89] = 23223, -- Swift White Mechanostrider
+	[90] = 23225, -- Swift Green Mechanostrider
+	[91] = 23227, -- Swift Palomino
+	[92] = 23228, -- Swift White Steed
+	[93] = 23229, -- Swift Brown Steed
+	[94] = 23238, -- Swift Brown Ram
+	[95] = 23239, -- Swift Gray Ram
+	[96] = 23240, -- Swift White Ram
+	[97] = 23241, -- Swift Blue Raptor
+	[98] = 23242, -- Swift Olive Raptor
+	[99] = 23243, -- Swift Orange Raptor
+	[100] = 23246, -- Purple Skeletal Warhorse
+	[101] = 23247, -- Great White Kodo
+	[102] = 23248, -- Great Gray Kodo
+	[103] = 23249, -- Great Brown Kodo
+	[104] = 23250, -- Swift Brown Wolf
+	[105] = 23251, -- Swift Timber Wolf
+	[106] = 23252, -- Swift Gray Wolf
+	[107] = 23338, -- Swift Stormsaber
+	[108] = 23509, -- Frostwolf Howler
+	[109] = 23510, -- Stormpike Battle Charger
+	[110] = 24242, -- Swift Razzashi Raptor
+	[111] = 24252, -- Swift Zulian Tiger
+	[116] = 25863, -- Black Qiraji Battle Tank
+	[117] = 25953, -- Blue Qiraji Battle Tank
+	[118] = 26054, -- Red Qiraji Battle Tank
+	[119] = 26055, -- Yellow Qiraji Battle Tank
+	[120] = 26056, -- Green Qiraji Battle Tank
+	[121] = 26655, -- Black Qiraji Battle Tank
+	[122] = 26656, -- Black Qiraji Battle Tank
+	[123] = 28828, -- Nether Drake
+	[125] = 30174, -- Riding Turtle
+	[129] = 32235, -- Golden Gryphon
+	[130] = 32239, -- Ebon Gryphon
+	[131] = 32240, -- Snowy Gryphon
+	[132] = 32242, -- Swift Blue Gryphon
+	[133] = 32243, -- Tawny Wind Rider
+	[134] = 32244, -- Blue Wind Rider
+	[135] = 32245, -- Green Wind Rider
+	[136] = 32246, -- Swift Red Wind Rider
+	[137] = 32289, -- Swift Red Gryphon
+	[138] = 32290, -- Swift Green Gryphon
+	[139] = 32292, -- Swift Purple Gryphon
+	[140] = 32295, -- Swift Green Wind Rider
+	[141] = 32296, -- Swift Yellow Wind Rider
+	[142] = 32297, -- Swift Purple Wind Rider
+	[145] = 33630, -- Blue Mechanostrider
+	[146] = 33660, -- Swift Pink Hawkstrider
+	[147] = 34406, -- Brown Elekk
+	[149] = 34767, -- Thalassian Charger
+	[150] = 34769, -- Thalassian Warhorse
+	[151] = 34790, -- Dark War Talbuk
+	[152] = 34795, -- Red Hawkstrider
+	[153] = 34896, -- Cobalt War Talbuk
+	[154] = 34897, -- White War Talbuk
+	[155] = 34898, -- Silver War Talbuk
+	[156] = 34899, -- Tan War Talbuk
+	[157] = 35018, -- Purple Hawkstrider
+	[158] = 35020, -- Blue Hawkstrider
+	[159] = 35022, -- Black Hawkstrider
+	[160] = 35025, -- Swift Green Hawkstrider
+	[161] = 35027, -- Swift Purple Hawkstrider
+	[162] = 35028, -- Swift Warstrider
+	[163] = 35710, -- Gray Elekk
+	[164] = 35711, -- Purple Elekk
+	[165] = 35712, -- Great Green Elekk
+	[166] = 35713, -- Great Blue Elekk
+	[167] = 35714, -- Great Purple Elekk
+	[168] = 36702, -- Fiery Warhorse
+	[169] = 37015, -- Swift Nether Drake
+	[170] = 39315, -- Cobalt Riding Talbuk
+	[171] = 39316, -- Dark Riding Talbuk
+	[172] = 39317, -- Silver Riding Talbuk
+	[173] = 39318, -- Tan Riding Talbuk
+	[174] = 39319, -- White Riding Talbuk
+	[176] = 39798, -- Green Riding Nether Ray
+	[177] = 39800, -- Red Riding Nether Ray
+	[178] = 39801, -- Purple Riding Nether Ray
+	[179] = 39802, -- Silver Riding Nether Ray
+	[180] = 39803, -- Blue Riding Nether Ray
+	[183] = 40192, -- Ashes of Al'ar
+	[185] = 41252, -- Raven Lord
+	[186] = 41513, -- Onyx Netherwing Drake
+	[187] = 41514, -- Azure Netherwing Drake
+	[188] = 41515, -- Cobalt Netherwing Drake
+	[189] = 41516, -- Purple Netherwing Drake
+	[190] = 41517, -- Veridian Netherwing Drake
+	[191] = 41518, -- Violet Netherwing Drake
+	[196] = 42776, -- Spectral Tiger
+	[197] = 42777, -- Swift Spectral Tiger
+	[199] = 43688, -- Amani War Bear
+	[201] = 43899, -- Brewfest Ram
+	[202] = 43900, -- Swift Brewfest Ram
+	[203] = 43927, -- Cenarion War Hippogryph
+	[204] = 44151, -- Turbo-Charged Flying Machine
+	[205] = 44153, -- Flying Machine
+	[206] = 44317, -- Merciless Nether Drake
+	[207] = 44744, -- Merciless Nether Drake
+	[211] = 46197, -- X-51 Nether-Rocket
+	[212] = 46199, -- X-51 Nether-Rocket X-TREME
+	[213] = 46628, -- Swift White Hawkstrider
+	[219] = 48025, -- Headless Horseman's Mount
+	[220] = 48027, -- Black War Elekk
+	[221] = 48778, -- Acherus Deathcharger
+	[222] = 48954, -- Swift Zhevra
+	[223] = 49193, -- Vengeful Nether Drake
+	[224] = 49322, -- Swift Zhevra
+	[225] = 49378, -- Brewfest Riding Kodo
+	[226] = 49379, -- Great Brewfest Kodo
+	[230] = 51412, -- Big Battle Bear
+	[236] = 54729, -- Winged Steed of the Ebon Blade
+	[237] = 54753, -- White Polar Bear
+	[238] = 55164, -- Swift Spectral Gryphon
+	[240] = 55531, -- Mechano-Hog
+	[241] = 58615, -- Brutal Nether Drake
+	[242] = 58819, -- Swift Brown Steed
+	[243] = 58983, -- Big Blizzard Bear
+	[246] = 59567, -- Azure Drake
+	[247] = 59568, -- Blue Drake
+	[248] = 59569, -- Bronze Drake
+	[249] = 59570, -- Red Drake
+	[250] = 59571, -- Twilight Drake
+	[251] = 59572, -- Black Polar Bear
+	[253] = 59650, -- Black Drake
+	[254] = 59785, -- Black War Mammoth
+	[255] = 59788, -- Black War Mammoth
+	[256] = 59791, -- Wooly Mammoth
+	[257] = 59793, -- Wooly Mammoth
+	[258] = 59797, -- Ice Mammoth
+	[259] = 59799, -- Ice Mammoth
+	[262] = 59961, -- Red Proto-Drake
+	[263] = 59976, -- Black Proto-Drake
+	[264] = 59996, -- Blue Proto-Drake
+	[265] = 60002, -- Time-Lost Proto-Drake
+	[266] = 60021, -- Plagued Proto-Drake
+	[267] = 60024, -- Violet Proto-Drake
+	[268] = 60025, -- Albino Drake
+	[269] = 60114, -- Armored Brown Bear
+	[270] = 60116, -- Armored Brown Bear
+	[271] = 60118, -- Black War Bear
+	[272] = 60119, -- Black War Bear
+	[273] = 60136, -- Grand Caravan Mammoth
+	[274] = 60140, -- Grand Caravan Mammoth
+	[275] = 60424, -- Mekgineer's Chopper
+	[276] = 61229, -- Armored Snowy Gryphon
+	[277] = 61230, -- Armored Blue Wind Rider
+	[278] = 61294, -- Green Proto-Drake
+	[279] = 61309, -- Magnificent Flying Carpet
+	[280] = 61425, -- Traveler's Tundra Mammoth
+	[284] = 61447, -- Traveler's Tundra Mammoth
+	[285] = 61451, -- Flying Carpet
+	[286] = 61465, -- Grand Black War Mammoth
+	[287] = 61467, -- Grand Black War Mammoth
+	[288] = 61469, -- Grand Ice Mammoth
+	[289] = 61470, -- Grand Ice Mammoth
+	[291] = 61996, -- Blue Dragonhawk
+	[292] = 61997, -- Red Dragonhawk
+	[293] = 62048, -- Black Dragonhawk Mount
+	[294] = 63232, -- Stormwind Steed
+	[295] = 63635, -- Darkspear Raptor
+	[296] = 63636, -- Ironforge Ram
+	[297] = 63637, -- Darnassian Nightsaber
+	[298] = 63638, -- Gnomeregan Mechanostrider
+	[299] = 63639, -- Exodar Elekk
+	[300] = 63640, -- Orgrimmar Wolf
+	[301] = 63641, -- Thunder Bluff Kodo
+	[302] = 63642, -- Silvermoon Hawkstrider
+	[303] = 63643, -- Forsaken Warhorse
+	[304] = 63796, -- Mimiron's Head
+	[305] = 63844, -- Argent Hippogryph
+	[306] = 63956, -- Ironbound Proto-Drake
+	[307] = 63963, -- Rusted Proto-Drake
+	[308] = 64656, -- Blue Skeletal Warhorse
+	[309] = 64657, -- White Kodo
+	[310] = 64658, -- Black Wolf
+	[311] = 64659, -- Venomhide Ravasaur
+	[312] = 64731, -- Sea Turtle
+	[313] = 64927, -- Deadly Gladiator's Frost Wyrm
+	[314] = 64977, -- Black Skeletal Horse
+	[317] = 65439, -- Furious Gladiator's Frost Wyrm
+	[318] = 65637, -- Great Red Elekk
+	[319] = 65638, -- Swift Moonsaber
+	[320] = 65639, -- Swift Red Hawkstrider
+	[321] = 65640, -- Swift Gray Steed
+	[322] = 65641, -- Great Golden Kodo
+	[323] = 65642, -- Turbostrider
+	[324] = 65643, -- Swift Violet Ram
+	[325] = 65644, -- Swift Purple Raptor
+	[326] = 65645, -- White Skeletal Warhorse
+	[327] = 65646, -- Swift Burgundy Wolf
+	[328] = 65917, -- Magic Rooster
+	[329] = 66087, -- Silver Covenant Hippogryph
+	[330] = 66088, -- Sunreaver Dragonhawk
+	[331] = 66090, -- Quel'dorei Steed
+	[332] = 66091, -- Sunreaver Hawkstrider
+	[333] = 66122, -- Magic Rooster
+	[334] = 66123, -- Magic Rooster
+	[335] = 66124, -- Magic Rooster
+	[336] = 66846, -- Ochre Skeletal Warhorse
+	[337] = 66847, -- Striped Dawnsaber
+	[338] = 66906, -- Argent Charger
+	[339] = 66907, -- Argent Warhorse
+	[340] = 67336, -- Relentless Gladiator's Frost Wyrm
+	[341] = 67466, -- Argent Warhorse
+	[342] = 68056, -- Swift Horde Wolf
+	[343] = 68057, -- Swift Alliance Steed
+	[344] = 68187, -- Crusader's White Warhorse
+	[345] = 68188, -- Crusader's Black Warhorse
+	[349] = 69395, -- Onyxian Drake
+	[350] = 69820, -- Sunwalker Kodo
+	[351] = 69826, -- Great Sunwalker Kodo
+	[352] = 71342, -- Big Love Rocket
+	[358] = 71810, -- Wrathful Gladiator's Frost Wyrm
+	[363] = 72286, -- Invincible
+	[364] = 72807, -- Icebound Frostbrood Vanquisher
+	[365] = 72808, -- Bloodbathed Frostbrood Vanquisher
+	[366] = 73313, -- Crimson Deathcharger
+	[367] = 73629, -- Exarch's Elekk
+	[368] = 73630, -- Great Exarch's Elekk
+	[371] = 74856, -- Blazing Hippogryph
+	[372] = 74918, -- Wooly White Rhino
+	[373] = 75207, -- Vashj'ir Seahorse
+	[375] = 75596, -- Frosty Flying Carpet
+	[376] = 75614, -- Celestial Steed
+	[382] = 75973, -- X-53 Touring Rocket
+	[386] = 84751, -- Fossilized Raptor
+	[388] = 87090, -- Goblin Trike
+	[389] = 87091, -- Goblin Turbo-Trike
+	[391] = 88331, -- Volcanic Stone Drake
+	[392] = 88335, -- Drake of the East Wind
+	[393] = 88718, -- Phosphorescent Stone Drake
+	[394] = 88741, -- Drake of the West Wind
+	[395] = 88742, -- Drake of the North Wind
+	[396] = 88744, -- Drake of the South Wind
+	[397] = 88746, -- Vitreous Stone Drake
+	[398] = 88748, -- Brown Riding Camel
+	[399] = 88749, -- Tan Riding Camel
+	[400] = 88750, -- Grey Riding Camel
+	[401] = 88990, -- Dark Phoenix
+	[403] = 90621, -- Golden King
+	[404] = 92155, -- Ultramarine Qiraji Battle Tank
+	[405] = 92231, -- Spectral Steed
+	[406] = 92232, -- Spectral Wolf
+	[407] = 93326, -- Sandstone Drake
+	[408] = 93623, -- Mottled Drake
+	[409] = 93644, -- Kor'kron Annihilator
+	[410] = 96491, -- Armored Razzashi Raptor
+	[411] = 96499, -- Swift Zulian Panther
+	[412] = 96503, -- Amani Dragonhawk
+	[413] = 97359, -- Flameward Hippogryph
+	[415] = 97493, -- Pureblood Fire Hawk
+	[417] = 97560, -- Corrupted Fire Hawk
+	[418] = 97581, -- Savage Raptor
+	[419] = 98204, -- Amani Battle Bear
+	[420] = 98718, -- Subdued Seahorse
+	[421] = 98727, -- Winged Guardian
+	[422] = 100332, -- Vicious War Steed
+	[423] = 100333, -- Vicious War Wolf
+	[424] = 101282, -- Vicious Gladiator's Twilight Drake
+	[425] = 101542, -- Flametalon of Alysrazor
+	[426] = 101573, -- Swift Shorestrider
+	[428] = 101821, -- Ruthless Gladiator's Twilight Drake
+	[429] = 102346, -- Swift Forest Strider
+	[430] = 102349, -- Swift Springstrider
+	[431] = 102350, -- Swift Lovebird
+	[432] = 102488, -- White Riding Camel
+	[433] = 102514, -- Corrupted Hippogryph
+	[434] = 103081, -- Darkmoon Dancing Bear
+	[435] = 103195, -- Mountain Horse
+	[436] = 103196, -- Swift Mountain Horse
+	[439] = 107203, -- Tyrael's Charger
+	[440] = 107516, -- Spectral Gryphon
+	[441] = 107517, -- Spectral Wind Rider
+	[442] = 107842, -- Blazing Drake
+	[443] = 107844, -- Twilight Harbinger
+	[444] = 107845, -- Life-Binder's Handmaiden
+	[445] = 110039, -- Experiment 12-B
+	[446] = 110051, -- Heart of the Aspects
+	[447] = 113120, -- Feldrake
+	[448] = 113199, -- Jade Cloud Serpent
+	[449] = 118089, -- Azure Water Strider
+	[450] = 118737, -- Pandaren Kite
+	[451] = 120043, -- Jeweled Onyx Panther
+	[452] = 120395, -- Green Dragon Turtle
+	[453] = 120822, -- Great Red Dragon Turtle
+	[455] = 121820, -- Obsidian Nightwing
+	[456] = 121836, -- Sapphire Panther
+	[457] = 121837, -- Jade Panther
+	[458] = 121838, -- Ruby Panther
+	[459] = 121839, -- Sunstone Panther
+	[460] = 122708, -- Grand Expedition Yak
+	[462] = 123182, -- White Riding Yak
+	[463] = 123886, -- Amber Scorpion
+	[464] = 123992, -- Azure Cloud Serpent
+	[465] = 123993, -- Golden Cloud Serpent
+	[466] = 124408, -- Thundering Jade Cloud Serpent
+	[467] = 124550, -- Cataclysmic Gladiator's Twilight Drake
+	[468] = 124659, -- Imperial Quilen
+	[469] = 126507, -- Depleted-Kyparium Rocket
+	[470] = 126508, -- Geosynchronous World Spinner
+	[471] = 127154, -- Onyx Cloud Serpent
+	[472] = 127156, -- Crimson Cloud Serpent
+	[473] = 127158, -- Heavenly Onyx Cloud Serpent
+	[474] = 127161, -- Heavenly Crimson Cloud Serpent
+	[475] = 127164, -- Heavenly Golden Cloud Serpent
+	[476] = 127165, -- Heavenly Jade Cloud Serpent
+	[477] = 127169, -- Heavenly Azure Cloud Serpent
+	[478] = 127170, -- Astral Cloud Serpent
+	[479] = 127174, -- Azure Riding Crane
+	[480] = 127176, -- Golden Riding Crane
+	[481] = 127177, -- Regal Riding Crane
+	[484] = 127209, -- Black Riding Yak
+	[485] = 127213, -- Brown Riding Yak
+	[486] = 127216, -- Grey Riding Yak
+	[487] = 127220, -- Blonde Riding Yak
+	[488] = 127271, -- Crimson Water Strider
+	[492] = 127286, -- Black Dragon Turtle
+	[493] = 127287, -- Blue Dragon Turtle
+	[494] = 127288, -- Brown Dragon Turtle
+	[495] = 127289, -- Purple Dragon Turtle
+	[496] = 127290, -- Red Dragon Turtle
+	[497] = 127293, -- Great Green Dragon Turtle
+	[498] = 127295, -- Great Black Dragon Turtle
+	[499] = 127302, -- Great Blue Dragon Turtle
+	[500] = 127308, -- Great Brown Dragon Turtle
+	[501] = 127310, -- Great Purple Dragon Turtle
+	[503] = 129552, -- Crimson Pandaren Phoenix
+	[504] = 129918, -- Thundering August Cloud Serpent
+	[505] = 129932, -- Green Shado-Pan Riding Tiger
+	[506] = 129934, -- Blue Shado-Pan Riding Tiger
+	[507] = 129935, -- Red Shado-Pan Riding Tiger
+	[508] = 130086, -- Brown Riding Goat
+	[509] = 130092, -- Red Flying Cloud
+	[510] = 130137, -- White Riding Goat
+	[511] = 130138, -- Black Riding Goat
+	[515] = 130965, -- Son of Galleon
+	[516] = 130985, -- Pandaren Kite
+	[517] = 132036, -- Thundering Ruby Cloud Serpent
+	[518] = 132117, -- Ashen Pandaren Phoenix
+	[519] = 132118, -- Emerald Pandaren Phoenix
+	[520] = 132119, -- Violet Pandaren Phoenix
+	[521] = 133023, -- Jade Pandaren Kite
+	[522] = 134359, -- Sky Golem
+	[523] = 134573, -- Swift Windsteed
+	[526] = 135416, -- Grand Armored Gryphon
+	[527] = 135418, -- Grand Armored Wyvern
+	[528] = 136163, -- Grand Gryphon
+	[529] = 136164, -- Grand Wyvern
+	[530] = 136400, -- Armored Skyscreamer
+	[531] = 136471, -- Spawn of Horridon
+	[532] = 136505, -- Ghastly Charger
+	[533] = 138423, -- Cobalt Primordial Direhorn
+	[534] = 138424, -- Amber Primordial Direhorn
+	[535] = 138425, -- Slate Primordial Direhorn
+	[536] = 138426, -- Jade Primordial Direhorn
+	[537] = 138640, -- Bone-White Primal Raptor
+	[538] = 138641, -- Red Primal Raptor
+	[539] = 138642, -- Black Primal Raptor
+	[540] = 138643, -- Green Primal Raptor
+	[541] = 139407, -- Malevolent Gladiator's Cloud Serpent
+	[542] = 139442, -- Thundering Cobalt Cloud Serpent
+	[543] = 139448, -- Clutch of Ji-Kun
+	[544] = 139595, -- Armored Bloodwing
+	[545] = 140249, -- Golden Primal Direhorn
+	[546] = 140250, -- Crimson Primal Direhorn
+	[547] = 142073, -- Hearthsteed
+	[548] = 142266, -- Armored Red Dragonhawk
+	[549] = 142478, -- Armored Blue Dragonhawk
+	[550] = 142641, -- Brawler's Burly Mushan Beast
+	[551] = 142878, -- Enchanted Fey Dragon
+	[554] = 146615, -- Vicious Warsaber
+	[555] = 146622, -- Vicious Skeletal Warhorse
+	[557] = 148392, -- Spawn of Galakras
+	[558] = 148396, -- Kor'kron War Wolf
+	[559] = 148417, -- Kor'kron Juggernaut
+	[560] = 148428, -- Ashhide Mushan Beast
+	[561] = 148476, -- Thundering Onyx Cloud Serpent
+	[562] = 148618, -- Tyrannical Gladiator's Cloud Serpent
+	[563] = 148619, -- Grievous Gladiator's Cloud Serpent
+	[564] = 148620, -- Prideful Gladiator's Cloud Serpent
+	[565] = 148626, -- Furious Ashhide Mushan
+	[566] = 148970, -- Felsteed
+	[567] = 148972, -- Dreadsteed
+	[568] = 149801, -- Emerald Hippogryph
+	[571] = 153489, -- Iron Chimaera
+	[593] = 163024, -- Warforged Nightmare
+	[594] = 163025, -- Grinning Reaver
+	[600] = 155741, -- Dread Raven
+	[603] = 169952, -- Creeping Carpet
+	[606] = 170347, -- Core Hound
+	[607] = 171436, -- Gorerider Gronnling
+	[608] = 171616, -- Dark Riding Clefthoof
+	[609] = 171617, -- Blue Riding Clefthoof
+	[610] = 171618, -- Grey Riding Clefthoof
+	[611] = 171619, -- White Riding Clefthoof
+	[612] = 171620, -- Red Riding Clefthoof
+	[613] = 171621, -- Armored Clefthoof
+	[614] = 171622, -- Brown Draenor Elekk
+	[615] = 171623, -- Dark Draenor Elekk
+	[616] = 171624, -- Grey Draenor Elekk
+	[617] = 171625, -- White Draenor Elekk
+	[618] = 171626, -- Armored Elekk
+	[650] = 171844, -- Tan Dire Wolf
+	[651] = 171845, -- Hellscream's Hog
+	[652] = 171846, -- Champion's Treadblade
+	[657] = 171851, -- Garn Nighthowl
+	}
+--Maps mount spell id to mounts position in mount journal
+local SpellIDToJournalIndex = {} -- [spellID] = journalIndex
+for i = 1, C_MountJournal.GetNumMounts() do
+	local _, spellID = C_MountJournal.GetMountInfo(i)
+	SpellIDToJournalIndex[spellID] = i
+end
+
+function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
+
+	if (action1 == 0) then
+		return
+	else
+		local mountSpellID = Mounts[action1]
+		local mountID = SpellIDToJournalIndex[mountSpellID]
+		local mountName,_, mountIcon = C_MountJournal.GetMountInfo(mountID)
+		self.data.macro_Text = "#autowrite\n/cast "..mountName..";"
+		self.data.macro_Auto = mountName..";"
+		self.data.macro_Icon = mountIcon
+		self.data.macro_Name = mountName
+		self.data.macro_Watch = false
+		self.data.macro_Equip = false
+		self.data.macro_Note = ""
+		self.data.macro_UseNote = false
+
+		if (not self.cursor) then
+			self:SetType(true)
+		end
+
+		MacroDrag[0] = false
+
+		ClearCursor(); SetCursor(nil)
+	end
+
+end
 
 function BUTTON:MACRO_PlaceCompanion(action1, action2, hasAction)
 
@@ -2013,12 +2537,11 @@ function BUTTON:MACRO_PlaceBattlePet(action1, action2, hasAction)
 	if (action1 == 0) then
 		return
 	else
-	 	_, _, _, _, _, _, petName = C_PetJournal.GetPetInfoByPetID(action1)
-
-	 	self.data.macro_Text = self:AutoWriteMacro(petName)
+	 	_, _, _, _, _, _, _,petName, petIcon = C_PetJournal.GetPetInfoByPetID(action1)
+	 	self.data.macro_Text = "#autowrite\n/summonpet "..petName
 	 	self.data.macro_Auto = petName..";"
-	 	self.data.macro_Icon = false
-		self.data.macro_Name = ""
+	 	self.data.macro_Icon = petIcon
+		self.data.macro_Name = petName
 		self.data.macro_Watch = false
 		self.data.macro_Equip = false
 		self.data.macro_Note = ""
@@ -2108,7 +2631,7 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 	if (InCombatLockdown()) then return end
 
 	local cursorType, action1, action2, ID = GetCursorInfo()
-
+--print(GetCursorInfo())
 	--for i=1,select("#",GetCursorInfo()) do
 	--	print(i..": "..select(i,GetCursorInfo()))
 	--end
@@ -2160,9 +2683,9 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 
 			self:MACRO_PlaceBlizzEquipSet(action1)
 
-		elseif (cursorType == "companion") then
+		elseif (cursorType == "mount") then
 
-			self:MACRO_PlaceCompanion(action1, action2, self:MACRO_HasAction())
+			self:MACRO_PlaceMount(action1, action2, self:MACRO_HasAction())
 
 		elseif (cursorType == "flyout") then
 

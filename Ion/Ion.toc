@@ -1,8 +1,9 @@
-## Interface: 50400
+## Interface: 60000
 ## Title: Ion
 ## Notes: Ion: Action Bar & Object Mananger
 ## Author: Connor Chenoweth (aka Maul)
-## Version: Hydrogen-9
+## X-Credits-Maintainer: SLOKnightfall
+## Version: WoD-Beta-Update
 ## DefaultState: enabled
 ## SavedVariables: IonGDB, IonItemCache
 ## SavedVariablesPerCharacter: IonCDB, IonSpec, IonProfile
