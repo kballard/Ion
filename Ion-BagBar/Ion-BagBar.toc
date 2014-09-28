@@ -1,7 +1,7 @@
-﻿## Interface: 50001
+## Interface: 50400
 ## Title: Ion: Bag Bar
 ## Author: Maul
-## Version: Hydrogen
+## Version: Hydrogen-4
 ## Notes: Bag bar for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion
