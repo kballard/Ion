@@ -1,5 +1,5 @@
-﻿--Ion Menu Bar, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Ion Menu Bar, a World of Warcraft® user interface addon.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 local ION, GDB, CDB, PEW = Ion
 
@@ -158,7 +158,7 @@ local function updateMicroButtons()
 		ION.LatencyButton_SetNormal(IonLatencyButton)
 	end
 
-	if (IonPVPButton and PVPFrame:IsShown()) then
+	if (IonPVPButton and PVPUIFrame and PVPUIFrame:IsShown()) then
 
 		IonPVPButton:SetButtonState("PUSHED", 1)
 		ION.PVPButton_SetPushed(IonPVPButton)
@@ -431,7 +431,7 @@ function ION.TalentButton_OnEvent(self, event, ...)
 
 	if (event == "PLAYER_LEVEL_UP") then
 
-		UpdateMicroButtons()
+		updateMicroButtons()
 
 		if (not CharacterFrame:IsShown()) then
 			SetButtonPulse(self, 60, 1)
@@ -439,7 +439,7 @@ function ION.TalentButton_OnEvent(self, event, ...)
 
 	elseif (event == "UNIT_LEVEL" or event == "PLAYER_ENTERING_WORLD") then
 
-		UpdateMicroButtons()
+		updateMicroButtons()
 
 	elseif (event == "UPDATE_BINDINGS") then
 
@@ -458,7 +458,7 @@ end
 function ION.AchievementButton_OnEvent(self, event, ...)
 
 	if (event == "PLAYER_ENTERING_WORLD") then
-		AchievementMicroButton_OnEvent(self, event, ...)
+		updateMicroButtons()
 	elseif (event == "UPDATE_BINDINGS") then
 		self.tooltipText =  MicroButtonTooltipText(TALENTS_BUTTON, "TOGGLETALENTS")
 	end
@@ -518,7 +518,7 @@ function ION.GuildButton_OnEvent(self, event, ...)
 	if (event == "UPDATE_BINDINGS") then
 		self.tooltipText = MicroButtonTooltipText(GUILD, "TOGGLEGUILDTAB")
 	elseif (event == "PLAYER_GUILD_UPDATE") then
-		UpdateMicroButtons()
+		updateMicroButtons()
 	end
 end
 
@@ -559,8 +559,8 @@ function ION.PVPButton_OnMouseDown(self)
 
 	if (self.down) then
 		self.down = nil
-		if (PVPFrame) then
-			ToggleFrame(PVPFrame)
+		if (PVPUIFrame) then
+			ToggleFrame(PVPUIFrame)
 		end
 		return
 	end
@@ -579,8 +579,13 @@ function ION.PVPButton_OnMouseUp(self)
 
 	if (self.down) then
 		self.down = nil
-		if (self:IsMouseOver() and PVPFrame) then
-			ToggleFrame(PVPFrame)
+
+		if (not IsAddOnLoaded("Blizzard_PVPUI")) then
+			LoadAddOn("Blizzard_PVPUI")
+		end
+
+		if (self:IsMouseOver() and PVPUIFrame) then
+			ToggleFrame(PVPUIFrame)
 		else
 			updateMicroButtons()
 		end
@@ -698,7 +703,28 @@ function ION.EJButton_OnClick(self)
 	end
 end
 
+function Ion.StoreButton_OnLoad(self)
+
+	LoadMicroButtonTextures(self, "BStore")
+	self.tooltipText = BLIZZARD_STORE
+	self:RegisterEvent("STORE_STATUS_CHANGED")
+	
+	menuElements[#menuElements+1] = self
+
+end
+
+function Ion.StoreButton_OnEvent(self, event, ...)
+
+end
+
+function Ion.StoreButton_OnClick(self)
+
+	ToggleStoreUI()
+
+end
+
 function ION.HelpButton_OnLoad(self)
+
 	LoadMicroButtonTextures(self, "Help")
 	self.tooltipText = HELP_BUTTON
 	self.newbieText = NEWBIE_TOOLTIP_HELP
@@ -1166,6 +1192,8 @@ local function controlOnEvent(self, event, ...)
 			GDB.firstRun = false
 
 		else
+		
+			local count = 0
 
 			for id,data in pairs(menubarsGDB) do
 				if (data ~= nil) then
@@ -1177,7 +1205,15 @@ local function controlOnEvent(self, event, ...)
 				if (data ~= nil) then
 					ION:CreateNewObject("menu", id)
 				end
+				
+				count = count + 1
 			end
+			
+			if (count < #menuElements) then			
+				for i=count+1, #menuElements do
+					object = ION:CreateNewObject("menu", i)
+				end
+			end				
 		end
 
 		STORAGE:Hide()

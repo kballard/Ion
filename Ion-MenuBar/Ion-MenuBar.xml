@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<!-- Ion Menu Bar, a World of WarcraftÂ® user interface addon. -->
-	<!-- CopyrightÂ© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved. -->
+	<!-- CopyrightÂ© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved. -->
 
 	<Button name="IonCharacterButton" inherits="MainMenuBarMicroButton" parent="UIParent">
 		<Layers>
@@ -193,6 +193,20 @@
 			</OnClick>
 		</Scripts>
 	</Button>
+	
+	<Button name="IonStoreButton" inherits="MainMenuBarMicroButton" parent="UIParent">
+		<Scripts>
+			<OnLoad>
+				Ion.StoreButton_OnLoad(self)
+			</OnLoad>
+			<OnEvent>
+				Ion.StoreButton_OnEvent(self, event, ...)
+			</OnEvent>
+			<OnClick>
+				Ion.StoreButton_OnClick(self)
+			</OnClick>
+		</Scripts>
+	</Button>	
 
 	<!-- I have borrowed the latency button from LedMirage to be the Ion default latency indicator -->
 	<!-- LedMirage 11/27/2006 New Frame for MirageUI Latency Button -->
