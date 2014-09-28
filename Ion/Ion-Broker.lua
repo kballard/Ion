@@ -1,5 +1,5 @@
-﻿--Ion Broker Plugin, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Ion Broker Plugin, a World of Warcraft® user interface addon.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 -- Original Broker Macaroon Comments retained --
 -- Broker_Macaroon : A simple Data Broker minimap button replacement by Lightbright@Alexstrasza
@@ -102,8 +102,12 @@ local function DelayedUpdate(self, elapsed)
 
 		for key,value in pairs(_G) do
 			local obj = _G[key]
-			if (type(obj) == "table" and type(rawget(obj, 0)) == "userdata" and type(obj.GetName) == "function") then
+			
+			-- following line fix posted by corveroth on Wowinterface Ion comments
+			if (type(obj) == "table" and type(rawget(obj, 0)) == "userdata" and type(obj.GetName) == "function") and (type(obj.IsForbidden) == "function" and not obj:IsForbidden()) then
+			
 				local name = obj:GetName()
+				
 				if (name and name:find("IonBroker") and not ORB.foundicon) then
 					if (name:find("Icon")) then
 						ORB.anchorFrame = obj; ORB.foundicon = true

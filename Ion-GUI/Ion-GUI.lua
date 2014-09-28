@@ -1,5 +1,5 @@
 ﻿--Ion GUI, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 local ION, GDB, CDB, IMM, IBE, IOE, IBTNE, MAS, PEW = Ion
 

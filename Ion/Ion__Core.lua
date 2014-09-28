@@ -1,5 +1,5 @@
-﻿--Ion, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Ion, a World of Warcraft® user interface addon.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 Ion = {
 	SLASHCMDS = {},
@@ -68,6 +68,9 @@ IonCDB = {
 	perCharBinds = false,
 
 	fix07312012 = false,
+	fix03312014 = false,
+	
+	firstRun = true,
 
 	debug = {},
 }
@@ -1704,6 +1707,8 @@ end
 
 function ION:ToggleBlizzBar(on)
 
+	if (InCombatLockdown()) then return end
+
 	if (ION.OpDep) then return end
 
 	if (on) then
@@ -2243,6 +2248,11 @@ local function control_OnEvent(self, event, ...)
 				ION.OpDep = true
 			end
 		end
+		
+		if (not fix03312014) then
+		
+		end
+		
 
 		GDB = IonGDB; CDB = IonCDB; SPEC = IonSpec
 
@@ -2310,11 +2320,6 @@ local function control_OnEvent(self, event, ...)
 			end
 		end
 
-		-- if statements for 4.x compatibility
-		if (TalentMicroButtonAlert) then
-			TalentMicroButtonAlert:HookScript("OnShow", hideAlerts)
-		end
-
 		if (CompanionsMicroButtonAlert) then
 			CompanionsMicroButtonAlert:HookScript("OnShow", hideAlerts)
 		end
@@ -2322,6 +2327,7 @@ local function control_OnEvent(self, event, ...)
 	elseif (event == "PLAYER_ENTERING_WORLD" and not PEW) then
 
 		GDB.firstRun = false
+		CDB.firstRun = false
 
 		ION:UpdateSpellIndex()
 		ION:UpdatePetSpellIndex()
@@ -2345,7 +2351,8 @@ local function control_OnEvent(self, event, ...)
 
 	elseif (event == "ACTIVE_TALENT_GROUP_CHANGED" or
 		  event == "LEARNED_SPELL_IN_TAB" or
-		  event == "CHARACTER_POINTS_CHANGED") then
+		  event == "CHARACTER_POINTS_CHANGED" or
+		  event == "SPELLS_CHANGED") then
 
 		updater.elapsed = 0
 		updater:Show()
@@ -2356,7 +2363,9 @@ local function control_OnEvent(self, event, ...)
 
 	elseif (event == "UNIT_PET" and ... == "player") then
 
-		ION:UpdatePetSpellIndex()
+		if (PEW) then
+			ION:UpdatePetSpellIndex()
+		end
 
 	elseif (event == "UNIT_LEVEL" and ... == "player") then
 
@@ -2377,7 +2386,7 @@ frame:RegisterEvent("PLAYER_LEAVING_WORLD")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 frame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-frame:RegisterEvent("SKILL_LINES_CHANGED")
+frame:RegisterEvent("SPELLS_CHANGED")
 frame:RegisterEvent("CHARACTER_POINTS_CHANGED")
 frame:RegisterEvent("LEARNED_SPELL_IN_TAB")
 frame:RegisterEvent("CURSOR_UPDATE")

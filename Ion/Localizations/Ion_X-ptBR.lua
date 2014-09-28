@@ -1,5 +1,5 @@
 ﻿--Ion, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 -- Brazillian Protuguese translations by:
 -- http://www.curseforge.com/profiles/marcelomax/
@@ -7,6 +7,8 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Ion", "ptBR", false)
 
 if L then
+
+L.DEFAULT = "Default"
 
 L.ACTION = "Dados de Ação" -- Needs review
 L.ALPHA = "Transparência" -- Needs review

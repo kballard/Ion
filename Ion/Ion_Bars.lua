@@ -1,5 +1,5 @@
-﻿--Ion, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Ion, a World of Warcraft® user interface addon.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 local ION, GDB, CDB, SPEC, PEW, player, realm, barGDB, barCDB = Ion
 
@@ -62,6 +62,7 @@ ION.barGDEF = {
 
 	alpha = 1,
 	alphaUp = 1,
+	alphaMax = 1,
 	fadeSpeed = 0.5,
 
 	barStrata = "MEDIUM",
@@ -171,6 +172,20 @@ local gDef = {
 		x = 0,
 		y = 100,
 		showGrid = true,
+	},
+}
+
+local cDef = {
+
+	[1] = {
+		dualSpec = true,
+		vehicle = true,
+		possess = true,
+		override = true,
+	},
+
+	[2] = {
+
 	},
 }
 
@@ -1729,9 +1744,9 @@ function BAR:CreateHandler()
 
 						]])
 
-	handler:SetAttribute("_onstate-current", [[ self:SetAttribute("activestate", self:GetAttribute("state-current") or "homestate") print(self:GetAttribute("state-current")) ]])
+    handler:SetAttribute("_onstate-current", [[ self:SetAttribute("activestate", self:GetAttribute("state-current") or "homestate") ]])
 
-	handler:SetAttribute("statestack", "homestate")
+    handler:SetAttribute("statestack", "homestate")
 
 	handler:SetAttribute("activestate", "homestate")
 
@@ -4306,10 +4321,11 @@ local function controlOnEvent(self, event, ...)
 				offset = offset + 12
 			end
 		else
-
+		
 			for id,data in pairs(barGDB) do
-				if (data ~= nil) then
-					ION:CreateNewBar("bar", id)
+			
+				if (data ~= nil) then				
+					ION:CreateNewBar("bar", id)					
 				end
 			end
 
@@ -4319,12 +4335,21 @@ local function controlOnEvent(self, event, ...)
 				end
 			end
 		end
-
+		
 		STORAGE:Hide()
 
 	elseif (event == "PLAYER_LOGIN") then
 
 		for _,bar in pairs(BARIndex) do
+		
+			if (CDB.firstRun) then			
+				for id, cdefaults in ipairs(cDef) do						
+					if (id == bar:GetID()) then
+						bar:SetDefaults(nil, cdefaults)
+					end						
+				end					
+			end		
+			
 			bar:Load()
 		end
 

@@ -1,5 +1,5 @@
 ﻿--Ion, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 --/flyout command based on Gello's addon "Select"
 
@@ -326,7 +326,7 @@ function BUTTON:GetCompanionFromTooltip(data, name)
 					optional = 1
 				end
 
-				if (key and find(companionTooltips[name:lower()], "[%s%p]+"..key.."[%s%p]+")) then
+				if (key and companionTooltips[name:lower()]:find("[%s%p]+"..key.."[%s%p]+")) then
 
    					if (cmd == "!") then
 						excluded = true
@@ -610,6 +610,7 @@ local flyoutBarUpdater = CreateFrame("Frame", nil, UIParent)
 	flyoutBarUpdater:Hide()
 
 function BUTTON:Flyout_UpdateButtons(init)
+        local slot
 
 	if (self.flyout) then
 
@@ -642,16 +643,12 @@ function BUTTON:Flyout_UpdateButtons(init)
 
 				elseif (source == "companion") then
 
-					if (spell:find("%(")) then
-						button.macroshow = spell
-					else
-						button.macroshow = spell.."()"
-					end
-
-					button:SetAttribute("prefix", "/use ")
+					button.macroshow = spell
+					--Companion pet fix by Tharai from CurseForge
+					button:SetAttribute("prefix", "/summonpet ")
 					button:SetAttribute("showtooltip", "#showtooltip "..button.macroshow.."\n")
 
-					prefix = "/use "
+					prefix = "/summonpet "
 
 				elseif (source == "item") then
 

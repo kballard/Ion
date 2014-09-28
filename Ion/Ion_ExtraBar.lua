@@ -1,5 +1,5 @@
-﻿--Ion , a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Ion , a World of Warcraft® user interface addon.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 local ION, GDB, CDB, PEW = Ion
 
@@ -443,7 +443,7 @@ end
 
 local function controlOnEvent(self, event, ...)
 
-	if (event == "ADDON_LOADED" and ... == "Ion-PetBar") then
+	if (event == "ADDON_LOADED" and ... == "Ion") then
 
 		GDB = IonGDB; CDB = IonCDB
 

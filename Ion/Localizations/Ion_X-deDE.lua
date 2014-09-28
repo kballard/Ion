@@ -1,5 +1,5 @@
 ﻿--Ion, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 -- German translations by:
 -- http://www.curseforge.com/profiles/Murida/
@@ -8,6 +8,8 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Ion", "deDE", false)
 
 if L then
+
+L.DEFAULT = "Default"
 
 L.ACTION = "Aktionsinformationen" -- Needs review
 L.ALPHA = "Alpha" -- Needs review

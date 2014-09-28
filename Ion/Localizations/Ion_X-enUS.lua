@@ -1,11 +1,13 @@
 ﻿--Ion, a World of Warcraft® user interface addon.
---Copyright© 2006-2012 Connor H. Chenoweth, aka Maul - All rights reserved.
+--Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
 --English spelling validated by Eledryn
 
 local L = LibStub("AceLocale-3.0"):NewLocale("Ion", "enUS", true)
 
 L.ION = "Ion"
+
+L.DEFAULT = "Default"
 
 L.SLASH1 = "/ion"
 L.SLASH_HINT1 = "\n/ion |cff00ff00<command>|r <options>"
