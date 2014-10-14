@@ -151,6 +151,9 @@ L.SLASH_CMD45_DESC = "Toggle Blizzard's Vehicle Bar"
 L.SLASH_CMD46 = "Animate"
 L.SLASH_CMD46_DESC = "Toggle Ion's Orb Animation"
 
+L.SLASH_CMD47 = "DraenorBar"
+L.SLASH_CMD47_DESC = "Toggle Draenor Garrison Bar"
+
 L.BARTYPES_USAGE = "Usage: |cffffff00/ion create <type>|r\n"
 L.BARTYPES_TYPES = "     Types -\n"
 L.BARTYPES_LINE = "Creates a bar for %ss"

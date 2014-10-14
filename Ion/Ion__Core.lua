@@ -42,6 +42,7 @@ IonGDB = {
 	snapToTol = 28,
 
 	mainbar = false,
+	draenorbar = false,
 	vehicle = false,
 
 	firstRun = true,
@@ -257,6 +258,7 @@ local slashFunctions = {
 	[44] = "BlizzBar",
 	[45] = "",
 	[46] = "Animate",
+	[47] = "DraenorBar",
 }
 
 local count = 1
@@ -1798,6 +1800,31 @@ function ION:BlizzBar()
 
 end
 
+
+function ION:ToggleDraenorBar(on)
+	if (InCombatLockdown()) then return end
+
+	if (ION.OpDep) then return end
+
+	if (on) then
+	DraenorZoneAbilityFrame:Show()
+	else
+	DraenorZoneAbilityFrame:Hide()
+	end
+end
+
+function ION:DraenorBar()
+
+	if (GDB.draenorbar) then
+		GDB.draenorbar = false
+	else
+		GDB.draenorbar = true
+	end
+
+	ION:ToggleDraenorBar(GDB.draenorbar)
+
+end
+
 function ION:Animate()
 
 	if (GDB.animate) then
@@ -2336,6 +2363,7 @@ local function control_OnEvent(self, event, ...)
 		ION:UpdateIconIndex()
 
 		ION:ToggleBlizzBar(GDB.mainbar)
+		ION:ToggleDraenorBar(GDB.draenorbar)
 
 		CDB.fix07312012 = true
 
@@ -2370,6 +2398,9 @@ local function control_OnEvent(self, event, ...)
 	elseif (event == "UNIT_LEVEL" and ... == "player") then
 
 		ION.level = UnitLevel("player")
+	
+	else
+	ION:ToggleDraenorBar(GDB.draenorbar)
 	end
 end
 
@@ -2395,6 +2426,13 @@ frame:RegisterEvent("COMPANION_LEARNED")
 frame:RegisterEvent("COMPANION_UPDATE")
 frame:RegisterEvent("UNIT_LEVEL")
 frame:RegisterEvent("UNIT_PET")
+
+	frame:RegisterUnitEvent("UNIT_AURA", "player");
+	frame:RegisterEvent("SPELL_UPDATE_COOLDOWN");
+	frame:RegisterEvent("SPELL_UPDATE_USABLE");
+	frame:RegisterEvent("SPELL_UPDATE_CHARGES");
+	frame:RegisterEvent("SPELLS_CHANGED");
+	frame:RegisterEvent("ACTIONBAR_SLOT_CHANGED");
 
 frame = CreateFrame("GameTooltip", "IonTooltipScan", UIParent, "GameTooltipTemplate")
 frame:SetOwner(UIParent, "ANCHOR_NONE")
