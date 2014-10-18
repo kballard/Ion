@@ -2,7 +2,7 @@
 ## Title: Ion: GUI
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: WoD-Beta-Update
+## Version: Hydrogen 10.1
 ## Notes: GUI for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion

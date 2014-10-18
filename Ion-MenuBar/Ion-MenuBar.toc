@@ -2,7 +2,7 @@
 ## Title: Ion: Menu Bar
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: WoD-Beta-Update
+## Version: Hydrogen 10
 ## Notes: Menu bar for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion

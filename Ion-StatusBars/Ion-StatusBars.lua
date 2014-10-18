@@ -297,6 +297,14 @@ local function xpstrings_Update()
 
 end
 
+--These factions return fID but have 8 levels instead of 6
+local BrawlerGuildFactions = {
+[1690] = true, --Aliance WoD
+[1419] = true, --Aliance MoP
+[1690] = true, --Horde WoD
+[1374] = true, --Horde MoP
+}
+
 local function repstrings_Update(line)
 
 	if (GetNumFactions() > 0) then
@@ -314,8 +322,7 @@ local function repstrings_Update(line)
 
 			if ((not isHeader or hasRep) and not IsFactionInactive(i) and not (isHeader and ID == 8)) then
 			
-				if (fID) then
-				
+				if (fID and not BrawlerGuildFactions[fID]) then
 					colors = BarRepColors[ID+2]; standing = fTextLevel
 
 					if (not RepWatch[i]) then
@@ -358,7 +365,6 @@ local function repstrings_Update(line)
 					end				
 				
 				else
-
 					colors = BarRepColors[ID]; standing = (colors.l):gsub("^%a%p", "")
 
 					if (not RepWatch[i]) then

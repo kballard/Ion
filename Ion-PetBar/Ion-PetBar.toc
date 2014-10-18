@@ -2,7 +2,7 @@
 ## Title: Ion: Pet Action Bar
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: WoD-Beta-Update
+## Version: Hydrogen 10
 ## Notes: Pet action bar for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion
