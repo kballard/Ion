@@ -1800,6 +1800,15 @@ local ignoreSubName = {
 [13809] =  true, --Frost Trap
 }
 
+--Spellbook names can not be used for macros
+local CallPetSpells = {
+[883] = true,
+[83242] = true,
+[83243] = true,
+[83244] = true,
+[83245] = true,
+}
+
 function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 
 	local _, modifier, spell, bookName, subName, spellID, texture = " "
@@ -1809,17 +1818,20 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 	else
 	 	BookName, subName = GetSpellBookItemName(action1, action2)
 	 	_, spellID = GetSpellBookItemInfo(action1, action2)
-		spell = GetSpellInfo(spellID)
+		spellName = GetSpellInfo(spellID)
         --print(GetSpellBookItemName(action1, action2))
         --print(GetSpellBookItemInfo(action1, action2))
         
 		if ignoreSubName[spellID] then
-			self.data.macro_Text = self:AutoWriteMacro(spell)
-			self.data.macro_Auto = spell..";"..subName
+			self.data.macro_Text = self:AutoWriteMacro(BookName)
+			self.data.macro_Auto = BookName..";"..subName
+		elseif CallPetSpells[spellID] then
+			self.data.macro_Text = self:AutoWriteMacro(spellName)
+			self.data.macro_Auto = spellName..";"
 		else
-			self.data.macro_Text = self:AutoWriteMacro(spell, subName)
-			self.data.macro_Auto = spell..";"
-			end
+			self.data.macro_Text = self:AutoWriteMacro(BookName, subName)
+			self.data.macro_Auto = BookName..";"..subName
+		end
 		
 		self.data.macro_Icon = false
 		self.data.macro_Name = ""

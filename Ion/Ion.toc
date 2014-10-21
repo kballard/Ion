@@ -3,9 +3,9 @@
 ## Notes: Ion: Action Bar & Object Mananger
 ## Author: Connor Chenoweth (aka Maul)
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 10.1
+## Version: Hydrogen 10.3
 ## DefaultState: enabled
-## SavedVariables: IonItemCache
+## SavedVariables: IonGDB, IonItemCache
 ## SavedVariablesPerCharacter: IonGDB, IonCDB, IonSpec, IonProfile
 ## OptionalDeps: Align, Masque, BarKeep, Bartender4, Dominos, MagnetButtons, nMainbar, Orbs, rActionBarStyler, StellarBars, Tukui, XBar
 ## X-Copyright: Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
