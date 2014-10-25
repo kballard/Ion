@@ -7,7 +7,7 @@
 ## DefaultState: enabled
 ## SavedVariables: IonGDB, IonItemCache
 ## SavedVariablesPerCharacter: IonCDB, IonSpec, IonProfile
-## OptionalDeps: Align, Masque, BarKeep, Bartender4, Dominos, MagnetButtons, nMainbar, Orbs, rActionBarStyler, StellarBars, Tukui, XBar
+## OptionalDeps: Align, Masque, BarKeep, Bartender4, Dominos, MagnetButtons, nMainbar, Orbs, rActionBarStyler, StellarBars, Tukui, XBar, Titan
 ## X-Copyright: Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 ## X-Permissions: AI-Art Visual Elements used with Author Permission (Quokka@WoWInterface)
 ## X-Email: trinityui@live.com

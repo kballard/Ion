@@ -211,6 +211,24 @@ local morphSpells = {
 	[88625] = false,
 }
 
+--list of spells that break if the subname is in the macro
+--Traps subname add trap launcher if active
+local ignoreSubName = {
+[34600] =  true, --Snake Trap
+[13813] =  true, --Explosive Trap
+[1499] =  true, --Freezing Trap
+[13809] =  true, --Frost Trap
+}
+
+--Spellbook names can not be used for macros
+local CallPetSpells = {
+[883] = true,
+[83242] = true,
+[83243] = true,
+[83244] = true,
+[83245] = true,
+}
+
 local unitAuras = { player = {}, target = {}, focus = {} }
 
 local alphaTimer, alphaDir = 0, 0
@@ -515,7 +533,7 @@ local function updateAuraInfo(unit)
 		end
 
 		-- temp fix to detect mighty morphing power spells
-		 if (uai_spellID == 48517) then morphSpells[8921] = 93402
+		    if (uai_spellID == 48517) then morphSpells[8921] = 93402
 		elseif (uai_spellID == 81206) then morphSpells[88625] = 88685
 		elseif (uai_spellID == 81207) then morphSpells[88625] = 88682
 		elseif (uai_spellID == 81208) then morphSpells[88625] = 88684
@@ -679,7 +697,7 @@ function BUTTON:MACRO_UpdateData(...)
    		if (ud_spell and ud_spellcmd:find("/castsequence")) then
      			ud__, ud_item, ud_spell = QueryCastSequence(ud_spell)
      		elseif (ud_spell) then
-     		  	if (#ud_spell < 1) then
+     		     	if (#ud_spell < 1) then
      				ud_spell = nil
      			elseif(GetItemInfo(ud_spell) or ItemCache[ud_spell]) then
      				ud_item = ud_spell; ud_spell = nil
@@ -865,12 +883,7 @@ function BUTTON:MACRO_SetItemIcon(item)
 		end
 
 		if (texture) then
-			if(type(texture) == "number") then
-				self.iconframeicon:SetToFileData(texture);
-			else
-				self.iconframeicon:SetTexture(texture)
-			end
-			--self.iconframeicon:SetTexture(texture)
+			self.iconframeicon:SetTexture(texture)
 		else
 			self.iconframeicon:SetTexture("INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK")
 		end
@@ -880,11 +893,7 @@ function BUTTON:MACRO_SetItemIcon(item)
 		if (self.data.macro_Icon == "BLANK") then
 			self.iconframeicon:SetTexture("")
 		else
-			if(type(self.data.macro_Icon) == "number") then
-				self.iconframeicon:SetToFileData(self.data.macro_Icon);
-			else
-				self.iconframeicon:SetTexture(self.data.macro_Icon)
-			end
+			self.iconframeicon:SetTexture(self.data.macro_Icon)
 		end
 	else
 
@@ -979,11 +988,8 @@ function BUTTON:MACRO_UpdateIcon(...)
 			end
 
 		elseif (self.data.macro_Icon) then
-			if(type(self.data.macro_Icon) == "number") then
-				self.iconframeicon:SetToFileData(self.data.macro_Icon);
-			else
-				self.iconframeicon:SetTexture(self.data.macro_Icon)
-			end
+
+			self.iconframeicon:SetTexture(self.data.macro_Icon)
 
 		else
 
@@ -1791,49 +1797,33 @@ function BUTTON:MACRO_PlaceMacro()
 	ION:ToggleButtonGrid(nil, true)
 end
 
---list of spells that break if the subname is in the macro
---Traps subname add trap launcher if active
-local ignoreSubName = {
-[34600] =  true, --Snake Trap
-[13813] =  true, --Explosive Trap
-[1499] =  true, --Freezing Trap
-[13809] =  true, --Frost Trap
-}
-
---Spellbook names can not be used for macros
-local CallPetSpells = {
-[883] = true,
-[83242] = true,
-[83243] = true,
-[83244] = true,
-[83245] = true,
-}
-
 function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 
-	local _, modifier, spell, bookName, subName, spellID, texture = " "
+	local _, modifier, spell, subName, spellID, texture = " "
 
 	if (action1 == 0) then
 		return
 	else
-	 	BookName, subName = GetSpellBookItemName(action1, action2)
+	 	spell, subName = GetSpellBookItemName(action1, action2)
 	 	_, spellID = GetSpellBookItemInfo(action1, action2)
-		spellName = GetSpellInfo(spellID)
+		local spellInfoName = GetSpellInfo(spellID)
+
         --print(GetSpellBookItemName(action1, action2))
         --print(GetSpellBookItemInfo(action1, action2))
-        
-		if ignoreSubName[spellID] then
-			self.data.macro_Text = self:AutoWriteMacro(BookName)
-			self.data.macro_Auto = BookName..";"..subName
+        --spell = GetSpellInfo(spellID)
+
+	   	if ignoreSubName[spellID] then
+			self.data.macro_Text = self:AutoWriteMacro(spell)
+			self.data.macro_Auto = spell
 		elseif CallPetSpells[spellID] then
-			self.data.macro_Text = self:AutoWriteMacro(spellName)
-			self.data.macro_Auto = spellName..";"
+			self.data.macro_Text = self:AutoWriteMacro(spellInfoName)
+			self.data.macro_Auto = spellInfoName..";"
 		else
-			self.data.macro_Text = self:AutoWriteMacro(BookName, subName)
-			self.data.macro_Auto = BookName..";"..subName
+			self.data.macro_Text = self:AutoWriteMacro(spell, subName)
+			self.data.macro_Auto = spell..";"..subName
 		end
-		
-		self.data.macro_Icon = false
+
+	 	self.data.macro_Icon = false
 		self.data.macro_Name = ""
 		self.data.macro_Watch = false
 		self.data.macro_Equip = false
@@ -2012,6 +2002,7 @@ function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 
 end
 
+
 function BUTTON:MACRO_PlaceCompanion(action1, action2, hasAction)
 
 	if (action1 == 0) then
@@ -2115,6 +2106,7 @@ function BUTTON:MACRO_PlaceBattlePet(action1, action2, hasAction)
 		return
 	else
 	 	_, _, _, _, _, _, _,petName, petIcon = C_PetJournal.GetPetInfoByPetID(action1)
+
 	 	self.data.macro_Text = "#autowrite\n/summonpet "..petName
 	 	self.data.macro_Auto = petName..";"
 	 	self.data.macro_Icon = petIcon
@@ -2208,6 +2200,11 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 	if (InCombatLockdown()) then return end
 
 	local cursorType, action1, action2, ID = GetCursorInfo()
+
+	--for i=1,select("#",GetCursorInfo()) do
+	--	print(i..": "..select(i,GetCursorInfo()))
+	--end
+
 	local texture = self.iconframeicon:GetTexture()
 
 	if (self:MACRO_HasAction()) then

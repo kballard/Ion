@@ -1923,11 +1923,7 @@ function ION:MacroEditorUpdate()
 			elseif (data.macro_Icon == "BLANK") then
 				IBTNE.macroicon.icon:SetTexture("")
 			else
-				if(type(data.macro_Icon) == "number") then
-					IBTNE.macroicon.icon:SetToFileData(data.macro_Icon);
-				else
-					IBTNE.macroicon.icon:SetTexture(data.macro_Icon)
-				end
+				IBTNE.macroicon.icon:SetTexture(data.macro_Icon)
 			end
 
 			IBTNE.nameedit:SetText(data.macro_Name)
@@ -2102,12 +2098,8 @@ function ION.MacroIconListUpdate(frame)
 		texture = IconList[index]
 
 		if (index < numIcons) then
-			if(type(texture) == "number") then
-				btn.icon:SetToFileData(texture);
-			else
-				btn.icon:SetTexture(texture)
-			end
-			--btn.icon:SetTexture(texture)
+
+			btn.icon:SetTexture(texture)
 			btn:Show()
 			btn.texture = texture
 

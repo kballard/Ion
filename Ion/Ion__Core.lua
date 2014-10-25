@@ -1018,6 +1018,9 @@ end
 
 local temp = {}
 
+local TempTexture = (CreateFrame("Button", nil, UIParent)):CreateTexture()
+--textf:Hide()
+
 function ION:UpdateIconIndex()
 
 	local icon
@@ -1027,13 +1030,17 @@ function ION:UpdateIconIndex()
 	GetMacroIcons(temp)
 
 	for k,v in ipairs(temp) do
+		if(type(v) == "number") then
+			TempTexture:SetToFileData(v);
+			icon = TempTexture:GetTexture()
+		else
+			icon = "INTERFACE\\ICONS\\"..v:upper()
+		end
 
-		--icon = "INTERFACE\\ICONS\\"..v:upper()
-
-   		if (not icons[v]) then
-   			ICONS[#ICONS+1] = v; icons[v] = true
-   		end
-   	end
+		if (not icons[icon:upper()]) then
+			ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+		end
+	end
 
 	--wipe(temp)
 
@@ -1800,7 +1807,6 @@ function ION:BlizzBar()
 
 end
 
-
 function ION:ToggleDraenorBar(on)
 	if (InCombatLockdown()) then return end
 
@@ -1824,6 +1830,7 @@ function ION:DraenorBar()
 	ION:ToggleDraenorBar(GDB.draenorbar)
 
 end
+
 
 function ION:Animate()
 
@@ -2361,7 +2368,8 @@ local function control_OnEvent(self, event, ...)
 		ION:UpdateStanceStrings()
 		ION:UpdateCompanionData()
 		ION:UpdateIconIndex()
-
+		--Fix for Titan causing the Main Bar to not be hidden
+		if (IsAddOnLoaded("Titan")) then TitanUtils_AddonAdjust("MainMenuBar", true) end
 		ION:ToggleBlizzBar(GDB.mainbar)
 		ION:ToggleDraenorBar(GDB.draenorbar)
 
@@ -2398,9 +2406,8 @@ local function control_OnEvent(self, event, ...)
 	elseif (event == "UNIT_LEVEL" and ... == "player") then
 
 		ION.level = UnitLevel("player")
-	
 	else
-	ION:ToggleDraenorBar(GDB.draenorbar)
+		ION:ToggleDraenorBar(GDB.draenorbar)
 	end
 end
 
@@ -2426,13 +2433,14 @@ frame:RegisterEvent("COMPANION_LEARNED")
 frame:RegisterEvent("COMPANION_UPDATE")
 frame:RegisterEvent("UNIT_LEVEL")
 frame:RegisterEvent("UNIT_PET")
+--Needed to check to hide the garrison button
+frame:RegisterUnitEvent("UNIT_AURA", "player");
+frame:RegisterEvent("SPELL_UPDATE_COOLDOWN");
+frame:RegisterEvent("SPELL_UPDATE_USABLE");
+frame:RegisterEvent("SPELL_UPDATE_CHARGES");
+frame:RegisterEvent("SPELLS_CHANGED");
+frame:RegisterEvent("ACTIONBAR_SLOT_CHANGED");
 
-	frame:RegisterUnitEvent("UNIT_AURA", "player");
-	frame:RegisterEvent("SPELL_UPDATE_COOLDOWN");
-	frame:RegisterEvent("SPELL_UPDATE_USABLE");
-	frame:RegisterEvent("SPELL_UPDATE_CHARGES");
-	frame:RegisterEvent("SPELLS_CHANGED");
-	frame:RegisterEvent("ACTIONBAR_SLOT_CHANGED");
 
 frame = CreateFrame("GameTooltip", "IonTooltipScan", UIParent, "GameTooltipTemplate")
 frame:SetOwner(UIParent, "ANCHOR_NONE")
