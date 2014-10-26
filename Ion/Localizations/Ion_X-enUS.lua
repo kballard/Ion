@@ -392,6 +392,8 @@ L.BOUND_TOGGLE_SPELL_KEYBIND = "Toggle Spell Binding Mode"
 L.BOUND_MACRO_KEYBIND = "Enable Macro Binding Mode"
 L.BOUND_TOGGLE_MACRO_KEYBIND = "Toggle Macro Binding Mode"
 
+
+
 L.BETA_WARNING = [[Thank you for installing Ion!!!
 
 Ion is currently in a "|cffffff00beta testing|r" state.
@@ -403,3 +405,7 @@ What this means is that not all features are in and there may be bugs. But, larg
 Only use Ion right now if you do not mind the occasional bug and not being able to do everything you did with Macaroon =)
 
 -Maul]]
+
+L.OPTIONS_BLIZZBAR = "Show Blizzard's Action Bar"
+L.OPTIONS_ANIMATE = "Enable Ion's Orb Animation"
+L.OPTIONS_DRAENORBAR = "Show the Draenor Garrison Action Icon"

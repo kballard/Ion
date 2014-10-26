@@ -2150,7 +2150,7 @@ function BAR:SetRemap_Paged()
 
 end
 
-local druidForms = { [1066] = true, [40120] = true, [783] = true, [114282] = true }
+local druidForms = { [1066] = true, [40120] = true, [783] = true, [114282] = true } -- aquatic, flight, travel ,treant 
 
 function BAR:SetRemap_Stance()
 
@@ -4375,3 +4375,66 @@ frame:RegisterEvent("PLAYER_LOGOUT")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame.elapsed = 0
+
+
+function IONBarProfileUpdate()
+
+		GDB, CDB, SPEC = IonGDB, IonCDB, IonSpec
+
+		barGDB = GDB.bars
+
+		barCDB = CDB.bars
+
+
+		if (GDB.firstRun) then
+
+			local oid, offset = 1, 0
+
+			for id, defaults in ipairs(gDef) do
+
+				ION.RegisteredBarData["bar"].gDef = defaults
+
+				local bar, object = ION:CreateNewBar("bar", id, true)
+
+				for i=oid+offset,oid+11+offset do
+					object = ION:CreateNewObject("bar", i, true)
+					bar:AddObjectToList(object)
+				end
+
+				ION.RegisteredBarData["bar"].gDef = nil
+
+				offset = offset + 12
+			end
+		else
+		
+			for id,data in pairs(barGDB) do
+			
+				if (data ~= nil) then				
+					ION:CreateNewBar("bar", id)					
+				end
+			end
+
+			for id,data in pairs(GDB.buttons) do
+				if (data ~= nil) then
+					ION:CreateNewObject("bar", id)
+				end
+			end
+		end
+		
+		STORAGE:Hide()
+
+		for _,bar in pairs(BARIndex) do
+		
+			if (CDB.firstRun) then			
+				for id, cdefaults in ipairs(cDef) do						
+					if (id == bar:GetID()) then
+						bar:SetDefaults(nil, cdefaults)
+					end						
+				end					
+			end		
+			
+			bar:Load()
+		end
+
+
+end

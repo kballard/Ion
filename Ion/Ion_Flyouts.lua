@@ -1470,7 +1470,8 @@ function ION:CompanionTooltips_Update()
 
 	for i=1,GetNumCompanions("MOUNT") do
 
-		_, name, spellID = GetCompanionInfo("MOUNT", i)
+		--_, name, spellID = C_MountJournal.GetNumMounts() ("MOUNT", i)
+		creatureName, spellID, icon =C_MountJournal.GetMountInfo(i)
 
 		if (name) then
 

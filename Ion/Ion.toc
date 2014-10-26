@@ -3,11 +3,11 @@
 ## Notes: Ion: Action Bar & Object Mananger
 ## Author: Connor Chenoweth (aka Maul)
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 10.3
+## Version: Hydrogen 11
 ## DefaultState: enabled
-## SavedVariables: IonGDB, IonItemCache
-## SavedVariablesPerCharacter: IonCDB, IonSpec, IonProfile
-## OptionalDeps: Align, Masque, BarKeep, Bartender4, Dominos, MagnetButtons, nMainbar, Orbs, rActionBarStyler, StellarBars, Tukui, XBar, Titan
+## SavedVariables: IonGDB, IonItemCache, IonProfilesDB
+## SavedVariablesPerCharacter: IonCDB, IonSpec, 
+## OptionalDeps: Align, Masque, BarKeep, Bartender4, Dominos, MagnetButtons, nMainbar, Orbs, rActionBarStyler, StellarBars, Tukui, XBar, Titan, Ace3,
 ## X-Copyright: Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 ## X-Permissions: AI-Art Visual Elements used with Author Permission (Quokka@WoWInterface)
 ## X-Email: trinityui@live.com
@@ -17,6 +17,13 @@ Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\LibDataBroker-1.1\LibDataBroker.lua
+
+Libs\AceAddon-3.0\AceAddon-3.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
+Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+
 
 Ion_Localizations.xml
 

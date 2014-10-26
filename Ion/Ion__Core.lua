@@ -185,6 +185,107 @@ local opDepList = { "BarKeep", "Bartender4", "Dominos", "MagnetButtons", "nMainb
 
 local level, stanceStringsUpdated, PEW
 
+
+IonProfile = LibStub("AceAddon-3.0"):NewAddon("IonProfile")
+
+ local options = {
+	name = "Ion",
+	type = 'group',
+	args = {
+		moreoptions={
+			name = "Options",
+			type = "group",
+			args={
+				AnimateIcon = {
+				 name = "Animate Icon",
+				 desc = "Toggles the Animation of the Ion Icon",
+				 type = "toggle",
+				 set = function() ION:Animate() end,
+				 get = function() return IonGDB.animate end,
+				 width = "full",
+				},
+				BlizzardBar = {
+				 name = "Display Blizzard Bar",
+				 desc = "Shows / Hides the Default Blizzard Bar",
+				 type = "toggle",
+				 set = function() ION:BlizzBar() end,
+				 get = function() return IonGDB.mainbar end,
+				 width = "full",
+				},
+				DraenorBar = {
+				 name = "Display Draenor Garrison Bar",
+				 desc = "Shows / Hides the Draenor Garrison Bar",
+				 type = "toggle",
+				 set = function() ION:DraenorBar() end,
+				 get = function() return IonGDB.mainbar end,
+				 width = "full",
+				},
+			},
+		},
+	} ,
+}
+--ION:BlizzBar()
+
+local defaults = {
+	profile = {
+		IonGDB = {
+
+			bars = {},
+			buttons = {},
+
+			xbars = {},
+			xbtns = {},
+
+			buttonLoc = { -0.85, -111.45 },
+			buttonRadius = 87.5,
+
+			throttle = 0.2,
+			timerLimit = 4,
+			snapToTol = 28,
+
+			mainbar = false,
+			draenorbar = false,
+			vehicle = false,
+
+			firstRun = true,
+			xbarFirstRun = true,
+
+			betaWarning = true,
+
+			animate = true,
+		},
+		IonCDB = {
+
+			bars = {},
+			buttons = {},
+
+			xbars = {},
+			xbtns = {},
+
+			selfCast = false,
+			focusCast = false,
+
+			layOut = 1,
+
+			perCharBinds = false,
+
+			fix07312012 = false,
+			fix03312014 = false,
+			
+			firstRun = true,
+
+			debug = {},
+		},
+		IonSpec = { cSpec = 1 },
+	},
+}
+
+local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
+
+
+
+
+
 function ION:GetParentKeys(frame)
 
 	if (frame == nil) then
@@ -209,7 +310,6 @@ function ION:GetParentKeys(frame)
 	return data
 end
 
-local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
 
 local slashFunctions = {
 	[1] = "ToggleMainMenu",
@@ -287,11 +387,11 @@ function ION:UpdateSpellIndex()
 		sIndexMax = sIndexMax + numSlots
 	end
 
-	local spellName, subName, altName, spellID, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _
+	local spellName, subName, altName, spellID, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _,astTime, minRange, maxRange
 
 	for i = 1,sIndexMax do
 
-		spellName, subName = GetSpellBookItemName(i, BOOKTYPE_SPELL)
+		spellName, _ = GetSpellBookItemName(i, BOOKTYPE_SPELL)
 		spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_SPELL)
 		spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_SPELL)
 		icon = GetSpellBookItemTexture(i, BOOKTYPE_SPELL)
@@ -299,17 +399,7 @@ function ION:UpdateSpellIndex()
 
 		if (spellName and spellType ~= "FUTURESPELL") then
 
-			link = GetSpellLink(spellName)
-
-			if (link) then
-				_, spellID = link:match("(spell:)(%d+)")
-				tempID = tonumber(spellID)
-				if (tempID) then
-					spellID = tempID
-				end
-			end
-
-			altName, _, _, cost, _, powerType = GetSpellInfo(spellID)
+			altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
 
 			if (subName and #subName > 0) then
 
@@ -326,10 +416,8 @@ function ION:UpdateSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
 
 			else
 
@@ -346,10 +434,8 @@ function ION:UpdateSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
 
 				if (not ION.sIndex[(spellName):lower().."()"]) then
 					ION.sIndex[(spellName):lower().."()"] = {}
@@ -364,10 +450,8 @@ function ION:UpdateSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
 			end
 
 			if (altName and altName ~= spellName) then
@@ -387,10 +471,8 @@ function ION:UpdateSpellIndex()
 					curSpell.spellID = spellID
 					curSpell.spellType = spellType
 					curSpell.spellLvl = spellLvl
-					curSpell.spellCost = cost
 					curSpell.isPassive = isPassive
 					curSpell.icon = icon
-					curSpell.powerType = powerType
 
 				else
 
@@ -407,10 +489,8 @@ function ION:UpdateSpellIndex()
 					curSpell.spellID = spellID
 					curSpell.spellType = spellType
 					curSpell.spellLvl = spellLvl
-					curSpell.spellCost = cost
 					curSpell.isPassive = isPassive
 					curSpell.icon = icon
-					curSpell.powerType = powerType
 
 					if (not ION.sIndex[(altName):lower().."()"]) then
 						ION.sIndex[(altName):lower().."()"] = {}
@@ -425,10 +505,8 @@ function ION:UpdateSpellIndex()
 					curSpell.spellID = spellID
 					curSpell.spellType = spellType
 					curSpell.spellLvl = spellLvl
-					curSpell.spellCost = cost
 					curSpell.isPassive = isPassive
 					curSpell.icon = icon
-					curSpell.powerType = powerType
 				end
 			end
 
@@ -447,10 +525,8 @@ function ION:UpdateSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
 			end
 
 	   		if (icon and not icons[icon:upper()]) then
@@ -461,9 +537,12 @@ function ION:UpdateSpellIndex()
    	end
 
 	-- maybe a temp fix to get the Sunfire spell to show for balance druids
+	--May not be needed for 6.0 recheck 
+	--[[
 	if (ION.class == "DRUID") then
 
-		local spellName, _, icon, cost, _, powerType = GetSpellInfo(93402)
+		--local spellName, _, icon, cost, _, powerType = GetSpellInfo(93402)
+		local spellName, rank, icon, castTime, minRange, maxRange = GetSpellInfo(8921)
 
 		if (ION.sIndex[8921]) then
 
@@ -480,10 +559,8 @@ function ION:UpdateSpellIndex()
 			curSpell.spellID = 93402
 			curSpell.spellType = "SPELL"
 			curSpell.spellLvl = ION.sIndex[8921].spellLvl
-			curSpell.spellCost = cost
 			curSpell.isPassive = nil
 			curSpell.icon = icon
-			curSpell.powerType = powerType
 
 			if (not ION.sIndex[(spellName):lower().."()"]) then
 				ION.sIndex[(spellName):lower().."()"] = {}
@@ -498,10 +575,8 @@ function ION:UpdateSpellIndex()
 			curSpell.spellID = 93402
 			curSpell.spellType = "SPELL"
 			curSpell.spellLvl = ION.sIndex[8921].spellLvl
-			curSpell.spellCost = cost
 			curSpell.isPassive = nil
 			curSpell.icon = icon
-			curSpell.powerType = powerType
 
 			if (not ION.sIndex[93402]) then
 				ION.sIndex[93402] = {}
@@ -516,13 +591,11 @@ function ION:UpdateSpellIndex()
 			curSpell.spellID = 93402
 			curSpell.spellType = "SPELL"
 			curSpell.spellLvl = ION.sIndex[8921].spellLvl
-			curSpell.spellCost = cost
 			curSpell.isPassive = nil
 			curSpell.icon = icon
-			curSpell.powerType = powerType
 		end
 	end
-
+]]--
 	for i = 1, select("#", GetProfessions()) do
 
 		local index = select(i, GetProfessions())
@@ -533,7 +606,7 @@ function ION:UpdateSpellIndex()
 
 			for i=1,numSpells do
 
-				spellName, subName = GetSpellBookItemName(i+spelloffset, BOOKTYPE_PROFESSION)
+				spellName, _ = GetSpellBookItemName(i+spelloffset, BOOKTYPE_PROFESSION)
 				spellType, spellID = GetSpellBookItemInfo(i+spelloffset, BOOKTYPE_PROFESSION)
 				spellLvl = GetSpellAvailableLevel(i+spelloffset, BOOKTYPE_PROFESSION)
 				icon = GetSpellBookItemTexture(i+spelloffset, BOOKTYPE_PROFESSION)
@@ -541,19 +614,7 @@ function ION:UpdateSpellIndex()
 
 				if (spellName and spellType ~= "FUTURESPELL") then
 
-					--print(spellName)
-
-					link = GetSpellLink(spellName)
-
-					if (link) then
-						_, spellID = link:match("(spell:)(%d+)")
-						tempID = tonumber(spellID)
-						if (tempID) then
-							spellID = tempID
-						end
-					end
-
-					altName, _, _, cost, _, powerType = GetSpellInfo(spellID)
+					altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
 
 					if (subName and #subName > 0) then
 
@@ -570,10 +631,8 @@ function ION:UpdateSpellIndex()
 						curSpell.spellID = spellID
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
-						curSpell.spellCost = cost
 						curSpell.isPassive = isPassive
 						curSpell.icon = icon
-						curSpell.powerType = powerType
 
 					else
 
@@ -590,10 +649,8 @@ function ION:UpdateSpellIndex()
 						curSpell.spellID = spellID
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
-						curSpell.spellCost = cost
 						curSpell.isPassive = isPassive
 						curSpell.icon = icon
-						curSpell.powerType = powerType
 
 						if (not ION.sIndex[(spellName):lower().."()"]) then
 							ION.sIndex[(spellName):lower().."()"] = {}
@@ -608,10 +665,8 @@ function ION:UpdateSpellIndex()
 						curSpell.spellID = spellID
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
-						curSpell.spellCost = cost
 						curSpell.isPassive = isPassive
 						curSpell.icon = icon
-						curSpell.powerType = powerType
 					end
 
 					if (altName and altName ~= spellName) then
@@ -631,10 +686,8 @@ function ION:UpdateSpellIndex()
 							curSpell.spellID = spellID
 							curSpell.spellType = spellType
 							curSpell.spellLvl = spellLvl
-							curSpell.spellCost = cost
 							curSpell.isPassive = isPassive
 							curSpell.icon = icon
-							curSpell.powerType = powerType
 
 						else
 
@@ -651,10 +704,8 @@ function ION:UpdateSpellIndex()
 							curSpell.spellID = spellID
 							curSpell.spellType = spellType
 							curSpell.spellLvl = spellLvl
-							curSpell.spellCost = cost
 							curSpell.isPassive = isPassive
 							curSpell.icon = icon
-							curSpell.powerType = powerType
 
 							if (not ION.sIndex[(altName):lower().."()"]) then
 								ION.sIndex[(altName):lower().."()"] = {}
@@ -669,10 +720,8 @@ function ION:UpdateSpellIndex()
 							curSpell.spellID = spellID
 							curSpell.spellType = spellType
 							curSpell.spellLvl = spellLvl
-							curSpell.spellCost = cost
 							curSpell.isPassive = isPassive
 							curSpell.icon = icon
-							curSpell.powerType = powerType
 						end
 					end
 
@@ -691,10 +740,8 @@ function ION:UpdateSpellIndex()
 						curSpell.spellID = spellID
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
-						curSpell.spellCost = cost
 						curSpell.isPassive = isPassive
 						curSpell.icon = icon
-						curSpell.powerType = powerType
 					end
 
 					if (icon and not icons[icon:upper()]) then
@@ -710,11 +757,11 @@ function ION:UpdatePetSpellIndex()
 
 	local numPetSpells = HasPetSpells() or 0
 
-	local spellName, subName, altName, spellID, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _
+	local spellName, subName, altName, spellID, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _, astTime, minRange, maxRange
 
 	for i=1,numPetSpells do
 
-		spellName, subName = GetSpellBookItemName(i, BOOKTYPE_PET)
+		spellName, _ = GetSpellBookItemName(i, BOOKTYPE_PET)
 		spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_PET)
 		spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_PET)
 		icon = GetSpellBookItemTexture(i, BOOKTYPE_PET)
@@ -722,17 +769,9 @@ function ION:UpdatePetSpellIndex()
 
 		if (spellName and spellType ~= "FUTURESPELL") then
 
-			link = GetSpellLink(spellName)
+		--_, _, icon, cost, _, powerType = GetSpellInfo(spellName)
+			altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellName)
 
-			if (link) then
-				_, spellID = link:match("(spell:)(%d+)")
-				tempID = tonumber(spellID)
-				if (tempID) then
-					spellID = tempID
-				end
-			end
-
-			_, _, icon, cost, _, powerType = GetSpellInfo(spellName)
 
 			if (subName and #subName > 0) then
 
@@ -749,10 +788,8 @@ function ION:UpdatePetSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
 			else
 
 				if (not ION.sIndex[(spellName):lower()]) then
@@ -768,10 +805,8 @@ function ION:UpdatePetSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
 
 				if (not ION.sIndex[(spellName):lower().."()"]) then
 					ION.sIndex[(spellName):lower().."()"] = {}
@@ -786,10 +821,8 @@ function ION:UpdatePetSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
 			end
 
 			if (spellID) then
@@ -807,10 +840,9 @@ function ION:UpdatePetSpellIndex()
 				curSpell.spellID = spellID
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
-				curSpell.spellCost = cost
 				curSpell.isPassive = isPassive
 				curSpell.icon = icon
-				curSpell.powerType = powerType
+
 			end
 
 	   		if (icon and not icons[icon:upper()]) then
@@ -852,10 +884,8 @@ function ION:UpdatePetSpellIndex()
 					curSpell.spellID = spellID
 					curSpell.spellType = v.spellType
 					curSpell.spellLvl = v.spellLvl
-					curSpell.spellCost = v.spellCost
 					curSpell.isPassive = v.isPassive
 					curSpell.icon = v.icon
-					curSpell.powerType = v.powerType
 
 					if (not ION.sIndex[(spellName):lower().."()"]) then
 						ION.sIndex[(spellName):lower().."()"] = {}
@@ -870,10 +900,8 @@ function ION:UpdatePetSpellIndex()
 					curSpell.spellID = spellID
 					curSpell.spellType = v.spellType
 					curSpell.spellLvl = v.spellLvl
-					curSpell.spellCost = v.spellCost
 					curSpell.isPassive = v.isPassive
 					curSpell.icon = v.icon
-					curSpell.powerType = v.powerType
 
 					if (not ION.sIndex[spellID]) then
 						ION.sIndex[spellID] = {}
@@ -888,10 +916,8 @@ function ION:UpdatePetSpellIndex()
 					curSpell.spellID = spellID
 					curSpell.spellType = v.spellType
 					curSpell.spellLvl = v.spellLvl
-					curSpell.spellCost = v.spellCost
 					curSpell.isPassive = v.isPassive
 					curSpell.icon = v.icon
-					curSpell.powerType = v.powerType
 
 				end
 			end
@@ -1067,8 +1093,8 @@ function ION:UpdateStanceStrings()
 
 	    	wipe(ION.StanceIndex)
 
-		local _, name, spellID
-
+		--local _, name, spellID
+local icon, name, active, castable, spellID, UJU
 		local states = "[stance:0] stance0; "
 
 		for i=1,8 do
@@ -1077,27 +1103,29 @@ function ION:UpdateStanceStrings()
 
 		for i=1,GetNumShapeshiftForms() do
 
-			_, name = GetShapeshiftFormInfo(i)
+			--_, name = GetShapeshiftFormInfo(i)
+			 icon, name, active, castable, spellID = GetShapeshiftFormInfo(i)
 
 			if (name) then
+			--print(name)
+				--link = GetSpellLink(name)
 
-				link = GetSpellLink(name)
+				--if (link) then
 
-				if (link) then
+					--_, spellID = link:match("(spell:)(%d+)")
 
-					_, spellID = link:match("(spell:)(%d+)")
-
-					spellID = tonumber(spellID)
+					--spellID = tonumber(spellID)
 
 					if (spellID) then
-
+					--print(spellID)
 						ION.StanceIndex[i] = spellID
 
 						if (ION.class == "DRUID" and spellID == 768) then
 							ION.kitty = i
+							--print(i)
 						end
 					end
-				end
+				--end
 
 				ION.STATES["stance"..i] = name
 
@@ -2090,7 +2118,7 @@ function ION:ToggleBars(show, hide)
 			collectgarbage()
 		else
 
-			ION:ToggleMainMenu(nil, true)
+			--ION:ToggleMainMenu(nil, true)
 			ION:ToggleEditFrames(nil, true)
 
 			ION.BarsShown = true
@@ -2122,12 +2150,14 @@ function ION:ToggleMainMenu(show, hide)
 	if (not IsAddOnLoaded("Ion-GUI")) then
 		LoadAddOn("Ion-GUI")
 	end
-
+--[[
 	if ((IonMainMenu:IsVisible() or hide) and not show) then
 		IonMainMenu:Hide()
 	else
 		IonMainMenu:Show()
 	end
+	]]--
+	InterfaceOptionsFrame_OpenToCategory("Ion");
 
 end
 
@@ -2312,9 +2342,9 @@ local function control_OnEvent(self, event, ...)
 
 		GameMenuFrame:HookScript("OnShow", function(self)
 
-				if (IonMainMenu and IonMainMenu:IsShown()) then
-					HideUIPanel(self); ION:ToggleMainMenu(nil, true)
-				end
+				--if (IonMainMenu and IonMainMenu:IsShown()) then
+					--HideUIPanel(self); ION:ToggleMainMenu(nil, true)
+				--end
 
 				if (ION.BarsShown) then
 					HideUIPanel(self); ION:ToggleBars(nil, true)
@@ -2345,6 +2375,7 @@ local function control_OnEvent(self, event, ...)
 		SLASH_ION1 = L.SLASH1
 
 		InterfaceOptionsFrame:SetFrameStrata("HIGH")
+
 
 	elseif (event == "PLAYER_LOGIN") then
 
@@ -2446,3 +2477,87 @@ frame = CreateFrame("GameTooltip", "IonTooltipScan", UIParent, "GameTooltipTempl
 frame:SetOwner(UIParent, "ANCHOR_NONE")
 frame:SetFrameStrata("TOOLTIP")
 frame:Hide()
+
+
+StaticPopupDialogs["ReloadUI"] = {
+	text = "ReloadUI",
+	button1 = "Yes",
+	OnAccept = function()
+		 ReloadUI()
+	end,
+	preferredIndex = 3,  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
+}
+
+function IonProfile:RefreshConfig()
+	IonCDB = self.db.profile["IonCDB"]
+	IonGDB = self.db.profile["IonGDB"]
+	IonSpec = {cSpec = GetActiveSpecGroup()}
+	defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
+	
+
+
+
+
+	IONButtonProfileUpdate()
+--IONBarProfileUpdate()
+	StaticPopup_Show("ReloadUI")
+end
+
+
+local addonName = ...
+
+function IonProfile:OnInitialize()
+
+--[[
+  self.db = LibStub("AceDB-3.0"):New("MyAddonDB")
+  self.db.char.money = GetMoney()
+if not GDB.firstRun then
+print("XF-GBD")
+	defaults.profile["IonGDB"] = CopyTable(IonGDB)
+end
+
+if  not GDB.firstRun then
+print("XF-IonCDB")
+	defaults.profile["IonCDB"] = CopyTable(IonCDB)
+end
+]]--
+--if not GDB.firstRun and not CDB.firstRun then
+--print("XF-GBD")
+	--defaults.profile["IonSpec"] = CopyTable(IonSpec)
+--end
+	self.db = LibStub("AceDB-3.0"):New("IonProfilesDB", defaults)
+	LibStub("AceConfigRegistry-3.0"):ValidateOptionsTable(options, addonName)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, options)
+
+	options.args.profile = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+	LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addonName, addonName)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
+	self.db.RegisterCallback(self, "OnDatabaseReset", "RefreshConfig")
+
+--Check to see if character has stored bars/buttons that need to be imported to profile
+if not IonProfilesDB["Saved"] then
+print("SAv Bar Location")
+
+IonProfilesDB["Saved"] = CopyTable(IonGDB)
+end
+
+	if not self.db.char.firstrun then 
+		self.db.profile["IonCDB"] = CopyTable(IonCDB)
+		self.db.profile["IonGDB"] = CopyTable(IonProfilesDB["Saved"])
+
+		self.db.char.firstrun = true
+	end
+--if not GDB.firstRun and not CDB.firstRun then
+--print("XF-GBD")
+	--defaults.profile["IonSpec"] = CopyTable(IonSpec)
+	IonCDB = self.db.profile["IonCDB"]
+	IonGDB = self.db.profile["IonGDB"]
+	IonSpec = self.db.profile["IonSpec"]
+
+	defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
+end
+
+
+--local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)

@@ -2,7 +2,7 @@
 ## Title: Ion: GUI
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 10.3
+## Version: Hydrogen 11
 ## Notes: GUI for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion
@@ -20,3 +20,4 @@ Ion-GUI_Localizations.xml
 
 Ion-GUI.lua
 Ion-GUI.xml
+Ion_Options.lua

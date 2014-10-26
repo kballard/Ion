@@ -1804,18 +1804,12 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 	if (action1 == 0) then
 		return
 	else
-	 	spell, subName = GetSpellBookItemName(action1, action2)
+	 	spell, _ = GetSpellBookItemName(action1, action2)
 	 	_, spellID = GetSpellBookItemInfo(action1, action2)
-		local spellInfoName = GetSpellInfo(spellID)
+		local spellInfoName , subName, icon, castTime, minRange, maxRange= GetSpellInfo(spellID)
 
-        --print(GetSpellBookItemName(action1, action2))
-        --print(GetSpellBookItemInfo(action1, action2))
-        --spell = GetSpellInfo(spellID)
-
-	   	if ignoreSubName[spellID] then
-			self.data.macro_Text = self:AutoWriteMacro(spell)
-			self.data.macro_Auto = spell
-		elseif CallPetSpells[spellID] then
+		
+		if CallPetSpells[spellID] then
 			self.data.macro_Text = self:AutoWriteMacro(spellInfoName)
 			self.data.macro_Auto = spellInfoName..";"
 		else
@@ -3693,3 +3687,11 @@ frame:RegisterEvent("UNIT_SPELLCAST_SENT")
 frame:RegisterEvent("UNIT_SPELLCAST_START")
 frame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 frame:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+
+function IONButtonProfileUpdate()
+		GDB, CDB = IonGDB, IonCDB
+
+		btnGDB = GDB.buttons
+
+		btnCDB = CDB.buttons
+end
