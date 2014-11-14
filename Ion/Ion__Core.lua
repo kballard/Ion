@@ -217,7 +217,7 @@ IonProfile = LibStub("AceAddon-3.0"):NewAddon("IonProfile")
 				 desc = "Shows / Hides the Draenor Garrison Bar",
 				 type = "toggle",
 				 set = function() ION:DraenorBar() end,
-				 get = function() return IonGDB.mainbar end,
+				 get = function() return IonGDB.draenorbar end,
 				 width = "full",
 				},
 			},
@@ -244,7 +244,7 @@ local defaults = {
 			snapToTol = 28,
 
 			mainbar = false,
-			draenorbar = false,
+			draenorbar = true,
 			vehicle = false,
 
 			firstRun = true,
@@ -281,9 +281,6 @@ local defaults = {
 }
 
 local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
-
-
-
 
 
 function ION:GetParentKeys(frame)
@@ -1836,11 +1833,11 @@ function ION:BlizzBar()
 end
 
 function ION:ToggleDraenorBar(on)
-	if (InCombatLockdown()) then return end
+	--if (InCombatLockdown()) then return end
 
 	if (ION.OpDep) then return end
 
-	if (on) then
+	if (on) and (HasDraenorZoneAbility()) then
 	DraenorZoneAbilityFrame:Show()
 	else
 	DraenorZoneAbilityFrame:Hide()
@@ -2423,6 +2420,7 @@ local function control_OnEvent(self, event, ...)
 
 		updater.elapsed = 0
 		updater:Show()
+		ION:ToggleDraenorBar(GDB.draenorbar)
 
 	elseif (event == "PET_UI_CLOSE" or event == "COMPANION_LEARNED" or event == "COMPANION_UPDATE") then
 
@@ -2469,7 +2467,6 @@ frame:RegisterUnitEvent("UNIT_AURA", "player");
 frame:RegisterEvent("SPELL_UPDATE_COOLDOWN");
 frame:RegisterEvent("SPELL_UPDATE_USABLE");
 frame:RegisterEvent("SPELL_UPDATE_CHARGES");
-frame:RegisterEvent("SPELLS_CHANGED");
 frame:RegisterEvent("ACTIONBAR_SLOT_CHANGED");
 
 
@@ -2561,3 +2558,11 @@ end
 
 
 --local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
+
+--Hooking on DraenorZoneAbilityFrame_OnShow in case it tries to get displayed
+local function DreanorCheck()
+	ION:ToggleDraenorBar(GDB.draenorbar)
+end
+hooksecurefunc("DraenorZoneAbilityFrame_OnShow", DreanorCheck);
+
+

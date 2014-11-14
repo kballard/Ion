@@ -211,22 +211,13 @@ local morphSpells = {
 	[88625] = false,
 }
 
---list of spells that break if the subname is in the macro
---Traps subname add trap launcher if active
-local ignoreSubName = {
-[34600] =  true, --Snake Trap
-[13813] =  true, --Explosive Trap
-[1499] =  true, --Freezing Trap
-[13809] =  true, --Frost Trap
-}
 
---Spellbook names can not be used for macros
 local CallPetSpells = {
-[883] = true,
-[83242] = true,
-[83243] = true,
-[83244] = true,
-[83245] = true,
+	[883] = true,
+	[83242] = true,
+	[83243] = true,
+	[83244] = true,
+	[83245] = true,
 }
 
 local unitAuras = { player = {}, target = {}, focus = {} }
@@ -1246,11 +1237,15 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 	elseif (sIndex[spell]) then
 
 		local spell_id = sIndex[spell].spellID
+		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+
+		if spell_id == 161691 then spell_id = draenor_id end
 
 		if (morphSpells[spell_id]) then
 			start, duration, enable = GetSpellCooldown(morphSpells[spell_id])
 		elseif spell_id then
 			start, duration, enable = GetSpellCooldown(spell_id)
+		
 		end
 	end
 
@@ -2411,8 +2406,10 @@ end
 function BUTTON:MACRO_SetSpellTooltip(spell)
 
 	if (sIndex[spell]) then
-
 		local spell_id = sIndex[spell].spellID
+		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+
+		if spell_id == 161691 then spell_id = draenor_id end
 
 		if (morphSpells[spell_id]) then
 			if (self.UberTooltips) then
@@ -2421,12 +2418,11 @@ function BUTTON:MACRO_SetSpellTooltip(spell)
 				local spell = GetSpellInfo(morphSpells[spell_id])
 				GameTooltip:SetText(spell, 1, 1, 1)
 			end
-
 		elseif (self.UberTooltips) then
-            GameTooltip:SetSpellByID(spell_id)
+			GameTooltip:SetSpellByID(spell_id)
 		else
-            local spell = GetSpellInfo(spell_id)
-            GameTooltip:SetText(spell, 1, 1, 1)
+			local spell = GetSpellInfo(spell_id)
+			GameTooltip:SetText(spell, 1, 1, 1)
 		end
 
 		self.UpdateTooltip = macroButton_SetTooltip
