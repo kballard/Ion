@@ -220,6 +220,7 @@ local CallPetSpells = {
 	[83245] = true,
 }
 
+
 local unitAuras = { player = {}, target = {}, focus = {} }
 
 local alphaTimer, alphaDir = 0, 0
@@ -1225,14 +1226,20 @@ end
 
 function BUTTON:MACRO_SetSpellCooldown(spell)
 
-	local start, duration, enable
-
+	local start, duration, enable, charges, maxCharges, chStart, chDuration
 	spell = (spell):lower()
 
 	if (cIndex[spell]) then
 
 		--local companion, index = cIndex[spell].creatureType, cIndex[spell].index
 		start, duration, enable = GetSpellCooldown(spell)
+		charges, maxCharges, chStart, chDuration = GetSpellCharges(spell)	
+ 		start, duration, enable = GetSpellCooldown(spell)
+
+		if maxCharges and charges < maxCharges then
+			start = chStart
+			duration = chDuration
+		end
 
 	elseif (sIndex[spell]) then
 
@@ -1242,10 +1249,22 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 		if spell_id == 161691 then spell_id = draenor_id end
 
 		if (morphSpells[spell_id]) then
-			start, duration, enable = GetSpellCooldown(morphSpells[spell_id])
+			charges, maxCharges, chStart, chDuration = GetSpellCharges(morphSpells[spell_id])	
+ 			start, duration, enable = GetSpellCooldown(morphSpells[spell_id])
+
+			if maxCharges and charges < maxCharges then
+				start = chStart
+				duration = chDuration
+			end
+
 		elseif spell_id then
-			start, duration, enable = GetSpellCooldown(spell_id)
-		
+			charges, maxCharges, chStart, chDuration = GetSpellCharges(spell_id)	
+ 			start, duration, enable = GetSpellCooldown(spell_id)
+
+			if maxCharges and charges < maxCharges then
+				start = chStart
+				duration = chDuration
+			end
 		end
 	end
 
@@ -1368,31 +1387,36 @@ function BUTTON:MACRO_UpdateAll(updateTexture)
 	end
 end
 
+--local garrisonAbility = GetSpellInfo(161691):lower()
 function BUTTON:MACRO_UpdateUsableSpell(spell)
 
-    local isUsable, notEnoughMana
+	local isUsable, notEnoughMana, alt_Name
+
 	local spellName = spell:lower()
 
-	--- necessary for spells changing of subtype between specs, ie, Rain of Fire() and Rain of Fire(Destruction)
-    --- unable to reproduce this but will leave it in here for now
-	if (sIndex[spellName]) then
-		isUsable, notEnoughMana = IsUsableSpell(sIndex[spellName].spellID)
+	if (sIndex[spellName]) and (sIndex[spellName].spellID ~= sIndex[spellName].spellID_Alt) then
+		alt_Name = GetSpellInfo(sIndex[spellName].spellID_Alt):lower()
+		isUsable, notEnoughMana = IsUsableSpell(alt_Name)
+		spellName = alt_Name
 	else
-		isUsable, notEnoughMana = IsUsableSpell(spell)
+		isUsable, notEnoughMana = IsUsableSpell(spellName)
+	end
+	if (spellName == GetSpellInfo(161691):lower()) then 
+		--print(GetSpellInfo(DraenorZoneAbilityFrame.SpellButton.currentSpellID))
 	end
 
 	if (notEnoughMana) then
-
 		self.iconframeicon:SetVertexColor(self.manacolor[1], self.manacolor[2], self.manacolor[3])
 		--self.iconframerange:SetVertexColor(self.manacolor[1], self.manacolor[2], self.manacolor[3], 0.5)
 		--self.iconframerange:Show()
 
 	elseif (isUsable) then
-
-		if (self.rangeInd and IsSpellInRange(spell, self.unit) == 0) then
+		if (self.rangeInd and IsSpellInRange(spellName, self.unit) == 0) then
 			self.iconframeicon:SetVertexColor(self.rangecolor[1], self.rangecolor[2], self.rangecolor[3])
 			--self.iconframerange:SetVertexColor(self.rangecolor[1], self.rangecolor[2], self.rangecolor[3], 0.5)
 			--self.iconframerange:Show()
+		elseif sIndex[spellName] and (self.rangeInd and IsSpellInRange(sIndex[spellName].index,"spell", self.unit) == 0) then
+			self.iconframeicon:SetVertexColor(self.rangecolor[1], self.rangecolor[2], self.rangecolor[3])
 		else
 			self.iconframeicon:SetVertexColor(1.0, 1.0, 1.0)
 			--self.iconframerange:Hide()
@@ -1415,7 +1439,6 @@ end
 function BUTTON:MACRO_UpdateUsableItem(item)
 
       local isUsable, notEnoughMana = IsUsableItem(item)
-
 	if (notEnoughMana and self.manacolor) then
 
 		self.iconframeicon:SetVertexColor(self.manacolor[1], self.manacolor[2], self.manacolor[3])

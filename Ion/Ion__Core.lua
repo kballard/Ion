@@ -390,13 +390,26 @@ function ION:UpdateSpellIndex()
 
 		spellName, _ = GetSpellBookItemName(i, BOOKTYPE_SPELL)
 		spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_SPELL)
+		spellID_Alt = spellID
 		spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_SPELL)
 		icon = GetSpellBookItemTexture(i, BOOKTYPE_SPELL)
 		isPassive = IsPassiveSpell(i, BOOKTYPE_SPELL)
 
 		if (spellName and spellType ~= "FUTURESPELL") then
 
+			link = GetSpellLink(spellName)
+			if (link) then
+				_, spellID = link:match("(spell:)(%d+)")
+				tempID = tonumber(spellID)
+				if (tempID) then
+					spellID = tempID
+				end
+			end
+
 			altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
+			if spellID ~= spellID_Alt then
+				altName = GetSpellInfo(spellID_Alt)
+			end
 
 			if (subName and #subName > 0) then
 
@@ -409,8 +422,10 @@ function ION:UpdateSpellIndex()
 				curSpell.index = i
 				curSpell.booktype = BOOKTYPE_SPELL
 				curSpell.spellName = spellName
+				curSpell.altName = altName
 				curSpell.subName = subName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -427,8 +442,10 @@ function ION:UpdateSpellIndex()
 				curSpell.index = i
 				curSpell.booktype = BOOKTYPE_SPELL
 				curSpell.spellName = spellName
+				curSpell.altName = altName
 				curSpell.subName = subName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -443,8 +460,10 @@ function ION:UpdateSpellIndex()
 				curSpell.index = i
 				curSpell.booktype = BOOKTYPE_SPELL
 				curSpell.spellName = spellName
+				curSpell.altName = altName
 				curSpell.subName = subName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -464,8 +483,10 @@ function ION:UpdateSpellIndex()
 					curSpell.index = i
 					curSpell.booktype = BOOKTYPE_SPELL
 					curSpell.spellName = spellName
+					curSpell.altName = altName
 					curSpell.subName = subName
 					curSpell.spellID = spellID
+					curSpell.spellID_Alt = spellID_Alt
 					curSpell.spellType = spellType
 					curSpell.spellLvl = spellLvl
 					curSpell.isPassive = isPassive
@@ -482,8 +503,10 @@ function ION:UpdateSpellIndex()
 					curSpell.index = i
 					curSpell.booktype = BOOKTYPE_SPELL
 					curSpell.spellName = spellName
+					curSpell.altName = altName
 					curSpell.subName = subName
 					curSpell.spellID = spellID
+					curSpell.spellID_Alt = spellID_Alt
 					curSpell.spellType = spellType
 					curSpell.spellLvl = spellLvl
 					curSpell.isPassive = isPassive
@@ -498,8 +521,10 @@ function ION:UpdateSpellIndex()
 					curSpell.index = i
 					curSpell.booktype = BOOKTYPE_SPELL
 					curSpell.spellName = spellName
+					curSpell.altName = altName
 					curSpell.subName = subName
 					curSpell.spellID = spellID
+					curSpell.spellID_Alt = spellID_Alt
 					curSpell.spellType = spellType
 					curSpell.spellLvl = spellLvl
 					curSpell.isPassive = isPassive
@@ -518,8 +543,10 @@ function ION:UpdateSpellIndex()
 				curSpell.index = i
 				curSpell.booktype = BOOKTYPE_SPELL
 				curSpell.spellName = spellName
+				curSpell.altName = altName
 				curSpell.subName = subName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -605,6 +632,7 @@ function ION:UpdateSpellIndex()
 
 				spellName, _ = GetSpellBookItemName(i+spelloffset, BOOKTYPE_PROFESSION)
 				spellType, spellID = GetSpellBookItemInfo(i+spelloffset, BOOKTYPE_PROFESSION)
+				spellID_Alt = spellID
 				spellLvl = GetSpellAvailableLevel(i+spelloffset, BOOKTYPE_PROFESSION)
 				icon = GetSpellBookItemTexture(i+spelloffset, BOOKTYPE_PROFESSION)
 				isPassive = IsPassiveSpell(i+spelloffset, BOOKTYPE_PROFESSION)
@@ -624,8 +652,10 @@ function ION:UpdateSpellIndex()
 						curSpell.index = i+spelloffset
 						curSpell.booktype = BOOKTYPE_PROFESSION
 						curSpell.spellName = spellName
+						curSpell.altName = altName
 						curSpell.subName = subName
 						curSpell.spellID = spellID
+						curSpell.spellID_Alt = spellID_Alt
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
 						curSpell.isPassive = isPassive
@@ -643,7 +673,9 @@ function ION:UpdateSpellIndex()
 						curSpell.booktype = BOOKTYPE_PROFESSION
 						curSpell.spellName = spellName
 						curSpell.subName = subName
+						curSpell.altName = altName
 						curSpell.spellID = spellID
+						curSpell.spellID_Alt = spellID_Alt
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
 						curSpell.isPassive = isPassive
@@ -658,8 +690,10 @@ function ION:UpdateSpellIndex()
 						curSpell.index = i+spelloffset
 						curSpell.booktype = BOOKTYPE_PROFESSION
 						curSpell.spellName = spellName
+						curSpell.altName = altName
 						curSpell.subName = subName
 						curSpell.spellID = spellID
+						curSpell.spellID_Alt = spellID_Alt
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
 						curSpell.isPassive = isPassive
@@ -679,8 +713,10 @@ function ION:UpdateSpellIndex()
 							curSpell.index = i+spelloffset
 							curSpell.booktype = BOOKTYPE_PROFESSION
 							curSpell.spellName = spellName
+							curSpell.altName = altName
 							curSpell.subName = subName
 							curSpell.spellID = spellID
+							curSpell.spellID_Alt = spellID_Alt
 							curSpell.spellType = spellType
 							curSpell.spellLvl = spellLvl
 							curSpell.isPassive = isPassive
@@ -697,8 +733,10 @@ function ION:UpdateSpellIndex()
 							curSpell.index = i+spelloffset
 							curSpell.booktype = BOOKTYPE_PROFESSION
 							curSpell.spellName = spellName
+							curSpell.altName = altName
 							curSpell.subName = subName
 							curSpell.spellID = spellID
+							curSpell.spellID_Alt = spellID_Alt
 							curSpell.spellType = spellType
 							curSpell.spellLvl = spellLvl
 							curSpell.isPassive = isPassive
@@ -713,8 +751,10 @@ function ION:UpdateSpellIndex()
 							curSpell.index = i+spelloffset
 							curSpell.booktype = BOOKTYPE_PROFESSION
 							curSpell.spellName = spellName
+							curSpell.altName = altName
 							curSpell.subName = subName
 							curSpell.spellID = spellID
+							curSpell.spellID_Alt = spellID_Alt
 							curSpell.spellType = spellType
 							curSpell.spellLvl = spellLvl
 							curSpell.isPassive = isPassive
@@ -733,8 +773,10 @@ function ION:UpdateSpellIndex()
 						curSpell.index = i+spelloffset
 						curSpell.booktype = BOOKTYPE_PROFESSION
 						curSpell.spellName = spellName
+						curSpell.altName = altName
 						curSpell.subName = subName
 						curSpell.spellID = spellID
+						curSpell.spellID_Alt = spellID_Alt
 						curSpell.spellType = spellType
 						curSpell.spellLvl = spellLvl
 						curSpell.isPassive = isPassive
@@ -748,6 +790,34 @@ function ION:UpdateSpellIndex()
 			end
 		end
 	end
+--[[
+	spellID = 161691  --Draenor Garrison Ability not currently in spellbook
+	spellName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
+
+						if (not ION.sIndex[(spellName):lower()]) then
+							ION.sIndex[(spellName):lower()] = {}
+						end
+
+						curSpell = ION.sIndex[(spellName):lower()]
+						curSpell.spellName = spellName
+						curSpell.subName = subName
+						curSpell.spellID = spellID
+						curSpell.icon = icon
+
+						if (not ION.sIndex[(spellName):lower().."()"]) then
+							ION.sIndex[(spellName):lower().."()"] = {}
+						end
+
+						curSpell = ION.sIndex[(spellName):lower().."()"]
+						curSpell.spellName = spellName
+						curSpell.subName = subName
+						curSpell.spellID = spellID
+						curSpell.icon = icon
+					
+
+]]--
+
+
 end
 
 function ION:UpdatePetSpellIndex()
@@ -760,6 +830,7 @@ function ION:UpdatePetSpellIndex()
 
 		spellName, _ = GetSpellBookItemName(i, BOOKTYPE_PET)
 		spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_PET)
+		spellID_Alt = spellID
 		spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_PET)
 		icon = GetSpellBookItemTexture(i, BOOKTYPE_PET)
 		isPassive = IsPassiveSpell(i, BOOKTYPE_PET)
@@ -782,7 +853,9 @@ function ION:UpdatePetSpellIndex()
 				curSpell.booktype = BOOKTYPE_PET
 				curSpell.spellName = spellName
 				curSpell.subName = subName
+				curSpell.altName = altName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -799,7 +872,9 @@ function ION:UpdatePetSpellIndex()
 				curSpell.booktype = BOOKTYPE_PET
 				curSpell.spellName = spellName
 				curSpell.subName = subName
+				curSpell.altName = altName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -815,7 +890,9 @@ function ION:UpdatePetSpellIndex()
 				curSpell.booktype = BOOKTYPE_PET
 				curSpell.spellName = spellName
 				curSpell.subName = subName
+				curSpell.altName = altName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -834,7 +911,9 @@ function ION:UpdatePetSpellIndex()
 				curSpell.booktype = BOOKTYPE_PET
 				curSpell.spellName = spellName
 				curSpell.subName = subName
+				curSpell.altName = altName
 				curSpell.spellID = spellID
+				curSpell.spellID_Alt = spellID_Alt
 				curSpell.spellType = spellType
 				curSpell.spellLvl = spellLvl
 				curSpell.isPassive = isPassive
@@ -879,6 +958,7 @@ function ION:UpdatePetSpellIndex()
 					curSpell.spellName = v.spellName
 					curSpell.subName = v.subName
 					curSpell.spellID = spellID
+					curSpell.spellID_Alt = spellID_Alt
 					curSpell.spellType = v.spellType
 					curSpell.spellLvl = v.spellLvl
 					curSpell.isPassive = v.isPassive
@@ -895,6 +975,7 @@ function ION:UpdatePetSpellIndex()
 					curSpell.spellName = v.spellName
 					curSpell.subName = v.subName
 					curSpell.spellID = spellID
+					curSpell.spellID_Alt = spellID_Alt
 					curSpell.spellType = v.spellType
 					curSpell.spellLvl = v.spellLvl
 					curSpell.isPassive = v.isPassive
@@ -911,6 +992,7 @@ function ION:UpdatePetSpellIndex()
 					curSpell.spellName = v.spellName
 					curSpell.subName = v.subName
 					curSpell.spellID = spellID
+					curSpell.spellID_Alt = spellID_Alt
 					curSpell.spellType = v.spellType
 					curSpell.spellLvl = v.spellLvl
 					curSpell.isPassive = v.isPassive
@@ -2533,12 +2615,10 @@ end
 	self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
 	self.db.RegisterCallback(self, "OnDatabaseReset", "RefreshConfig")
 
---Check to see if character has stored bars/buttons that need to be imported to profile
-if not IonProfilesDB["Saved"] then
-print("SAv Bar Location")
-
-IonProfilesDB["Saved"] = CopyTable(IonGDB)
-end
+	--Check to see if character has stored bars/buttons that need to be imported to profile
+	if not IonProfilesDB["Saved"] then
+		IonProfilesDB["Saved"] = CopyTable(IonGDB)
+	end
 
 	if not self.db.char.firstrun then 
 		self.db.profile["IonCDB"] = CopyTable(IonCDB)
@@ -2547,7 +2627,7 @@ end
 		self.db.char.firstrun = true
 	end
 --if not GDB.firstRun and not CDB.firstRun then
---print("XF-GBD")
+
 	--defaults.profile["IonSpec"] = CopyTable(IonSpec)
 	IonCDB = self.db.profile["IonCDB"]
 	IonGDB = self.db.profile["IonGDB"]
