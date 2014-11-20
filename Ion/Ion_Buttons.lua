@@ -211,13 +211,14 @@ local morphSpells = {
 	[88625] = false,
 }
 
-
-local CallPetSpells = {
-	[883] = true,
-	[83242] = true,
-	[83243] = true,
-	[83244] = true,
-	[83245] = true,
+--Spells that need their primary spell name overwritten
+local AlternateSpellNameList = {
+	[883] = true, --CallPet1
+	[83242] = true, --CallPet2
+	[83243] = true,  --CallPet3
+	[83244] = true,  --CallPet4
+	[83245] = true,  --CallPet5
+	[770] = true, --fairy fire/fairy swerm
 }
 
 
@@ -1225,7 +1226,6 @@ function BUTTON:MACRO_UpdateAuraWatch(unit, spell)
 end
 
 function BUTTON:MACRO_SetSpellCooldown(spell)
-
 	local start, duration, enable, charges, maxCharges, chStart, chDuration
 	spell = (spell):lower()
 
@@ -1246,6 +1246,14 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 		local spell_id = sIndex[spell].spellID
 		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
 
+		--overwrites fairy fire cooldown to fairy swarm if talent is choesen
+		if (ION.class == "DRUID" and spell_id == 770 ) then
+		local _, _, _, selected, _ = GetTalentInfo(3,1,GetActiveSpecGroup())
+			if selected then
+				spell_id = 102355
+			end
+		end
+
 		if spell_id == 161691 then spell_id = draenor_id end
 
 		if (morphSpells[spell_id]) then
@@ -1256,8 +1264,7 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 				start = chStart
 				duration = chDuration
 			end
-
-		elseif spell_id then
+		else
 			charges, maxCharges, chStart, chDuration = GetSpellCharges(spell_id)	
  			start, duration, enable = GetSpellCooldown(spell_id)
 
@@ -1404,7 +1411,10 @@ function BUTTON:MACRO_UpdateUsableSpell(spell)
 	if (spellName == GetSpellInfo(161691):lower()) then 
 		--print(GetSpellInfo(DraenorZoneAbilityFrame.SpellButton.currentSpellID))
 	end
-
+--print(spell)
+--print(sIndex[spellName].spellID)
+--print(sIndex[spellName].spellID_Alt)
+--print(IsUsableSpell(spellName))
 	if (notEnoughMana) then
 		self.iconframeicon:SetVertexColor(self.manacolor[1], self.manacolor[2], self.manacolor[3])
 		--self.iconframerange:SetVertexColor(self.manacolor[1], self.manacolor[2], self.manacolor[3], 0.5)
@@ -1825,9 +1835,10 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 	 	spell, _ = GetSpellBookItemName(action1, action2)
 	 	_, spellID = GetSpellBookItemInfo(action1, action2)
 		local spellInfoName , subName, icon, castTime, minRange, maxRange= GetSpellInfo(spellID)
-
-		
-		if CallPetSpells[spellID] then
+print(spell)
+print(spellInfoName)
+print(spellID)		
+		if AlternateSpellNameList[spellID] then
 			self.data.macro_Text = self:AutoWriteMacro(spellInfoName)
 			self.data.macro_Auto = spellInfoName..";"
 		else

@@ -373,6 +373,14 @@ end
 -- "()" indexes added because the Blizzard macro parser uses that to determine the difference of a spell versus a usable item if the two happen to have the same name.
 -- I forgot this fact and removed using "()" and it made some macros not represent the right spell /sigh. This note is here so I do not forget again :P
 
+
+local OverlapTalentNames = {
+	[106707] = true,
+	[175682] = true, --Druid l45 talent spell placeholder
+	[102355] = true, --Fairy Swarm Spell
+}
+
+
 function ION:UpdateSpellIndex()
 
 	local sIndexMax = 0
@@ -384,7 +392,7 @@ function ION:UpdateSpellIndex()
 		sIndexMax = sIndexMax + numSlots
 	end
 
-	local spellName, subName, altName, spellID, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _,astTime, minRange, maxRange
+	local spellName, subName, altName, spellID, spellID_Alt, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _,astTime, minRange, maxRange
 
 	for i = 1,sIndexMax do
 
@@ -397,15 +405,21 @@ function ION:UpdateSpellIndex()
 
 		if (spellName and spellType ~= "FUTURESPELL") then
 
+
+--if spellID == 106707 then print(spellID)
+
+--print(spellName)
+--
 			link = GetSpellLink(spellName)
 			if (link) then
 				_, spellID = link:match("(spell:)(%d+)")
 				tempID = tonumber(spellID)
 				if (tempID) then
 					spellID = tempID
+					--print(spellID)
 				end
 			end
-
+--end
 			altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
 			if spellID ~= spellID_Alt then
 				altName = GetSpellInfo(spellID_Alt)
@@ -824,7 +838,7 @@ function ION:UpdatePetSpellIndex()
 
 	local numPetSpells = HasPetSpells() or 0
 
-	local spellName, subName, altName, spellID, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _, astTime, minRange, maxRange
+	local spellName, subName, altName, spellID, spellID_Alt, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _, astTime, minRange, maxRange
 
 	for i=1,numPetSpells do
 
