@@ -1244,17 +1244,21 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 	elseif (sIndex[spell]) then
 
 		local spell_id = sIndex[spell].spellID
-		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+		local DraenorZoneAbilityID = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+		local FairyFireID = 770
+		local FairySwarmID = 102355
+		local GarrisonAbilityID = 161691
 
 		--overwrites fairy fire cooldown to fairy swarm if talent is choesen
-		if (ION.class == "DRUID" and spell_id == 770 ) then
-		local _, _, _, selected, _ = GetTalentInfo(3,1,GetActiveSpecGroup())
+		if (ION.class == "DRUID" and spell_id == FairyFireID) then
+			local _, _, _, selected, _ = GetTalentInfo(3,1,GetActiveSpecGroup())--Checks to see if Fairy Swarm talent is caken
+
 			if selected then
-				spell_id = 102355
+				spell_id = FairySwarmID
 			end
 		end
-
-		if spell_id == 161691 then spell_id = draenor_id end
+--Needs work
+		if (spell_id == GarrisonAbilityID and DraenorZoneAbilityID) then spell_id = DraenorZoneAbilityID end
 
 		if (morphSpells[spell_id]) then
 			charges, maxCharges, chStart, chDuration = GetSpellCharges(morphSpells[spell_id])	
@@ -1265,7 +1269,7 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 				duration = chDuration
 			end
 		else
-			charges, maxCharges, chStart, chDuration = GetSpellCharges(spell_id)	
+			charges, maxCharges, chStart, chDuration = GetSpellCharges(spell_id)
  			start, duration, enable = GetSpellCooldown(spell_id)
 
 			if maxCharges and charges < maxCharges then
@@ -1401,7 +1405,7 @@ function BUTTON:MACRO_UpdateUsableSpell(spell)
 
 	local spellName = spell:lower()
 
-	if (sIndex[spellName]) and (sIndex[spellName].spellID ~= sIndex[spellName].spellID_Alt) then
+	if (sIndex[spellName]) and (sIndex[spellName].spellID ~= sIndex[spellName].spellID_Alt) and sIndex[spellName].spellID_Alt then
 		alt_Name = GetSpellInfo(sIndex[spellName].spellID_Alt):lower()
 		isUsable, notEnoughMana = IsUsableSpell(alt_Name)
 		spellName = alt_Name
@@ -2443,7 +2447,7 @@ function BUTTON:MACRO_SetSpellTooltip(spell)
 		local spell_id = sIndex[spell].spellID
 		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
 
-		if spell_id == 161691 then spell_id = draenor_id end
+		if spell_id == 161691 and draenor_id then spell_id = draenor_id end
 
 		if (morphSpells[spell_id]) then
 			if (self.UberTooltips) then
