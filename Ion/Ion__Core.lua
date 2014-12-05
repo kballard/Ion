@@ -1255,7 +1255,7 @@ local icon, name, active, castable, spellID, UJU
 
 				ION.STATES.stance0 = L.ROGUE_MELEE
 
-				states = states.."[stance:3] stance1; "
+				states = states.."[stance:2] stance1; "
 
 			end
 

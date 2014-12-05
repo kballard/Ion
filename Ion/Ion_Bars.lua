@@ -492,8 +492,8 @@ function HANDLER:BuildStateMap(bar, remapState)
 
 		map, remap = (":"):split(states)
 
-		if (remapState == "stance" and ION.class == "ROGUE" and map == "2") then
-			map = "3"
+		if (remapState == "stance" and ION.class == "ROGUE" and map == "1") then
+			map = "2"
 		end
 
 		if (not homestate) then
