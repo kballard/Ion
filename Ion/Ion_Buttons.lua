@@ -2996,9 +2996,17 @@ function BUTTON:SetData(bar)
 	self:MACRO_UpdateTimers()
 end
 
+function BUTTON:GetSpec()
+	if self.dualSpec then
+		return GetActiveSpecGroup()
+	else
+		return 1
+	end
+end
+
 function BUTTON:SaveData(state)
 
-	local index, spec = self.id, GetActiveSpecGroup()
+	local index, spec = self.id, self:GetSpec()
 
 	if (not state) then
 		state = self:GetParent():GetAttribute("activestate") or "homestate"

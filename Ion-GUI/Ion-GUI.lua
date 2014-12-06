@@ -1910,9 +1910,10 @@ function ION:MacroEditorUpdate()
 
 	if (ION.CurrentObject and ION.CurrentObject.objType == "ACTIONBUTTON") then
 
-		local button, spec, IBTNE = ION.CurrentObject, IonSpec.cSpec, IonButtonEditor
+		local button, IBTNE = ION.CurrentObject, IonButtonEditor
 		local state = button.bar.handler:GetAttribute("fauxstate")
-		local data = button.specdata[spec][state]
+		local buttonSpec = button:GetSpec()
+		local data = button.specdata[buttonSpec][state]
 
 		if (data) then
 
@@ -1981,11 +1982,12 @@ local function macroText_OnTextChanged(self)
 
 	if (self.hasfocus) then
 
-		local button, spec = ION.CurrentObject, IonSpec.cSpec
+		local button = ION.CurrentObject
+		local buttonSpec = button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
-		if (button and spec and state) then
-			button.specdata[spec][state].macro_Text = self:GetText()
+		if (button and buttonSpec and state) then
+			button.specdata[buttonSpec][state].macro_Text = self:GetText()
 		end
 	end
 end
@@ -1998,11 +2000,12 @@ local function macroNameEdit_OnTextChanged(self)
 
 	if (self.hasfocus) then
 
-		local button, spec = ION.CurrentObject, IonSpec.cSpec
+		local button = ION.CurrentObject
+		local buttonSpec = button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
-		if (button and spec and state) then
-			button.specdata[spec][state].macro_Name = self:GetText()
+		if (button and buttonSpec and state) then
+			button.specdata[buttonSpec][state].macro_Name = self:GetText()
 		end
 
 	elseif (strlen(self:GetText()) <= 0) then
@@ -2021,11 +2024,12 @@ local function macroNoteEdit_OnTextChanged(self)
 
 	if (self.hasfocus) then
 
-		local button, spec = ION.CurrentObject, IonSpec.cSpec
+		local button = ION.CurrentObject
+		local buttonSpec = button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
-		if (button and spec and state) then
-			button.specdata[spec][state].macro_Note = self:GetText()
+		if (button and buttonSpec and state) then
+			button.specdata[buttonSpec][state].macro_Note = self:GetText()
 		end
 	end
 end
