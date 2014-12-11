@@ -1928,30 +1928,43 @@ function ION:BlizzBar()
 
 end
 
+
 function ION:ToggleDraenorBar(on)
-	--if (InCombatLockdown()) then return end
+	if (InCombatLockdown()) then return end
 
 	if (ION.OpDep) then return end
 
 	if (on) and (HasDraenorZoneAbility()) then
 	DraenorZoneAbilityFrame:Show()
+	DraenorZoneAbilityFrame:SetAttribute("statehidden", nil);
 	else
 	DraenorZoneAbilityFrame:Hide()
+	DraenorZoneAbilityFrame:SetAttribute("statehidden", true);
 	end
 end
 
-function ION:DraenorBar()
+--work arround to get the garrison button to reilably hide by adding it to the default bar if it is not allready on it.
+local function DraenorButtonCheck()
+	if not HasDraenorZoneAbility() then return end
 
+	if not HasDraenorZoneSpellOnBar(DraenorZoneAbilityFrame)then
+		PickupSpell(161691)
+		PlaceAction(72)
+		ClearCursor ()
+	end
+
+end
+
+function ION:DraenorBar()
 	if (GDB.draenorbar) then
 		GDB.draenorbar = false
+		DraenorButtonCheck()
 	else
 		GDB.draenorbar = true
 	end
 
 	ION:ToggleDraenorBar(GDB.draenorbar)
-
 end
-
 
 function ION:Animate()
 
@@ -2496,6 +2509,7 @@ local function control_OnEvent(self, event, ...)
 		if (IsAddOnLoaded("Titan")) then TitanUtils_AddonAdjust("MainMenuBar", true) end
 		ION:ToggleBlizzBar(GDB.mainbar)
 		ION:ToggleDraenorBar(GDB.draenorbar)
+		DraenorButtonCheck()
 
 		CDB.fix07312012 = true
 
@@ -2532,7 +2546,7 @@ local function control_OnEvent(self, event, ...)
 
 		ION.level = UnitLevel("player")
 	else
-		ION:ToggleDraenorBar(GDB.draenorbar)
+		--ION:ToggleDraenorBar(GDB.draenorbar)
 	end
 end
 
@@ -2654,9 +2668,42 @@ end
 --local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
 
 --Hooking on DraenorZoneAbilityFrame_OnShow in case it tries to get displayed
+--[[
 local function DreanorCheck()
 	ION:ToggleDraenorBar(GDB.draenorbar)
 end
 hooksecurefunc("DraenorZoneAbilityFrame_OnShow", DreanorCheck);
+--]]
 
+--[[
+local origDraenorZoneAbilityFrame_OnEvent = DraenorZoneAbilityFrame_OnEvent
+
+DraenorZoneAbilityFrame_OnEvent = function(...)
+	if (InCombatLockdown()) then return end
+	print("nocom")
+	origDraenorZoneAbilityFrame_OnEvent(...);
+	
+end
+
+
+DraenorZoneAbilityFrame:SetScript("OnEvent", DraenorZoneAbilityFrame_OnEvent)
+
+
+
+local origHasDraenorZoneSpellOnBar = HasDraenorZoneSpellOnBar
+
+HasDraenorZoneSpellOnBar = function(...)
+print("Call")
+	if not GDB.draenorbar then 
+		return true;
+	else
+		return origHasDraenorZoneSpellOnBar(...);
+	end
+end
+--]]
+
+
+
+
+--161691
 
