@@ -2531,6 +2531,7 @@ local function control_OnEvent(self, event, ...)
 		updater.elapsed = 0
 		updater:Show()
 		ION:ToggleDraenorBar(GDB.draenorbar)
+		DraenorButtonCheck()
 
 	elseif (event == "PET_UI_CLOSE" or event == "COMPANION_LEARNED" or event == "COMPANION_UPDATE") then
 

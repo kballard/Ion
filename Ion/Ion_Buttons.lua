@@ -1839,9 +1839,7 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 	 	spell, _ = GetSpellBookItemName(action1, action2)
 	 	_, spellID = GetSpellBookItemInfo(action1, action2)
 		local spellInfoName , subName, icon, castTime, minRange, maxRange= GetSpellInfo(spellID)
-print(spell)
-print(spellInfoName)
-print(spellID)		
+
 		if AlternateSpellNameList[spellID] then
 			self.data.macro_Text = self:AutoWriteMacro(spellInfoName)
 			self.data.macro_Auto = spellInfoName..";"
