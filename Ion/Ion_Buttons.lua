@@ -1973,8 +1973,8 @@ local function HookOnEnter(self)
 end
 
 local MountButtonsHookIsSet
-hooksecurefunc("TogglePetJournal", function()
-	if PetJournalParent:IsShown() then
+hooksecurefunc("ToggleCollectionsJournal", function()
+	if CollectionsJournal:IsShown() then
 		if not MountButtonsHookIsSet then
 			for i = 1, 20 do
 				local bName = "MountJournalListScrollFrameButton"..i

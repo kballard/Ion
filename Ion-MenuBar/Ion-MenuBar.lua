@@ -240,7 +240,7 @@ local function updateMicroButtons()
 
 	end
 
-	if (IonCompanionButton and PetJournalParent and PetJournalParent:IsShown())  then
+	if (IonCompanionButton and CollectionsJournal and CollectionsJournal:IsShown())  then
 
 		IonCompanionButton:SetButtonState("PUSHED", 1)
 
@@ -664,7 +664,7 @@ end
 
 function ION.CompanionButton_OnClick(self)
 
-	TogglePetJournal()
+	ToggleCollectionsJournal()
 end
 
 function ION.EJButton_OnLoad(self)
