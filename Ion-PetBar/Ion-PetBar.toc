@@ -1,8 +1,8 @@
-## Interface: 60000
+## Interface: 60100
 ## Title: Ion: Pet Action Bar
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 10
+## Version: Hydrogen 10.1
 ## Notes: Pet action bar for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion

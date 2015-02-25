@@ -1,8 +1,8 @@
-## Interface: 60000
+## Interface: 60100
 ## Title: Ion: Menu Bar
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 10
+## Version: Hydrogen 10.1
 ## Notes: Menu bar for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion

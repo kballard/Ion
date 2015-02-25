@@ -1,8 +1,8 @@
-## Interface: 60000
+## Interface: 60100
 ## Title: Ion: Status Bars
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 7
+## Version: Hydrogen 7.1
 ## Notes: Status bars for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion

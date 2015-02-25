@@ -1,8 +1,8 @@
-## Interface: 60000
+## Interface: 60100
 ## Title: Ion: Bag Bar
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 10
+## Version: Hydrogen 10.1
 ## Notes: Bag bar for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion
