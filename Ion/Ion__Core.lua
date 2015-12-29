@@ -26,6 +26,8 @@ Ion = {
 	OpDep = false,
 }
 
+
+--GlobalDB ?
 IonGDB = {
 
 	bars = {},
@@ -53,6 +55,7 @@ IonGDB = {
 	animate = true,
 }
 
+--CharacterDB?
 IonCDB = {
 
 	bars = {},
@@ -176,7 +179,6 @@ ION.STATEINDEX = {
 	[L.EXTRABAR] = "extrabar",
 	[L.PROWL] = "prowl",
 	[L.CUSTOM] = "custom",
-
 }
 
 local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
@@ -188,7 +190,7 @@ local level, stanceStringsUpdated, PEW
 
 IonProfile = LibStub("AceAddon-3.0"):NewAddon("IonProfile")
 
- local options = {
+local options = {
 	name = "Ion",
 	type = 'group',
 	args = {
@@ -380,7 +382,30 @@ local OverlapTalentNames = {
 	[102355] = true, --Fairy Swarm Spell
 }
 
+--- Returns a list of the available spell icon filenames for use in macros
+-- @param spellIndexName, index, bookType, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon
+-- @return N/A
+local function SetSpellInfo(spellIndexName, index, bookType, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 
+	local curSpell = spellIndexName
+	curSpell.index = index
+	curSpell.booktype = bookType
+	curSpell.spellName = spellName
+	curSpell.altName = altName
+	curSpell.subName = subName
+	curSpell.spellID = spellID
+	curSpell.spellID_Alt = spellID_Alt
+	curSpell.spellType = spellType
+	curSpell.spellLvl = spellLvl
+	curSpell.isPassive = isPassive
+	curSpell.icon = icon
+end
+
+
+
+--- Scans Character Spell Book and creates a table of all known spells 
+-- @param N/A
+-- @return N/A
 function ION:UpdateSpellIndex()
 
 	local sIndexMax = 0
@@ -426,153 +451,57 @@ function ION:UpdateSpellIndex()
 			end
 
 			if (subName and #subName > 0) then
-
 				if (not ION.sIndex[(spellName.."("..subName..")"):lower()]) then
 					ION.sIndex[(spellName.."("..subName..")"):lower()] = {}
 				end
-
-				curSpell = ION.sIndex[(spellName.."("..subName..")"):lower()]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_SPELL
-				curSpell.spellName = spellName
-				curSpell.altName = altName
-				curSpell.subName = subName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
-
+				SetSpellInfo(ION.sIndex[(spellName.."("..subName..")"):lower()], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 			else
-
+				
 				if (not ION.sIndex[(spellName):lower()]) then
 					ION.sIndex[(spellName):lower()] = {}
 				end
-
-				curSpell = ION.sIndex[(spellName):lower()]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_SPELL
-				curSpell.spellName = spellName
-				curSpell.altName = altName
-				curSpell.subName = subName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
+				SetSpellInfo(ION.sIndex[(spellName):lower()], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 
 				if (not ION.sIndex[(spellName):lower().."()"]) then
 					ION.sIndex[(spellName):lower().."()"] = {}
 				end
-
-				curSpell = ION.sIndex[(spellName):lower().."()"]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_SPELL
-				curSpell.spellName = spellName
-				curSpell.altName = altName
-				curSpell.subName = subName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
+				SetSpellInfo(ION.sIndex[(spellName):lower().."()"], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 			end
 
 			if (altName and altName ~= spellName) then
 
 				if (subName and #subName > 0) then
-
 					if (not ION.sIndex[(altName.."("..subName..")"):lower()]) then
 						ION.sIndex[(altName.."("..subName..")"):lower()] = {}
 					end
-
-					curSpell = ION.sIndex[(altName.."("..subName..")"):lower()]
-
-					curSpell.index = i
-					curSpell.booktype = BOOKTYPE_SPELL
-					curSpell.spellName = spellName
-					curSpell.altName = altName
-					curSpell.subName = subName
-					curSpell.spellID = spellID
-					curSpell.spellID_Alt = spellID_Alt
-					curSpell.spellType = spellType
-					curSpell.spellLvl = spellLvl
-					curSpell.isPassive = isPassive
-					curSpell.icon = icon
-
+					SetSpellInfo(ION.sIndex[(altName.."("..subName..")"):lower()], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 				else
-
 					if (not ION.sIndex[(altName):lower()]) then
 						ION.sIndex[(altName):lower()] = {}
 					end
 
-					curSpell = ION.sIndex[(altName):lower()]
-
-					curSpell.index = i
-					curSpell.booktype = BOOKTYPE_SPELL
-					curSpell.spellName = spellName
-					curSpell.altName = altName
-					curSpell.subName = subName
-					curSpell.spellID = spellID
-					curSpell.spellID_Alt = spellID_Alt
-					curSpell.spellType = spellType
-					curSpell.spellLvl = spellLvl
-					curSpell.isPassive = isPassive
-					curSpell.icon = icon
+					SetSpellInfo( ION.sIndex[(altName):lower()], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 
 					if (not ION.sIndex[(altName):lower().."()"]) then
 						ION.sIndex[(altName):lower().."()"] = {}
 					end
-
-					curSpell = ION.sIndex[(altName):lower().."()"]
-
-					curSpell.index = i
-					curSpell.booktype = BOOKTYPE_SPELL
-					curSpell.spellName = spellName
-					curSpell.altName = altName
-					curSpell.subName = subName
-					curSpell.spellID = spellID
-					curSpell.spellID_Alt = spellID_Alt
-					curSpell.spellType = spellType
-					curSpell.spellLvl = spellLvl
-					curSpell.isPassive = isPassive
-					curSpell.icon = icon
+					SetSpellInfo(ION.sIndex[(altName):lower().."()"], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 				end
 			end
 
 			if (spellID) then
-
 				if (not ION.sIndex[spellID]) then
 					ION.sIndex[spellID] = {}
 				end
-
-				curSpell = ION.sIndex[spellID]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_SPELL
-				curSpell.spellName = spellName
-				curSpell.altName = altName
-				curSpell.subName = subName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
+				SetSpellInfo(ION.sIndex[spellID], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 			end
 
-	   		if (icon and not icons[icon:upper()]) then
-	   			ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
-	   		end
-   		end
+			if (icon and not icons[icon:upper()]) then
+				ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+			end
+		end
 
-   	end
+	end
 
 	-- maybe a temp fix to get the Sunfire spell to show for balance druids
 	--May not be needed for 6.0 recheck 
@@ -643,158 +572,59 @@ function ION:UpdateSpellIndex()
 			local _, _, _, _, numSpells, spelloffset = GetProfessionInfo(index)
 
 			for i=1,numSpells do
-
-				spellName, _ = GetSpellBookItemName(i+spelloffset, BOOKTYPE_PROFESSION)
-				spellType, spellID = GetSpellBookItemInfo(i+spelloffset, BOOKTYPE_PROFESSION)
+				local offsetIndex = i + spelloffset
+				spellName, _ = GetSpellBookItemName(offsetIndex, BOOKTYPE_PROFESSION)
+				spellType, spellID = GetSpellBookItemInfo(offsetIndex, BOOKTYPE_PROFESSION)
 				spellID_Alt = spellID
-				spellLvl = GetSpellAvailableLevel(i+spelloffset, BOOKTYPE_PROFESSION)
-				icon = GetSpellBookItemTexture(i+spelloffset, BOOKTYPE_PROFESSION)
-				isPassive = IsPassiveSpell(i+spelloffset, BOOKTYPE_PROFESSION)
+				spellLvl = GetSpellAvailableLevel(offsetIndex, BOOKTYPE_PROFESSION)
+				icon = GetSpellBookItemTexture(offsetIndex, BOOKTYPE_PROFESSION)
+				isPassive = IsPassiveSpell(offsetIndex, BOOKTYPE_PROFESSION)
 
 				if (spellName and spellType ~= "FUTURESPELL") then
 
 					altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
 
 					if (subName and #subName > 0) then
-
 						if (not ION.sIndex[(spellName.."("..subName..")"):lower()]) then
 							ION.sIndex[(spellName.."("..subName..")"):lower()] = {}
 						end
-
-						curSpell = ION.sIndex[(spellName.."("..subName..")"):lower()]
-
-						curSpell.index = i+spelloffset
-						curSpell.booktype = BOOKTYPE_PROFESSION
-						curSpell.spellName = spellName
-						curSpell.altName = altName
-						curSpell.subName = subName
-						curSpell.spellID = spellID
-						curSpell.spellID_Alt = spellID_Alt
-						curSpell.spellType = spellType
-						curSpell.spellLvl = spellLvl
-						curSpell.isPassive = isPassive
-						curSpell.icon = icon
-
+						SetSpellInfo(ION.sIndex[(spellName.."("..subName..")"):lower()], offsetIndex, BOOKTYPE_PROFESSION, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 					else
-
 						if (not ION.sIndex[(spellName):lower()]) then
 							ION.sIndex[(spellName):lower()] = {}
 						end
-
-						curSpell = ION.sIndex[(spellName):lower()]
-
-						curSpell.index = i+spelloffset
-						curSpell.booktype = BOOKTYPE_PROFESSION
-						curSpell.spellName = spellName
-						curSpell.subName = subName
-						curSpell.altName = altName
-						curSpell.spellID = spellID
-						curSpell.spellID_Alt = spellID_Alt
-						curSpell.spellType = spellType
-						curSpell.spellLvl = spellLvl
-						curSpell.isPassive = isPassive
-						curSpell.icon = icon
-
+						SetSpellInfo(ION.sIndex[(spellName):lower()], offsetIndex, BOOKTYPE_PROFESSION, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
+						
 						if (not ION.sIndex[(spellName):lower().."()"]) then
 							ION.sIndex[(spellName):lower().."()"] = {}
 						end
-
-						curSpell = ION.sIndex[(spellName):lower().."()"]
-
-						curSpell.index = i+spelloffset
-						curSpell.booktype = BOOKTYPE_PROFESSION
-						curSpell.spellName = spellName
-						curSpell.altName = altName
-						curSpell.subName = subName
-						curSpell.spellID = spellID
-						curSpell.spellID_Alt = spellID_Alt
-						curSpell.spellType = spellType
-						curSpell.spellLvl = spellLvl
-						curSpell.isPassive = isPassive
-						curSpell.icon = icon
+						SetSpellInfo(ION.sIndex[(spellName):lower().."()"], offsetIndex, BOOKTYPE_PROFESSION, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 					end
 
 					if (altName and altName ~= spellName) then
-
 						if (subName and #subName > 0) then
-
 							if (not ION.sIndex[(altName.."("..subName..")"):lower()]) then
 								ION.sIndex[(altName.."("..subName..")"):lower()] = {}
 							end
-
-							curSpell = ION.sIndex[(altName.."("..subName..")"):lower()]
-
-							curSpell.index = i+spelloffset
-							curSpell.booktype = BOOKTYPE_PROFESSION
-							curSpell.spellName = spellName
-							curSpell.altName = altName
-							curSpell.subName = subName
-							curSpell.spellID = spellID
-							curSpell.spellID_Alt = spellID_Alt
-							curSpell.spellType = spellType
-							curSpell.spellLvl = spellLvl
-							curSpell.isPassive = isPassive
-							curSpell.icon = icon
-
+							SetSpellInfo(ION.sIndex[(altName.."("..subName..")"):lower()], offsetIndex, BOOKTYPE_PROFESSION, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 						else
-
 							if (not ION.sIndex[(altName):lower()]) then
 								ION.sIndex[(altName):lower()] = {}
 							end
-
-							curSpell = ION.sIndex[(altName):lower()]
-
-							curSpell.index = i+spelloffset
-							curSpell.booktype = BOOKTYPE_PROFESSION
-							curSpell.spellName = spellName
-							curSpell.altName = altName
-							curSpell.subName = subName
-							curSpell.spellID = spellID
-							curSpell.spellID_Alt = spellID_Alt
-							curSpell.spellType = spellType
-							curSpell.spellLvl = spellLvl
-							curSpell.isPassive = isPassive
-							curSpell.icon = icon
-
+							SetSpellInfo(ION.sIndex[(altName):lower()], offsetIndex, BOOKTYPE_PROFESSION, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
+							
 							if (not ION.sIndex[(altName):lower().."()"]) then
 								ION.sIndex[(altName):lower().."()"] = {}
 							end
-
-							curSpell = ION.sIndex[(altName):lower().."()"]
-
-							curSpell.index = i+spelloffset
-							curSpell.booktype = BOOKTYPE_PROFESSION
-							curSpell.spellName = spellName
-							curSpell.altName = altName
-							curSpell.subName = subName
-							curSpell.spellID = spellID
-							curSpell.spellID_Alt = spellID_Alt
-							curSpell.spellType = spellType
-							curSpell.spellLvl = spellLvl
-							curSpell.isPassive = isPassive
-							curSpell.icon = icon
+							SetSpellInfo(ION.sIndex[(altName):lower().."()"], offsetIndex, BOOKTYPE_PROFESSION, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 						end
 					end
 
 					if (spellID) then
-
 						if (not ION.sIndex[spellID]) then
 							ION.sIndex[spellID] = {}
 						end
-
-						curSpell = ION.sIndex[spellID]
-
-						curSpell.index = i+spelloffset
-						curSpell.booktype = BOOKTYPE_PROFESSION
-						curSpell.spellName = spellName
-						curSpell.altName = altName
-						curSpell.subName = subName
-						curSpell.spellID = spellID
-						curSpell.spellID_Alt = spellID_Alt
-						curSpell.spellType = spellType
-						curSpell.spellLvl = spellLvl
-						curSpell.isPassive = isPassive
-						curSpell.icon = icon
+						SetSpellInfo(ION.sIndex[spellID], offsetIndex, BOOKTYPE_PROFESSION, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 					end
 
 					if (icon and not icons[icon:upper()]) then
@@ -834,6 +664,9 @@ function ION:UpdateSpellIndex()
 
 end
 
+--- Compiles a list of spells that a player's pet has.
+-- @param N/A
+-- @return N/A
 function ION:UpdatePetSpellIndex()
 
 	local numPetSpells = HasPetSpells() or 0
@@ -856,93 +689,37 @@ function ION:UpdatePetSpellIndex()
 
 
 			if (subName and #subName > 0) then
-
 				if (not ION.sIndex[(spellName.."("..subName..")"):lower()]) then
 					ION.sIndex[(spellName.."("..subName..")"):lower()] = {}
 				end
-
-				curSpell = ION.sIndex[(spellName.."("..subName..")"):lower()]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_PET
-				curSpell.spellName = spellName
-				curSpell.subName = subName
-				curSpell.altName = altName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
+				SetSpellInfo(ION.sIndex[(spellName.."("..subName..")"):lower()], i, BOOKTYPE_PET, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 			else
-
 				if (not ION.sIndex[(spellName):lower()]) then
 					ION.sIndex[(spellName):lower()] = {}
 				end
-
-				curSpell = ION.sIndex[(spellName):lower()]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_PET
-				curSpell.spellName = spellName
-				curSpell.subName = subName
-				curSpell.altName = altName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
-
+				SetSpellInfo(ION.sIndex[(spellName):lower()], i, BOOKTYPE_PET, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
+				
 				if (not ION.sIndex[(spellName):lower().."()"]) then
 					ION.sIndex[(spellName):lower().."()"] = {}
 				end
-
-				curSpell = ION.sIndex[(spellName):lower().."()"]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_PET
-				curSpell.spellName = spellName
-				curSpell.subName = subName
-				curSpell.altName = altName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
+				SetSpellInfo(ION.sIndex[(spellName):lower().."()"], i, BOOKTYPE_PET, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 			end
 
 			if (spellID) then
-
 				if (not ION.sIndex[spellID]) then
 					ION.sIndex[spellID] = {}
 				end
-
-				curSpell = ION.sIndex[spellID]
-
-				curSpell.index = i
-				curSpell.booktype = BOOKTYPE_PET
-				curSpell.spellName = spellName
-				curSpell.subName = subName
-				curSpell.altName = altName
-				curSpell.spellID = spellID
-				curSpell.spellID_Alt = spellID_Alt
-				curSpell.spellType = spellType
-				curSpell.spellLvl = spellLvl
-				curSpell.isPassive = isPassive
-				curSpell.icon = icon
-
+				SetSpellInfo(ION.sIndex[spellID], i, BOOKTYPE_PET, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 			end
 
-	   		if (icon and not icons[icon:upper()]) then
-	   			ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
-	   		end
-   		end
+			if (icon and not icons[icon:upper()]) then
+				ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+			end
+		end
 
-   		i = i + 1
+		i = i + 1
 
-   	end
+	end
 
 	-- a lot of work to associate the Call Pet spell with the pet's name so that tooltips work on Call Pet spells. /sigh
 	local _, _, numSlots, isKnown = GetFlyoutInfo(9)
@@ -960,64 +737,41 @@ function ION:UpdatePetSpellIndex()
 			for k,v in pairs(ION.sIndex) do
 
 				if (v.spellName:find(petName.."$")) then
-
 					if (not ION.sIndex[(spellName):lower()]) then
 						ION.sIndex[(spellName):lower()] = {}
 					end
-
-					curSpell = ION.sIndex[(spellName):lower()]
-
-					curSpell.index = v.index
-					curSpell.booktype = v.booktype
-					curSpell.spellName = v.spellName
-					curSpell.subName = v.subName
-					curSpell.spellID = spellID
-					curSpell.spellID_Alt = spellID_Alt
-					curSpell.spellType = v.spellType
-					curSpell.spellLvl = v.spellLvl
-					curSpell.isPassive = v.isPassive
-					curSpell.icon = v.icon
+					SetSpellInfo(ION.sIndex[(spellName):lower()], v.index, v.booktype, v.spellName, nil, v.subName, spellID, spellID_Alt, v.spellType, v.spellLvl, v.isPassive, v.icon)
 
 					if (not ION.sIndex[(spellName):lower().."()"]) then
 						ION.sIndex[(spellName):lower().."()"] = {}
 					end
-
-					curSpell = ION.sIndex[(spellName):lower().."()"]
-
-					curSpell.index = v.index
-					curSpell.booktype = v.booktype
-					curSpell.spellName = v.spellName
-					curSpell.subName = v.subName
-					curSpell.spellID = spellID
-					curSpell.spellID_Alt = spellID_Alt
-					curSpell.spellType = v.spellType
-					curSpell.spellLvl = v.spellLvl
-					curSpell.isPassive = v.isPassive
-					curSpell.icon = v.icon
-
+					SetSpellInfo(ION.sIndex[(spellName):lower().."()"], v.index, v.booktype, v.spellName, nil, v.subName, spellID, spellID_Alt, v.spellType, v.spellLvl, v.isPassive, v.icon)
+					
 					if (not ION.sIndex[spellID]) then
 						ION.sIndex[spellID] = {}
 					end
-
-					curSpell = ION.sIndex[spellID]
-
-					curSpell.index = v.index
-					curSpell.booktype = v.booktype
-					curSpell.spellName = v.spellName
-					curSpell.subName = v.subName
-					curSpell.spellID = spellID
-					curSpell.spellID_Alt = spellID_Alt
-					curSpell.spellType = v.spellType
-					curSpell.spellLvl = v.spellLvl
-					curSpell.isPassive = v.isPassive
-					curSpell.icon = v.icon
-
+					SetSpellInfo(ION.sIndex[spellID], v.index, v.booktype, v.spellName, nil, v.subName, spellID, spellID_Alt, v.spellType, v.spellLvl, v.isPassive, v.icon)
 				end
 			end
 		end
 	end
 end
 
+
+local function SetCompanionData(creatureIndexName,creatureType, index, creatureID, creatureName, spellID, icon)
+local curComp = creatureIndexName
+				curComp.creatureType = "CRITTER"
+				curComp.index = index
+				curComp.creatureID = creatureID
+				curComp.creatureName = creatureName
+				curComp.spellID = spellID
+				curComp.icon = icon
+
+end
+
+--- Compiles a list of battle pets & mounts a player has
+-- @param N/A
+-- @return N/A
 function ION:UpdateCompanionData()
 
 	local creatureID, creatureName, spellID, icon, spell, curComp
@@ -1035,103 +789,62 @@ function ION:UpdateCompanionData()
 				if (not ION.cIndex[spell:lower()]) then
 					ION.cIndex[spell:lower()] = {}
 				end
+				SetCompanionData(ION.cIndex[spell:lower()],"CRITTER", i, creatureID, creatureName, spellID, icon)
 
-				curComp = ION.cIndex[spell:lower()]
-
-				curComp.creatureType = "CRITTER"
-				curComp.index = i
-				curComp.creatureID = creatureID
-				curComp.creatureName = creatureName
-				curComp.spellID = spellID
-				curComp.icon = icon
 
 				if (not ION.cIndex[spell:lower().."()"]) then
 					ION.cIndex[spell:lower().."()"] = {}
 				end
-
-				curComp = ION.cIndex[spell:lower().."()"]
-
-				curComp.creatureType = "CRITTER"
-				curComp.index = i
-				curComp.creatureID = creatureID
-				curComp.creatureName = creatureName
-				curComp.spellID = spellID
-				curComp.icon = icon
+				SetCompanionData(ION.cIndex[spell:lower().."()"],"CRITTER", i, creatureID, creatureName, spellID, icon)
 
 				if (not ION.cIndex[spellID]) then
 					ION.cIndex[spellID] = {}
 				end
+				SetCompanionData(ION.cIndex[spellID],"CRITTER", i, creatureID, creatureName, spellID, icon)
 
-				curComp = ION.cIndex[spellID]
-
-				curComp.creatureType = "CRITTER"
-				curComp.index = i
-				curComp.creatureID = creatureID
-				curComp.creatureName = creatureName
-				curComp.spellID = spellID
-				curComp.icon = icon
-
-		   		if (icon and not icons[icon:upper()]) then
-		   			ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
-		   		end
+				if (icon and not icons[icon:upper()]) then
+					ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+				end
 			end
 		end
 	end
 
-	for i=1,GetNumCompanions("MOUNT") do
 
-		creatureID, creatureName, spellID, icon = GetCompanionInfo("MOUNT", i)
+	for i=1,C_MountJournal.GetNumMounts() do
+		local creatureName, creatureID, _, active, summonable, source, isFavorite, isFactionSpecific, faction, unknown, owned = C_MountJournal.GetMountInfo(i)
+		local link = GetSpellLink(creatureName)
+
+		if (link) then
+			_, spellID = link:match("(spell:)(%d+)")
+			spellID = tonumber(spellID)
+		end
 
 		if (spellID) then
 
-			spell = GetSpellInfo(spellID)
-
+			spell, _, icon = GetSpellInfo(spellID)
 			if (spell) then
 
 				if (not ION.cIndex[spell:lower()]) then
 					ION.cIndex[spell:lower()] = {}
 				end
-
-				curComp = ION.cIndex[spell:lower()]
-
-				curComp.creatureType = "MOUNT"
-				curComp.index = i
-				curComp.creatureID = creatureID
-				curComp.creatureName = creatureName
-				curComp.spellID = spellID
-				curComp.icon = icon
+				SetCompanionData(ION.cIndex[spell:lower()],"MOUNT", i, creatureID, creatureName, spellID, icon)
 
 				if (not ION.cIndex[spell:lower().."()"]) then
 					ION.cIndex[spell:lower().."()"] = {}
 				end
-
-				curComp = ION.cIndex[spell:lower().."()"]
-
-				curComp.creatureType = "MOUNT"
-				curComp.index = i
-				curComp.creatureID = creatureID
-				curComp.creatureName = creatureName
-				curComp.spellID = spellID
-				curComp.icon = icon
+				SetCompanionData(ION.cIndex[spell:lower().."()"],"MOUNT", i, creatureID, creatureName, spellID, icon)
 
 				if (not ION.cIndex[spellID]) then
 					ION.cIndex[spellID] = {}
 				end
+				SetCompanionData(ION.cIndex[spellID],"MOUNT", i, creatureID, creatureName, spellID, icon)
 
-				curComp = ION.cIndex[spellID]
-
-				curComp.creatureType = "MOUNT"
-				curComp.index = i
-				curComp.creatureID = creatureID
-				curComp.creatureName = creatureName
-				curComp.spellID = spellID
-				curComp.icon = icon
-
-		   		if (icon and not icons[icon:upper()]) then
-		   			ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
-		   		end
+				if (icon and not icons[icon:upper()]) then
+					ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+				end
 			end
 		end
+		
 	end
 end
 
@@ -1140,6 +853,10 @@ local temp = {}
 local TempTexture = (CreateFrame("Button", nil, UIParent)):CreateTexture()
 --textf:Hide()
 
+
+--- Returns a list of the available spell icon filenames for use in macros
+-- @param N/A
+-- @return N/A
 function ION:UpdateIconIndex()
 
 	local icon
@@ -1278,6 +995,8 @@ local icon, name, active, castable, spellID, UJU
 		ION.MAS.stance.states = states
 	end
 end
+
+
 
 local function printSlashHelp()
 
@@ -1449,17 +1168,17 @@ local minimapShapes = {
 
 	["ROUND"] 				= {true, true, true, true},
 	["SQUARE"] 				= {false, false, false, false},
-	["CORNER-TOPLEFT"] 		= {true, false, false, false},
+	["CORNER-TOPLEFT"] 			= {true, false, false, false},
 	["CORNER-TOPRIGHT"] 		= {false, false, true, false},
 	["CORNER-BOTTOMLEFT"] 		= {false, true, false, false},
 	["CORNER-BOTTOMRIGHT"]		= {false, false, false, true},
-	["SIDE-LEFT"] 			= {true, true, false, false},
+	["SIDE-LEFT"] 				= {true, true, false, false},
 	["SIDE-RIGHT"] 			= {false, false, true, true},
-	["SIDE-TOP"] 			= {true, false, true, false},
+	["SIDE-TOP"] 				= {true, false, true, false},
 	["SIDE-BOTTOM"] 			= {false, true, false, true},
-	["TRICORNER-TOPLEFT"] 		= {true, true, true, false},
+	["TRICORNER-TOPLEFT"]		= {true, true, true, false},
 	["TRICORNER-TOPRIGHT"] 		= {true, false, true, true},
-	["TRICORNER-BOTTOMLEFT"]	= {true, true, false, true},
+	["TRICORNER-BOTTOMLEFT"]		= {true, true, false, true},
 	["TRICORNER-BOTTOMRIGHT"]	= {false, true, true, true},
 }
 
