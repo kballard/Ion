@@ -54,7 +54,7 @@ local GetPetActionInfo = _G.GetPetActionInfo
 local GetPetActionsUsable = _G.GetPetActionsUsable
 local GetPetActionSlotUsable = _G.GetPetActionSlotUsable
 local GetPetActionCooldown = _G.GetPetActionCooldown
-local	AutoCastStart = ION.AutoCastStart
+local AutoCastStart = ION.AutoCastStart
 local AutoCastStop = ION.AutoCastStop
 
 local configData = {
@@ -281,21 +281,18 @@ function PETBTN:OnUpdate(elapsed)
 	end
 
 	if (self.updateRightClick and not InCombatLockdown()) then
-
 		local spell = GetPetActionInfo(self.actionID)
 
 		if (spell) then
 			self:SetAttribute("*macrotext2", "/petautocasttoggle "..spell)
+			self.updateRightClick = nil
 		end
-
-		self.updateRightClick = nil
 	end
 end
 
+
 function PETBTN:PET_BAR_UPDATE(event, ...)
-
 	self:PET_UpdateOnEvent()
-
 end
 
 PETBTN.PLAYER_CONTROL_LOST = PETBTN.PET_BAR_UPDATE
@@ -303,45 +300,47 @@ PETBTN.PLAYER_CONTROL_GAINED = PETBTN.PET_BAR_UPDATE
 PETBTN.PLAYER_FARSIGHT_FOCUS_CHANGED = PETBTN.PET_BAR_UPDATE
 
 function PETBTN:UNIT_PET(event, ...)
-
 	if (select(1,...) ==  "player") then
+		self.updateRightClick = true
 		self:PET_UpdateOnEvent()
 	end
-
 end
 
-function PETBTN:UNIT_FLAGS(event, ...)
 
+function PETBTN:UNIT_FLAGS(event, ...)
 	if (select(1,...) ==  "pet") then
 		self:PET_UpdateOnEvent()
 	end
-
 end
+
 
 PETBTN.UNIT_AURA = PETBTN.UNIT_FLAGS
 
+
 function PETBTN:PET_BAR_UPDATE_COOLDOWN(event, ...)
-
 	self:PET_UpdateCooldown()
-
 end
+
 
 function PETBTN:PET_BAR_SHOWGRID(event, ...)
-
+--empty
 end
+
 
 function PETBTN:PET_BAR_HIDEGRID(event, ...)
-
+--empty
 end
 
+
 function PETBTN:PLAYER_ENTERING_WORLD(event, ...)
-
 	self.binder:ApplyBindings(self)
-
 	self.updateRightClick = true
 end
 
-PETBTN.PET_TALENT_UPDATE = PETBTN.PLAYER_ENTERING_WORLD
+
+PETBTN.PET_SPECIALIZATION_CHANGED = PETBTN.PLAYER_ENTERING_WORLD
+
+PETBTN.PET_DISMISS_START = PETBTN.PLAYER_ENTERING_WORLD
 
 function PETBTN:PET_OnEvent(event, ...)
 
@@ -350,14 +349,13 @@ function PETBTN:PET_OnEvent(event, ...)
 	end
 end
 
+
 function PETBTN:PostClick()
-
 	self:PET_UpdateOnEvent(true)
-
 end
 
-function PETBTN:OnDragStart()
 
+function PETBTN:OnDragStart()
 	if (not self.barLock) then
 		self.drag = true
 	elseif (self.barLockAlt and IsAltKeyDown()) then
@@ -369,7 +367,6 @@ function PETBTN:OnDragStart()
 	end
 
 	if (self.drag) then
-
 		self:SetChecked(0)
 
 		PickupPetAction(self.actionID)
@@ -378,26 +375,22 @@ function PETBTN:OnDragStart()
 	end
 end
 
-function PETBTN:OnReceiveDrag()
 
+function PETBTN:OnReceiveDrag()
 	local cursorType = GetCursorInfo()
 
 	if (cursorType == "petaction") then
-
 		self:SetChecked(0)
-
 		PickupPetAction(self.actionID)
-
 		self:PET_UpdateOnEvent(true)
 	end
 end
 
-function PETBTN:PET_SetTooltip()
 
+function PETBTN:PET_SetTooltip()
 	local actionID = self.actionID
 
 	if (self.isToken) then
-
 		if (self.tooltipName) then
 			GameTooltip:SetText(self.tooltipName, 1.0, 1.0, 1.0)
 		end
@@ -405,9 +398,7 @@ function PETBTN:PET_SetTooltip()
 		if (self.tooltipSubtext and self.UberTooltips) then
 			GameTooltip:AddLine(self.tooltipSubtext, "", 0.5, 0.5, 0.5)
 		end
-
 	elseif (HasPetAction(actionID)) then
-
 		if (self.UberTooltips) then
 			GameTooltip:SetPetAction(actionID)
 		else
@@ -417,24 +408,19 @@ function PETBTN:PET_SetTooltip()
 		if (not edit) then
 			self.UpdateTooltip = self.PET_SetTooltip
 		end
-
 	elseif (edit) then
-
 		GameTooltip:SetText(L.EMPTY_PETBTN)
 	end
-
 end
 
+
 function PETBTN:OnEnter(...)
-
 	if (self.bar) then
-
 		if (self.tooltipsCombat and InCombatLockdown()) then
 			return
 		end
 
 		if (self.tooltips) then
-
 			if (self.tooltipsEnhanced) then
 				self.UberTooltips = true
 				GameTooltip_SetDefaultAnchor(GameTooltip, self)
@@ -449,6 +435,7 @@ function PETBTN:OnEnter(...)
 		end
 	end
 end
+
 
 function PETBTN:OnLeave ()
 	GameTooltip:Hide()
@@ -616,7 +603,8 @@ function PETBTN:SetType(save)
 	self:RegisterEvent("PET_BAR_UPDATE_COOLDOWN")
 	self:RegisterEvent("PET_BAR_SHOWGRID")
 	self:RegisterEvent("PET_BAR_HIDEGRID")
-	self:RegisterEvent("PET_TALENT_UPDATE")
+	self:RegisterEvent("PET_SPECIALIZATION_CHANGED")
+	self:RegisterEvent("PET_DISMISS_START")
 	self:RegisterEvent("PLAYER_CONTROL_LOST")
 	self:RegisterEvent("PLAYER_CONTROL_GAINED")
 	self:RegisterEvent("PLAYER_FARSIGHT_FOCUS_CHANGED")

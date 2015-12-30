@@ -45,7 +45,6 @@ ION.BarShapes = {
 local barShapes = ION.BarShapes
 
 ION.barGDEF = {
-
 	name = "",
 
 	objectList = "",
@@ -93,8 +92,8 @@ ION.barGDEF = {
 	rangecolor = "0.7;0.15;0.15;1",
 }
 
-ION.barCDEF = {
 
+ION.barCDEF = {
 	upClicks = true,
 	downClicks = false,
 
@@ -151,7 +150,6 @@ ION.barCDEF = {
 }
 
 local gDef = {
-
 	[1] = {
 
 		snapTo = false,
@@ -190,14 +188,13 @@ local cDef = {
 }
 
 local function round(num, idp)
-
-      local mult = 10^(idp or 0)
-      return math.floor(num * mult + 0.5) / mult
+	local mult = 10^(idp or 0)
+	return math.floor(num * mult + 0.5) / mult
 
 end
 
-local function IsMouseOverSelfOrWatchFrame(frame)
 
+local function IsMouseOverSelfOrWatchFrame(frame)
 	if (frame:IsMouseOver()) then
 		return true
 	end
@@ -213,8 +210,8 @@ local function IsMouseOverSelfOrWatchFrame(frame)
 	return false
 end
 
-local function controlOnUpdate(self, elapsed)
 
+local function controlOnUpdate(self, elapsed)
 	for k,v in pairs(autoHideIndex) do
 		if (v~=nil) then
 
@@ -4197,20 +4194,18 @@ function BAR:CDAlphaSet(msg, gui, checked, query)
 	self:Update()
 end
 
-function BAR:AuraTextSet(msg, gui, checked, query)
 
+function BAR:AuraTextSet(msg, gui, checked, query)
 	if (query) then
 		return self.cdata.auraText, self.gdata.auracolor1, self.gdata.auracolor2
 	end
 
 	if (gui) then
-
 		if (checked) then
 			self.cdata.auraText = true
 		else
 			self.cdata.auraText = false
 		end
-
 	else
 
 		if (self.cdata.auraText) then
@@ -4221,26 +4216,22 @@ function BAR:AuraTextSet(msg, gui, checked, query)
 	end
 
 	self:UpdateObjectData()
-
 	self:Update()
 end
 
-function BAR:AuraIndSet(msg, gui, checked, query)
 
+function BAR:AuraIndSet(msg, gui, checked, query)
 	if (query) then
 		return self.cdata.auraInd, self.gdata.buffcolor, self.gdata.debuffcolor
 	end
 
 	if (gui) then
-
 		if (checked) then
 			self.cdata.auraInd = true
 		else
 			self.cdata.auraInd = false
 		end
-
 	else
-
 		if (self.cdata.auraInd) then
 			self.cdata.auraInd = false
 		else
@@ -4249,24 +4240,17 @@ function BAR:AuraIndSet(msg, gui, checked, query)
 	end
 
 	self:UpdateObjectData()
-
 	self:Update()
 end
 
+
 function BAR:Load()
-
 	self:SetPosition()
-
 	self:LoadObjects(true)
-
 	self:SetObjectLoc()
-
 	self:SetPerimeter()
-
 	self:SetSize()
-
 	self:EnableKeyboard(false)
-
 	self:Update()
 end
 
@@ -4302,7 +4286,6 @@ local function controlOnEvent(self, event, ...)
 							  AURAIND = true }, true, 115)
 
 		if (GDB.firstRun) then
-
 			local oid, offset = 1, 0
 
 			for id, defaults in ipairs(gDef) do
@@ -4321,7 +4304,6 @@ local function controlOnEvent(self, event, ...)
 				offset = offset + 12
 			end
 		else
-		
 			for id,data in pairs(barGDB) do
 			
 				if (data ~= nil) then				
@@ -4337,9 +4319,7 @@ local function controlOnEvent(self, event, ...)
 		end
 		
 		STORAGE:Hide()
-
 	elseif (event == "PLAYER_LOGIN") then
-
 		for _,bar in pairs(BARIndex) do
 		
 			if (CDB.firstRun) then			
@@ -4352,17 +4332,10 @@ local function controlOnEvent(self, event, ...)
 			
 			bar:Load()
 		end
-
 	elseif (event == "PLAYER_LOGOUT") then
-
-
 	elseif (event == "PLAYER_ENTERING_WORLD" and not PEW) then
-
 		PEW = true; self.elapsed = 0
-
 	elseif (event == "PLAYER_REGEN_DISABLED") then
-
-
 	end
 end
 
@@ -4378,7 +4351,6 @@ frame.elapsed = 0
 
 
 function IONBarProfileUpdate()
-
 		GDB, CDB, SPEC = IonGDB, IonCDB, IonSpec
 
 		barGDB = GDB.bars

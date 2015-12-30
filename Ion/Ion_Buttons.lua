@@ -73,9 +73,9 @@ local ShowOverlayGlow = ActionButton_ShowOverlayGlow
 local HideOverlayGlow = ActionButton_HideOverlayGlow
 local IsSpellOverlayed = _G.IsSpellOverlayed
 
-local sIndex = ION.sIndex
-local cIndex = ION.cIndex
-local iIndex = ION.iIndex
+local sIndex = ION.sIndex  --Spell index
+local cIndex = ION.cIndex  --Battle pet & Mount index
+local iIndex = ION.iIndex  --Items Index
 
 local ItemCache = IonItemCache
 
@@ -89,7 +89,6 @@ local currMacro = {}
 local cmdSlash
 
 local configData = {
-
 	btnType = "macro",
 
 	mouseAnchor = false,
@@ -140,19 +139,18 @@ local configData = {
 	YOffset = 0,
 	HHitBox = 0,
 	VHitBox = 0,
-
 }
 
-local keyData = {
 
+local keyData = {
 	hotKeys = ":",
 	hotKeyText = ":",
 	hotKeyLock = false,
 	hotKeyPri = false,
 }
 
-local keyDefaults = {
 
+local keyDefaults = {
 	[1] = { hotKeys = ":1:", hotKeyText = ":1:" },
 	[2] = { hotKeys = ":2:", hotKeyText = ":2:" },
 	[3] = { hotKeys = ":3:", hotKeyText = ":3:" },
@@ -167,8 +165,8 @@ local keyDefaults = {
 	[12] = { hotKeys = ":=:", hotKeyText = ":=:" },
 }
 
-local stateData = {
 
+local stateData = {
 	actionID = false,
 
 	macro_Text = "",
@@ -180,6 +178,7 @@ local stateData = {
 	macro_Note = "",
 	macro_UseNote = false,
 }
+
 
 ION.SpecialActions = { vehicle = "Interface\\AddOns\\Ion\\Images\\new_vehicle_exit", possess = "Interface\\Icons\\Spell_Shadow_SacrificialShield" }
 
@@ -231,7 +230,6 @@ local autoCast = { speeds = { 2, 4, 6, 8 }, timers = { 0, 0, 0, 0 }, circle = { 
 local cooldowns, cdAlphas = {}, {}, {}
 
 local function AutoCastStart(shine, r, g, b)
-
 	autoCast.shines[shine] = shine
 
 	if (not r) then
@@ -243,8 +241,8 @@ local function AutoCastStart(shine, r, g, b)
 	end
 end
 
-local function AutoCastStop(shine)
 
+local function AutoCastStop(shine)
 	autoCast.shines[shine] = nil
 
 	for _,sparkle in pairs(shine.sparkles) do
@@ -255,7 +253,6 @@ end
 local cou_distance, cou_radius, cou_timer, cou_speed, cou_degree, cou_x, cou_y, cou_position
 
 local function controlOnUpdate(self, elapsed)
-
 	for i in next,autoCast.timers do
 
 		autoCast.timers[i] = autoCast.timers[i] + elapsed
@@ -277,17 +274,13 @@ local function controlOnUpdate(self, elapsed)
 	end
 
 	for shine in next, autoCast.shines do
-
 		cou_distance, cou_radius = shine:GetWidth(), shine:GetWidth()/2.7
 
 		for i=1,4 do
-
 			cou_timer, cou_speed, cou_degree, cou_x, cou_y, cou_position = autoCast.timers[i], autoCast.speeds[i], autoCast.circle[i]
 
 			if ( cou_timer <= cou_speed ) then
-
 				if (shine.shape == "circle") then
-
 					cou_x = ((cou_radius)*(4/pi))*(cos(cou_degree)); cou_y = ((cou_radius)*(4/pi))*(sin(cou_degree))
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
 
@@ -301,7 +294,6 @@ local function controlOnUpdate(self, elapsed)
 					shine.sparkles[12+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
 
 				else
-
 					cou_position = cou_timer/cou_speed*cou_distance
 
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "TOPLEFT", cou_position, 0)
@@ -311,9 +303,7 @@ local function controlOnUpdate(self, elapsed)
 				end
 
 			elseif (cou_timer <= cou_speed*2) then
-
 				if (shine.shape == "circle") then
-
 					cou_x = ((cou_radius)*(4/pi))*(cos(cou_degree)); cou_y = ((cou_radius)*(4/pi))*(sin(cou_degree))
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
 
@@ -325,22 +315,17 @@ local function controlOnUpdate(self, elapsed)
 
 					cou_x = ((cou_radius)*(4/pi))*(cos(cou_degree+270)); cou_y = ((cou_radius)*(4/pi))*(sin(cou_degree+270))
 					shine.sparkles[12+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
-
 				else
-
 					cou_position = (cou_timer-cou_speed)/cou_speed*cou_distance
 
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "TOPRIGHT", 0, -cou_position)
 					shine.sparkles[4+i]:SetPoint("CENTER", shine, "BOTTOMLEFT", 0, cou_position)
 					shine.sparkles[8+i]:SetPoint("CENTER", shine, "BOTTOMRIGHT", -cou_position, 0)
 					shine.sparkles[12+i]:SetPoint("CENTER", shine, "TOPLEFT", cou_position, 0)
-
 				end
 
 			elseif (cou_timer <= cou_speed*3) then
-
 				if (shine.shape == "circle") then
-
 					cou_x = ((cou_radius)*(4/pi))*(cos(cou_degree)); cou_y = ((cou_radius)*(4/pi))*(sin(cou_degree))
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
 
@@ -352,22 +337,16 @@ local function controlOnUpdate(self, elapsed)
 
 					cou_x = ((cou_radius)*(4/pi))*(cos(cou_degree+270)); cou_y = ((cou_radius)*(4/pi))*(sin(cou_degree+270))
 					shine.sparkles[12+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
-
 				else
-
 					cou_position = (cou_timer-cou_speed*2)/cou_speed*cou_distance
 
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "BOTTOMRIGHT", -cou_position, 0)
 					shine.sparkles[4+i]:SetPoint("CENTER", shine, "TOPLEFT", cou_position, 0)
 					shine.sparkles[8+i]:SetPoint("CENTER", shine, "BOTTOMLEFT", 0, cou_position)
 					shine.sparkles[12+i]:SetPoint("CENTER", shine, "TOPRIGHT", 0, -cou_position)
-
 				end
-
 			else
-
 				if (shine.shape == "circle") then
-
 					cou_x = ((cou_radius)*(4/pi))*(cos(cou_degree)); cou_y = ((cou_radius)*(4/pi))*(sin(cou_degree))
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
 
@@ -379,16 +358,13 @@ local function controlOnUpdate(self, elapsed)
 
 					cou_x = ((cou_radius)*(4/pi))*(cos(cou_degree+270)); cou_y = ((cou_radius)*(4/pi))*(sin(cou_degree+270))
 					shine.sparkles[12+i]:SetPoint("CENTER", shine, "CENTER", cou_x, cou_y)
-
 				else
-
 					cou_position = (cou_timer-cou_speed*3)/cou_speed*cou_distance
 
 					shine.sparkles[0+i]:SetPoint("CENTER", shine, "BOTTOMLEFT", 0, cou_position)
 					shine.sparkles[4+i]:SetPoint("CENTER", shine, "TOPRIGHT", 0, -cou_position)
 					shine.sparkles[8+i]:SetPoint("CENTER", shine, "TOPLEFT", cou_position, 0)
 					shine.sparkles[12+i]:SetPoint("CENTER", shine, "BOTTOMRIGHT", -cou_position, 0)
-
 				end
 			end
 		end
@@ -409,11 +385,10 @@ local function controlOnUpdate(self, elapsed)
 	if (MacroDrag[0]) then
 		SetCursor(MacroDrag.texture)
 	end
-
 end
 
-local function cooldownsOnUpdate(self, elapsed)
 
+local function cooldownsOnUpdate(self, elapsed)
 	local coolDown, formatted, size
 
 	for cd in next,cooldowns do
@@ -422,9 +397,7 @@ local function cooldownsOnUpdate(self, elapsed)
 		formatted, size = coolDown, cd.button:GetWidth()*0.45
 
 		if (coolDown < 1) then
-
 			if (coolDown < 0) then
-
 				cooldowns[cd] = nil
 
 				cd.timer:Hide()
@@ -436,7 +409,6 @@ local function cooldownsOnUpdate(self, elapsed)
 				cd.expiry = nil
 
 			elseif (coolDown >= 0) then
-
 				cd.timer:SetAlpha(cd.duration-(GetTime()-cd.start))
 
 				if (cd.alphafade) then
@@ -446,7 +418,6 @@ local function cooldownsOnUpdate(self, elapsed)
 			end
 
 		elseif (cd.timer:IsShown() and coolDown ~= cd.timerCD) then
-
 			if (coolDown >= 86400) then
 				formatted = ceil(coolDown/86400)
 				formatted = formatted.."d"; size = cd.button:GetWidth()*0.3
@@ -476,23 +447,20 @@ local function cooldownsOnUpdate(self, elapsed)
 	end
 
 	for cd in next,cdAlphas do
-
 		coolDown = ceil(cd.duration-(GetTime()-cd.start))
 
 		if (coolDown < 1) then
-
 			cdAlphas[cd] = nil
 			cd.button:SetAlpha(1)
 			cd.alphaOn = nil
 
 		elseif (not cd.alphaOn) then
-
 			cd.button:SetAlpha(cd.button.cdAlpha)
 			cd.alphaOn = true
 		end
 	end
-
 end
+
 
 -- Moonfire: 8921
 -- Solar Eclipse: 48517
@@ -553,7 +521,6 @@ local function updateAuraInfo(unit)
 end
 
 local function isActiveShapeshiftSpell(spell)
-
 	local shapeshift, texture, name, isActive = spell:match("^[^(]+")
 
 	if (shapeshift) then
@@ -566,8 +533,8 @@ local function isActiveShapeshiftSpell(spell)
 	end
 end
 
-local function checkCursor(self, button)
 
+local function checkCursor(self, button)
 	if (MacroDrag[0]) then
 
 		if (button == "LeftButton" or button == "RightButton") then
@@ -584,8 +551,8 @@ local function checkCursor(self, button)
 	end
 end
 
-function BUTTON:SetTimer(cd, start, duration, enable, timer, color1, color2, cdAlpha)
 
+function BUTTON:SetTimer(cd, start, duration, enable, timer, color1, color2, cdAlpha)
 	if ( start and start > 0 and duration > 0 and enable > 0) then
 
 		cd:SetAlpha(1)
@@ -620,6 +587,7 @@ function BUTTON:SetTimer(cd, start, duration, enable, timer, color1, color2, cdA
 	end
 end
 
+
 function BUTTON:MACRO_HasAction()
 
 	local hasAction = self.data.macro_Text
@@ -637,16 +605,16 @@ function BUTTON:MACRO_HasAction()
 	end
 end
 
+
 function BUTTON:MACRO_GetDragAction()
-
 	return "macro"
-
 end
+
 
 local ud_spell, ud_spellcmd, ud_show, ud_showcmd, ud_cd, ud_cdcmd, ud_aura, ud_auracmd, ud_item, ud_target, ud__
 
-function BUTTON:MACRO_UpdateData(...)
 
+function BUTTON:MACRO_UpdateData(...)
 	if (self.macroparse) then
 
 		ud_spell, ud_spellcmd, ud_show, ud_showcmd, ud_cd, ud_cdcmd, ud_aura, ud_auracmd, ud_item, ud_target, ud__ = nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil
@@ -766,8 +734,8 @@ function BUTTON:MACRO_UpdateData(...)
 	end
 end
 
-function BUTTON:MACRO_SetSpellIcon(spell)
 
+function BUTTON:MACRO_SetSpellIcon(spell)
 	local _, texture
 
 	if (not self.data.macro_Watch and not self.data.macro_Equip) then
@@ -810,7 +778,6 @@ function BUTTON:MACRO_SetSpellIcon(spell)
 		end
 
 	else
-
 		if (self.data.macro_Watch) then
 
 			--for i=1,select("#",GetMacroInfo(self.data.macro_Watch)) do
@@ -839,11 +806,10 @@ function BUTTON:MACRO_SetSpellIcon(spell)
 	end
 
 	return texture
-
 end
 
-function BUTTON:MACRO_SetItemIcon(item)
 
+function BUTTON:MACRO_SetItemIcon(item)
 	local _,texture, link, itemID
 
 	if (IsEquippedItem(item)) then
@@ -899,8 +865,8 @@ function BUTTON:MACRO_SetItemIcon(item)
 
 end
 
-function BUTTON:ACTION_SetIcon(action)
 
+function BUTTON:ACTION_SetIcon(action)
 	local actionID = tonumber(action)
 
 	if (actionID) then
@@ -931,6 +897,7 @@ function BUTTON:ACTION_SetIcon(action)
 
 	return self.iconframeicon:GetTexture()
 end
+
 
 function BUTTON:MACRO_UpdateIcon(...)
 
@@ -3541,14 +3508,12 @@ function BUTTON:SetFauxState(state)
 				self:SetAttribute("HasActionID", false)
 			end
 		end
-
 		self:SetAttribute("activestate", msg)
-
 	end
 end
 
-function BUTTON:AutoWriteMacro(spell, subName)
 
+function BUTTON:AutoWriteMacro(spell, subName)
 	local modifier, modkey = " "
 
 	if (GDB.selfCast) then
@@ -3575,7 +3540,6 @@ function BUTTON:AutoWriteMacro(spell, subName)
 end
 
 function BUTTON:GetPosition(oFrame)
-
 	local relFrame, point
 
 	if (oFrame) then

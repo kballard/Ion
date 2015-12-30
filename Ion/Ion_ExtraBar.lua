@@ -17,14 +17,12 @@ local STORAGE = CreateFrame("Frame", nil, UIParent)
 
 local L = LibStub("AceLocale-3.0"):GetLocale("Ion")
 
-local	SKIN = LibStub("Masque", true)
+local SKIN = LibStub("Masque", true)
 
 local sIndex = ION.sIndex
 
 local gDef = {
-
 	hidestates = ":extrabar0:",
-
 	snapTo = false,
 	snapToFrame = false,
 	snapToPoint = false,
@@ -35,34 +33,31 @@ local gDef = {
 
 local GetParentKeys = ION.GetParentKeys
 
-local	AutoCastStart = ION.AutoCastStart
+local AutoCastStart = ION.AutoCastStart
 local AutoCastStop = ION.AutoCastStop
 
 local configData = {
-
 	stored = false,
 }
 
 local keyData = {
-
 	hotKeys = ":",
 	hotKeyText = ":",
 	hotKeyLock = false,
 	hotKeyPri = true,
 }
 
-function XBTN:GetSkinned()
 
+function XBTN:GetSkinned()
 	self.hasAction = ""
 	self.noAction = ""
 
 	return false
 end
 
+
 function XBTN:SetData(bar)
-
 	if (bar) then
-
 		self.bar = bar
 
 		self.barLock = bar.cdata.barLock

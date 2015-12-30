@@ -9,14 +9,16 @@ local BUTTON, BINDER = ION.BUTTON, ION.BINDER
 local L = LibStub("AceLocale-3.0"):GetLocale("Ion")
 
 local BTNIndex = ION.BTNIndex
-
 local BINDIndex = ION.BINDIndex
 
 local sIndex = ION.sIndex
 local cIndex = ION.cIndex
 
-function BINDER:GetModifier()
 
+--- Returns a list of the available spell icon filenames for use in macros
+-- @param N/A
+-- @return text field of the key modifiers currently being pressed
+function BINDER:GetModifier()
 	local modifier
 
 	if (IsAltKeyDown()) then
@@ -43,6 +45,9 @@ function BINDER:GetModifier()
 end
 
 
+--- Returns the keybind for a given button
+-- @param Button: The button to keybindings to look up
+-- @return bindkeys: The current key that is bound to the selected button
 function BINDER:GetBindkeyList(button)
 
 	if (not button.data) then return L.KEYBIND_NONE end
@@ -59,25 +64,23 @@ function BINDER:GetBindkeyList(button)
 	return bindkeys
 end
 
-function BINDER:GetKeyText(key)
 
+--- Returns the text value of a keybind 
+-- @param key: The key to look up
+-- @return keytext: The text value for the key
+function BINDER:GetKeyText(key)
 	local keytext
 
 	if (key:find("Button")) then
-
 		keytext = key:gsub("([Bb][Uu][Tt][Tt][Oo][Nn])(%d+)","m%2")
-
 	elseif (key:find("NUMPAD")) then
-
 		keytext = key:gsub("NUMPAD","n")
 		keytext = keytext:gsub("DIVIDE","/")
 		keytext = keytext:gsub("MULTIPLY","*")
 		keytext = keytext:gsub("MINUS","-")
 		keytext = keytext:gsub("PLUS","+")
 		keytext = keytext:gsub("DECIMAL",".")
-
 	elseif (key:find("MOUSEWHEEL")) then
-
 		keytext = key:gsub("MOUSEWHEEL","mw")
 		keytext = keytext:gsub("UP","U")
 		keytext = keytext:gsub("DOWN","D")
@@ -101,49 +104,43 @@ function BINDER:GetKeyText(key)
 end
 
 
+--- Clears the bindings of a given button
+-- @param button: The button to clear
+-- @param key: ?
 function BINDER:ClearBindings(button, key)
-
 	if (key) then
-
 		SetOverrideBinding(button, true, key, nil)
 
 		local newkey = key:gsub("%-", "%%-")
-
 		button.keys.hotKeys = button.keys.hotKeys:gsub(newkey..":", "")
 
 		local keytext = self:GetKeyText(key)
-
 		button.keys.hotKeyText = button.keys.hotKeyText:gsub(keytext..":", "")
-
 	else
 		local bindkey = "CLICK "..button:GetName()..":LeftButton"
 
 		while (GetBindingKey(bindkey)) do
-
 			SetBinding(GetBindingKey(bindkey), nil)
-
 		end
 
 		ClearOverrideBindings(button)
-
 		button.keys.hotKeys = ":"
-
 		button.keys.hotKeyText = ":"
-
 	end
 
 	self:ApplyBindings(button)
-
 end
 
-function BINDER:SetIonBinding(button, key)
 
+--- Sets a keybinding to a button
+-- @param button: The button to set keybinding for
+-- @param key: The key to be used
+function BINDER:SetIonBinding(button, key)
 	local found
 
 	gsub(button.keys.hotKeys, "[^:]+", function(binding) if(binding == key) then found = true end end)
 
 	if (not found) then
-
 		local keytext = self:GetKeyText(key)
 
 		button.keys.hotKeys = button.keys.hotKeys..key..":"
@@ -153,8 +150,10 @@ function BINDER:SetIonBinding(button, key)
 	self:ApplyBindings(button)
 end
 
-function BINDER:ApplyBindings(button)
 
+--- Applys binding to button
+-- @param button: The button to apply settings go
+function BINDER:ApplyBindings(button)
 	button:SetAttribute("hotkeypri", button.keys.hotKeyPri)
 
 	if (button:IsVisible() or button:GetParent():GetAttribute("concealed")) then
@@ -174,20 +173,18 @@ function BINDER:ApplyBindings(button)
 	if (GetCurrentBindingSet() > 0 and GetCurrentBindingSet() < 3) then SaveBindings(GetCurrentBindingSet()) end
 end
 
-
+--- Processes the change to a key bind  (i think)
+-- @param button: The button to set keybinding for
+-- @param key: The key to be used
 function BINDER:ProcessBinding(key, button)
-
 	if (button and button.keys and button.keys.hotKeyLock) then
 		UIErrorsFrame:AddMessage(L.BINDINGS_LOCKED, 1.0, 1.0, 1.0, 1.0, UIERRORS_HOLD_TIME)
 		return
 	end
 
 	if (key == "ESCAPE") then
-
 		self:ClearBindings(button)
-
 	elseif (key) then
-
 		for index,binder in pairs(BINDIndex) do
 			if (button ~= binder.button and binder.button.keys and not binder.button.keys.hotKeyLock) then
 				binder.button.keys.hotKeys:gsub("[^:]+", function(binding) if (key == binding) then self:ClearBindings(binder.button, binding) self:ApplyBindings(binder.button) end end)
@@ -195,7 +192,6 @@ function BINDER:ProcessBinding(key, button)
 		end
 
 		self:SetIonBinding(button, key)
-
 	end
 
 	if (self:IsVisible()) then
@@ -203,11 +199,11 @@ function BINDER:ProcessBinding(key, button)
 	end
 
 	button:SaveData()
-
 end
 
-function BINDER:OnShow()
 
+--- OnShow Event handler
+function BINDER:OnShow()
 	local button = self.button
 
 	if (button) then
@@ -230,13 +226,14 @@ function BINDER:OnShow()
 	end
 end
 
+
+--- OnHide Event handler
 function BINDER:OnHide()
-
-
 end
 
-function BINDER:OnEnter()
 
+--- OnEnter Event handler
+function BINDER:OnEnter()
 	local button = self.button
 
 	self.select:Show()
@@ -254,8 +251,9 @@ function BINDER:OnEnter()
 
 end
 
-function BINDER:OnLeave()
 
+--- OnLeave Event handler
+function BINDER:OnLeave()
 	IonBindingsEditor:ClearLines()
 	IonBindingsEditor:SetText(L.BINDER_NOTICE)
 
@@ -263,8 +261,9 @@ function BINDER:OnLeave()
 
 end
 
-function BINDER:OnUpdate()
 
+--- OnUpdate Event handler
+function BINDER:OnUpdate()
 	if (self:IsMouseOver()) then
 		self:EnableKeyboard(true)
 	else
@@ -272,8 +271,10 @@ function BINDER:OnUpdate()
 	end
 end
 
-function BINDER:OnClick(button)
 
+--- OnClick Event handler
+-- @param button: The button that was clicked
+function BINDER:OnClick(button)
 	if (button == "LeftButton") then
 
 		if (self.button.keys.hotKeyLock) then
@@ -288,7 +289,6 @@ function BINDER:OnClick(button)
 	end
 
 	if (button == "RightButton") then
-
 		if (self.button.keys.hotKeyPri) then
 			self.button.keys.hotKeyPri = false
 		else
@@ -315,11 +315,12 @@ function BINDER:OnClick(button)
 	end
 
 	self:ProcessBinding(key, self.button)
-
 end
 
-function BINDER:OnKeyDown(key)
 
+--- OnKeyDown Event handler
+-- @param key: The key that was pressed
+function BINDER:OnKeyDown(key)
 	if (key:find("ALT") or key:find("SHIFT") or key:find("CTRL") or key:find("PRINTSCREEN")) then
 		return
 	end
@@ -331,11 +332,12 @@ function BINDER:OnKeyDown(key)
 	end
 
 	self:ProcessBinding(key, self.button)
-
 end
 
-function BINDER:OnMouseWheel(delta)
 
+--- OnMouseWheel Event handler
+-- @param delta: direction mouse wheel moved
+function BINDER:OnMouseWheel(delta)
 	local modifier, key, action = self:GetModifier()
 
 	if (delta > 0) then
@@ -351,14 +353,13 @@ function BINDER:OnMouseWheel(delta)
 	end
 
 	self:ProcessBinding(key, self.button)
-
 end
 
 
 local BINDER_MT = { __index = BINDER }
 
-function BUTTON:CreateBindFrame(index)
 
+function BUTTON:CreateBindFrame(index)
 	local binder = CreateFrame("Button", self:GetName().."BindFrame", self, "IonBindFrameTemplate")
 
 	setmetatable(binder, BINDER_MT)
@@ -386,9 +387,11 @@ function BUTTON:CreateBindFrame(index)
 	BINDIndex[self.class..index] = binder
 
 	binder:Hide()
-
 end
 
+
+--- OnLoad Event handler for the Bindings Editor
+-- @param frame: frame that was loaded
 function ION:BindingsEditor_OnLoad(frame)
 
 	--this line was causing a crash on the beta
@@ -416,21 +419,21 @@ function ION:BindingsEditor_OnLoad(frame)
 	IonBindingsEditorTextRight2:ClearAllPoints()
 	IonBindingsEditorTextRight2:SetPoint("TOPRIGHT", -10, -62)
 	IonBindingsEditorTextRight2:SetFontObject("GameFontNormal")
-
 end
+
 
 function ION:BindingsEditor_OnShow(frame)
-
 end
+
 
 function ION:BindingsEditor_OnHide(frame)
-
 end
 
+--- Toggles the displaying of key bindings
+-- @param show: True if to be displayed
+-- @param hide: True if to be hidden
 function ION:ToggleBindings(show, hide)
-
 	if (ION.BindingMode or hide) then
-
 		ION.BindingMode = false
 
 		for index, binder in pairs(BINDIndex) do
@@ -444,7 +447,6 @@ function ION:ToggleBindings(show, hide)
 		IonBindingsEditor:Hide()
 
 	else
-
 		--ION:ToggleMainMenu(nil, true)
 		ION:ToggleEditFrames(nil, true)
 

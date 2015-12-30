@@ -5,7 +5,7 @@ Ion = {
 	SLASHCMDS = {},
 	SLASHHELP = {},
 	sIndex = {},
-	iIndex = { [1] = "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK" },
+	iIndex = {[1] = "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK"},
 	cIndex = {},
 	StanceIndex = {},
 	ShowGrids = {},
@@ -29,14 +29,13 @@ Ion = {
 
 --GlobalDB ?
 IonGDB = {
-
 	bars = {},
 	buttons = {},
 
 	xbars = {},
 	xbtns = {},
 
-	buttonLoc = { -0.85, -111.45 },
+	buttonLoc = {-0.85, -111.45},
 	buttonRadius = 87.5,
 
 	throttle = 0.2,
@@ -57,7 +56,6 @@ IonGDB = {
 
 --CharacterDB?
 IonCDB = {
-
 	bars = {},
 	buttons = {},
 
@@ -79,7 +77,7 @@ IonCDB = {
 	debug = {},
 }
 
-IonSpec = { cSpec = 1 }
+IonSpec = {cSpec = 1}
 
 IonItemCache = {}
 
@@ -95,9 +93,9 @@ ION.GameVersion, ION.GameBuild, ION.GameDate, ION.TOCVersion = GetBuildInfo()
 
 ION.GameVersion = tonumber(ION.GameVersion); ION.TOCVersion = tonumber(ION.TOCVersion)
 
-ION.Points = { R = "RIGHT", L = "LEFT", T = "TOP", B = "BOTTOM", TL = "TOPLEFT", TR = "TOPRIGHT", BL = "BOTTOMLEFT", BR = "BOTTOMRIGHT", C = "CENTER" }
+ION.Points = {R = "RIGHT", L = "LEFT", T = "TOP", B = "BOTTOM", TL = "TOPLEFT", TR = "TOPRIGHT", BL = "BOTTOMLEFT", BR = "BOTTOMRIGHT", C = "CENTER"}
 
-ION.Stratas = { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "TOOLTIP" }
+ION.Stratas = {"BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "TOOLTIP"}
 
 ION.STATES = {
 
@@ -183,7 +181,7 @@ ION.STATEINDEX = {
 
 local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 
-local opDepList = { "BarKeep", "Bartender4", "Dominos", "MagnetButtons", "nMainbar", "rActionBarStyler", "Orbs", "RazerNaga", "StellarBars", "Tukui", "XBar" }
+local opDepList = {"BarKeep", "Bartender4", "Dominos", "MagnetButtons", "nMainbar", "rActionBarStyler", "Orbs", "RazerNaga", "StellarBars", "Tukui", "XBar"}
 
 local level, stanceStringsUpdated, PEW
 
@@ -238,7 +236,7 @@ local defaults = {
 			xbars = {},
 			xbtns = {},
 
-			buttonLoc = { -0.85, -111.45 },
+			buttonLoc = {-0.85, -111.45},
 			buttonRadius = 87.5,
 
 			throttle = 0.2,
@@ -278,7 +276,7 @@ local defaults = {
 
 			debug = {},
 		},
-		IonSpec = { cSpec = 1 },
+		IonSpec = {cSpec = 1},
 	},
 }
 
@@ -286,13 +284,12 @@ local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(Ion
 
 
 function ION:GetParentKeys(frame)
-
 	if (frame == nil) then
 		return
 	end
 
 	local data, childData = {}, {}
-	local children, regions = { frame:GetChildren() }, { frame:GetRegions() }
+	local children, regions = {frame:GetChildren()}, {frame:GetRegions()}
 
 	for k,v in pairs(children) do
 		tinsert(data, v:GetName())
@@ -360,11 +357,12 @@ local slashFunctions = {
 	[47] = "DraenorBar",
 }
 
+
 local count = 1
 
-for index,func in ipairs(slashFunctions) do
 
-	ION.SLASHCMDS[L["SLASH_CMD"..index]:lower()] = { L["SLASH_CMD"..index], L["SLASH_CMD"..index.."_DESC"], func }
+for index,func in ipairs(slashFunctions) do
+	ION.SLASHCMDS[L["SLASH_CMD"..index]:lower()] = {L["SLASH_CMD"..index], L["SLASH_CMD"..index.."_DESC"], func}
 
 	if (func and #func > 0) then
 		ION.SLASHHELP[count] = "       |cff00ff00"..L["SLASH_CMD"..index].."|r: "..L["SLASH_CMD"..index.."_DESC"]
@@ -382,11 +380,11 @@ local OverlapTalentNames = {
 	[102355] = true, --Fairy Swarm Spell
 }
 
---- Returns a list of the available spell icon filenames for use in macros
+
+--- Adds a spell's info to the Spell List Table
 -- @param spellIndexName, index, bookType, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon
 -- @return N/A
 local function SetSpellInfo(spellIndexName, index, bookType, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
-
 	local curSpell = spellIndexName
 	curSpell.index = index
 	curSpell.booktype = bookType
@@ -401,41 +399,37 @@ local function SetSpellInfo(spellIndexName, index, bookType, spellName, altName,
 	curSpell.icon = icon
 end
 
-
+local HunterTrapLauncher = {
+	[60192] = 1499, --Freezing Trap
+	[82939] = 13813, --Exp Trap
+	[82941] = 13809, --ice trap
+}
 
 --- Scans Character Spell Book and creates a table of all known spells 
--- @param N/A
--- @return N/A
 function ION:UpdateSpellIndex()
-
 	local sIndexMax = 0
 
 	for i=1,8 do
-
 		local _, _, _, numSlots = GetSpellTabInfo(i)
 
 		sIndexMax = sIndexMax + numSlots
 	end
 
-	local spellName, subName, altName, spellID, spellID_Alt, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _,astTime, minRange, maxRange
-
 	for i = 1,sIndexMax do
-
-		spellName, _ = GetSpellBookItemName(i, BOOKTYPE_SPELL)
-		spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_SPELL)
-		spellID_Alt = spellID
-		spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_SPELL)
-		icon = GetSpellBookItemTexture(i, BOOKTYPE_SPELL)
-		isPassive = IsPassiveSpell(i, BOOKTYPE_SPELL)
+		local spellName, _ = GetSpellBookItemName(i, BOOKTYPE_SPELL)
+		local spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_SPELL)
+		local spellID_Alt = spellID
+		local spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_SPELL)
+		local icon = GetSpellBookItemTexture(i, BOOKTYPE_SPELL)
+		local isPassive = IsPassiveSpell(i, BOOKTYPE_SPELL)
 
 		if (spellName and spellType ~= "FUTURESPELL") then
-
 
 --if spellID == 106707 then print(spellID)
 
 --print(spellName)
 --
-			link = GetSpellLink(spellName)
+			local link = GetSpellLink(spellName)
 			if (link) then
 				_, spellID = link:match("(spell:)(%d+)")
 				tempID = tonumber(spellID)
@@ -445,7 +439,12 @@ function ION:UpdateSpellIndex()
 				end
 			end
 --end
-			altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
+			--Fix for when trap launcher is enabled to display correct info
+			if HunterTrapLauncher[spellID] then
+				spellID = HunterTrapLauncher[spellID]
+			end
+
+			local altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
 			if spellID ~= spellID_Alt then
 				altName = GetSpellInfo(spellID_Alt)
 			end
@@ -456,7 +455,6 @@ function ION:UpdateSpellIndex()
 				end
 				SetSpellInfo(ION.sIndex[(spellName.."("..subName..")"):lower()], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 			else
-				
 				if (not ION.sIndex[(spellName):lower()]) then
 					ION.sIndex[(spellName):lower()] = {}
 				end
@@ -469,7 +467,6 @@ function ION:UpdateSpellIndex()
 			end
 
 			if (altName and altName ~= spellName) then
-
 				if (subName and #subName > 0) then
 					if (not ION.sIndex[(altName.."("..subName..")"):lower()]) then
 						ION.sIndex[(altName.."("..subName..")"):lower()] = {}
@@ -479,7 +476,6 @@ function ION:UpdateSpellIndex()
 					if (not ION.sIndex[(altName):lower()]) then
 						ION.sIndex[(altName):lower()] = {}
 					end
-
 					SetSpellInfo( ION.sIndex[(altName):lower()], i, BOOKTYPE_SPELL, spellName, altName, subName, spellID, spellID_Alt, spellType, spellLvl, isPassive, icon)
 
 					if (not ION.sIndex[(altName):lower().."()"]) then
@@ -500,7 +496,6 @@ function ION:UpdateSpellIndex()
 				ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
 			end
 		end
-
 	end
 
 	-- maybe a temp fix to get the Sunfire spell to show for balance druids
@@ -564,25 +559,22 @@ function ION:UpdateSpellIndex()
 	end
 ]]--
 	for i = 1, select("#", GetProfessions()) do
-
 		local index = select(i, GetProfessions())
 
 		if (index) then
-
 			local _, _, _, _, numSpells, spelloffset = GetProfessionInfo(index)
 
 			for i=1,numSpells do
 				local offsetIndex = i + spelloffset
-				spellName, _ = GetSpellBookItemName(offsetIndex, BOOKTYPE_PROFESSION)
-				spellType, spellID = GetSpellBookItemInfo(offsetIndex, BOOKTYPE_PROFESSION)
-				spellID_Alt = spellID
-				spellLvl = GetSpellAvailableLevel(offsetIndex, BOOKTYPE_PROFESSION)
-				icon = GetSpellBookItemTexture(offsetIndex, BOOKTYPE_PROFESSION)
-				isPassive = IsPassiveSpell(offsetIndex, BOOKTYPE_PROFESSION)
+				local spellName, _ = GetSpellBookItemName(offsetIndex, BOOKTYPE_PROFESSION)
+				local spellType, spellID = GetSpellBookItemInfo(offsetIndex, BOOKTYPE_PROFESSION)
+				local spellID_Alt = spellID
+				local spellLvl = GetSpellAvailableLevel(offsetIndex, BOOKTYPE_PROFESSION)
+				local icon = GetSpellBookItemTexture(offsetIndex, BOOKTYPE_PROFESSION)
+				local isPassive = IsPassiveSpell(offsetIndex, BOOKTYPE_PROFESSION)
 
 				if (spellName and spellType ~= "FUTURESPELL") then
-
-					altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
+					local altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
 
 					if (subName and #subName > 0) then
 						if (not ION.sIndex[(spellName.."("..subName..")"):lower()]) then
@@ -658,35 +650,28 @@ function ION:UpdateSpellIndex()
 						curSpell.spellID = spellID
 						curSpell.icon = icon
 					
-
 ]]--
-
-
 end
+
 
 --- Compiles a list of spells that a player's pet has.
 -- @param N/A
 -- @return N/A
 function ION:UpdatePetSpellIndex()
-
 	local numPetSpells = HasPetSpells() or 0
-
-	local spellName, subName, altName, spellID, spellID_Alt, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _, astTime, minRange, maxRange
+	--local spellName, subName, altName, spellID, spellID_Alt, tempID, spellType, spellLvl, isPassive, icon, cost, powerType, curSpell, link, _, astTime, minRange, maxRange
 
 	for i=1,numPetSpells do
-
-		spellName, _ = GetSpellBookItemName(i, BOOKTYPE_PET)
-		spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_PET)
-		spellID_Alt = spellID
-		spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_PET)
-		icon = GetSpellBookItemTexture(i, BOOKTYPE_PET)
-		isPassive = IsPassiveSpell(i, BOOKTYPE_PET)
+		local spellName, _ = GetSpellBookItemName(i, BOOKTYPE_PET)
+		local spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_PET)
+		local spellID_Alt = spellID
+		local spellLvl = GetSpellAvailableLevel(i, BOOKTYPE_PET)
+		local icon = GetSpellBookItemTexture(i, BOOKTYPE_PET)
+		local isPassive = IsPassiveSpell(i, BOOKTYPE_PET)
 
 		if (spellName and spellType ~= "FUTURESPELL") then
-
 		--_, _, icon, cost, _, powerType = GetSpellInfo(spellName)
-			altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellName)
-
+			local altName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellName)
 
 			if (subName and #subName > 0) then
 				if (not ION.sIndex[(spellName.."("..subName..")"):lower()]) then
@@ -718,24 +703,20 @@ function ION:UpdatePetSpellIndex()
 		end
 
 		i = i + 1
-
 	end
 
 	-- a lot of work to associate the Call Pet spell with the pet's name so that tooltips work on Call Pet spells. /sigh
 	local _, _, numSlots, isKnown = GetFlyoutInfo(9)
-	local petIndex, petName
+	--local petIndex, petName
 
 	for i=1, numSlots do
-
-		spellID, isKnown = GetFlyoutSlotInfo(9, i)
-		petIndex, petName = GetCallPetSpellInfo(spellID)
+		local spellID, isKnown = GetFlyoutSlotInfo(9, i)
+		local petIndex, petName = GetCallPetSpellInfo(spellID)
 
 		if (isKnown and petIndex and petName and #petName > 0) then
-
-			spellName = GetSpellInfo(spellID)
+			local spellName = GetSpellInfo(spellID)
 
 			for k,v in pairs(ION.sIndex) do
-
 				if (v.spellName:find(petName.."$")) then
 					if (not ION.sIndex[(spellName):lower()]) then
 						ION.sIndex[(spellName):lower()] = {}
@@ -759,38 +740,32 @@ end
 
 
 local function SetCompanionData(creatureIndexName,creatureType, index, creatureID, creatureName, spellID, icon)
-local curComp = creatureIndexName
-				curComp.creatureType = "CRITTER"
-				curComp.index = index
-				curComp.creatureID = creatureID
-				curComp.creatureName = creatureName
-				curComp.spellID = spellID
-				curComp.icon = icon
-
+	local curComp = creatureIndexName
+	curComp.creatureType = "CRITTER"
+	curComp.index = index
+	curComp.creatureID = creatureID
+	curComp.creatureName = creatureName
+	curComp.spellID = spellID
+	curComp.icon = icon
 end
 
 --- Compiles a list of battle pets & mounts a player has
 -- @param N/A
 -- @return N/A
 function ION:UpdateCompanionData()
-
 	local creatureID, creatureName, spellID, icon, spell, curComp
 
 	for i=1,GetNumCompanions("CRITTER") do
-
 		creatureID, creatureName, spellID, icon = GetCompanionInfo("CRITTER", i)
 
 		if (spellID) then
-
 			spell = GetSpellInfo(spellID)
 
 			if (spell) then
-
 				if (not ION.cIndex[spell:lower()]) then
 					ION.cIndex[spell:lower()] = {}
 				end
 				SetCompanionData(ION.cIndex[spell:lower()],"CRITTER", i, creatureID, creatureName, spellID, icon)
-
 
 				if (not ION.cIndex[spell:lower().."()"]) then
 					ION.cIndex[spell:lower().."()"] = {}
@@ -809,7 +784,6 @@ function ION:UpdateCompanionData()
 		end
 	end
 
-
 	for i=1,C_MountJournal.GetNumMounts() do
 		local creatureName, creatureID, _, active, summonable, source, isFavorite, isFactionSpecific, faction, unknown, owned = C_MountJournal.GetMountInfo(i)
 		local link = GetSpellLink(creatureName)
@@ -820,10 +794,8 @@ function ION:UpdateCompanionData()
 		end
 
 		if (spellID) then
-
 			spell, _, icon = GetSpellInfo(spellID)
 			if (spell) then
-
 				if (not ION.cIndex[spell:lower()]) then
 					ION.cIndex[spell:lower()] = {}
 				end
@@ -848,21 +820,19 @@ function ION:UpdateCompanionData()
 	end
 end
 
+
 local temp = {}
 
 local TempTexture = (CreateFrame("Button", nil, UIParent)):CreateTexture()
 --textf:Hide()
 
-
 --- Returns a list of the available spell icon filenames for use in macros
 -- @param N/A
 -- @return N/A
 function ION:UpdateIconIndex()
-
 	local icon
 
 	wipe(temp)
-
 	GetMacroIcons(temp)
 
 	for k,v in ipairs(temp) do
@@ -893,7 +863,6 @@ function ION:UpdateIconIndex()
 end
 
 function ION:UpdateStanceStrings()
-
 	if (ION.class == "DRUID" or
 	    ION.class == "MONK" or
 	    ION.class == "PRIEST" or
@@ -904,7 +873,7 @@ function ION:UpdateStanceStrings()
 	    	wipe(ION.StanceIndex)
 
 		--local _, name, spellID
-local icon, name, active, castable, spellID, UJU
+		local icon, name, active, castable, spellID, UJU
 		local states = "[stance:0] stance0; "
 
 		for i=1,8 do
@@ -912,9 +881,8 @@ local icon, name, active, castable, spellID, UJU
 		end
 
 		for i=1,GetNumShapeshiftForms() do
-
 			--_, name = GetShapeshiftFormInfo(i)
-			 icon, name, active, castable, spellID = GetShapeshiftFormInfo(i)
+			icon, name, active, castable, spellID = GetShapeshiftFormInfo(i)
 
 			if (name) then
 			--print(name)
@@ -946,46 +914,31 @@ local icon, name, active, castable, spellID, UJU
 		states = states:gsub("; $", "")
 
 		if (not stanceStringsUpdated) then
-
 			if (ION.class == "DRUID") then
-
 				ION.STATES.stance0 = L.DRUID_CASTER
-
 				ION.STATES.prowl = L.DRUID_PROWL
-
 			end
 
 			if (ION.class == "MONK") then
-
 				ION.STATES.stance0 = ATTRIBUTE_NOOP
-
 				ION.MAS.stance.homestate = "stance1"
 			end
 
 			if (ION.class == "PRIEST") then
-
 				ION.STATES.stance0 = L.PRIEST_HEALER
-
 			end
 
 			if (ION.class == "ROGUE") then
-
 				ION.STATES.stance0 = L.ROGUE_MELEE
-
 				states = states.."[stance:2] stance1; "
-
 			end
 
 			if (ION.class == "WARLOCK") then
-
 				ION.STATES.stance0 = L.WARLOCK_CASTER
-
 			end
 
 			if (ION.class == "WARRIOR") then
-
 				ION.STATES.stance0 = ATTRIBUTE_NOOP
-
 				ION.MAS.stance.homestate = "stance1"
 			end
 
@@ -999,7 +952,6 @@ end
 
 
 local function printSlashHelp()
-
 	print(L.SLASH_HINT1)
 	print(L.SLASH_HINT2)
 
@@ -1011,11 +963,9 @@ end
 local commands = {}
 
 local function slashHandler(msg)
-
 	wipe(commands)
 
 	if ((not msg) or (strlen(msg) <= 0)) then
-
 		printSlashHelp()
 
 		return
@@ -1024,7 +974,6 @@ local function slashHandler(msg)
 	(msg):gsub("(%S+)", function(cmd) tinsert(commands, cmd) end)
 
 	if (ION.SLASHCMDS[commands[1]:lower()]) then
-
 		local command
 
 		for k,v in ipairs(commands) do
@@ -1038,18 +987,13 @@ local function slashHandler(msg)
 		end
 
 		if (commands) then
-
 			local func = ION.SLASHCMDS[commands[1]:lower()][3]
 			local bar = ION.CurrentBar
 
 			if (ION[func]) then
-
 				ION[func](ION, command)
-
 			elseif (bar and bar[func]) then
-
 				bar[func](bar, command)
-
 			else
 				print(L.SELECT_BAR)
 			end
@@ -1063,7 +1007,6 @@ end
 
 
 function ION.EditBox_PopUpInitialize(popupFrame, data)
-
 	popupFrame.func = ION.PopUp_Update
 	popupFrame.data = data
 
@@ -1071,7 +1014,6 @@ function ION.EditBox_PopUpInitialize(popupFrame, data)
 end
 
 function ION.PopUp_Update(popupFrame)
-
 	local data, count, height, width, option, anchor, last, text = popupFrame.data, 1, 0, 0
 
 	if (popupFrame.options) then
@@ -1091,25 +1033,21 @@ function ION.PopUp_Update(popupFrame)
 	end
 
 	for k,v in pairs(data) do
-
 		if (type(v) == "string") then
 			popupFrame.array[count] = k..","..v
 		else
 			popupFrame.array[count] = k
 		end
-
 		count = count + 1
 	end
 
 	table.sort(popupFrame.array)
 
 	for i=1,#popupFrame.array do
-
 		popupFrame.array[i] = gsub(popupFrame.array[i], "%s+", " ")
 		popupFrame.array[i] = gsub(popupFrame.array[i], "^%s+", "")
 
 		if (not popupFrame.options[i]) then
-
 			option = CreateFrame("Button", popupFrame:GetName().."Option"..i, popupFrame, "IonPopupButtonTemplate")
 			option:SetHeight(20)
 
@@ -1120,9 +1058,7 @@ function ION.PopUp_Update(popupFrame)
 		end
 
 		text = popupFrame.array[i]:match("^[^,]+") or ""
-
 		option:SetText(text:gsub("^%d+_", ""))
-
 		option.value = popupFrame.array[i]:match("[^,]+$")
 
 		if (option:GetTextWidth() > width) then
@@ -1138,9 +1074,7 @@ function ION.PopUp_Update(popupFrame)
 		end
 
 		last = option
-
 		height = height + 21
-
 		option:Show()
 	end
 
@@ -1159,13 +1093,12 @@ function ION.PopUp_Update(popupFrame)
 	end
 end
 
+
 --From http://www.wowpedia.org/GetMinimapShape
 local minimapShapes = {
-
 	-- quadrant booleans (same order as SetTexCoord)
 	-- {upper-left, lower-left, upper-right, lower-right}
 	-- true = rounded, false = squared
-
 	["ROUND"] 				= {true, true, true, true},
 	["SQUARE"] 				= {false, false, false, false},
 	["CORNER-TOPLEFT"] 			= {true, false, false, false},
@@ -1183,13 +1116,10 @@ local minimapShapes = {
 }
 
 local function updatePoint(self, elapsed)
-
 	if (GDB.animate) then
-
 		self.elapsed = self.elapsed + elapsed
 
 		if (self.elapsed > 0.025) then
-
 			self.l = self.l + 0.0625
 			self.r = self.r + 0.0625
 
@@ -1211,14 +1141,13 @@ local function updatePoint(self, elapsed)
 			if (self.t > 1) then self.t = 1 end
 
 			self.texture:SetTexCoord(self.l, self.r, self.t, self.b)
-
 			self.elapsed = 0
 		end
 	end
 end
 
-local function createMiniOrb(parent, index, prefix)
 
+local function createMiniOrb(parent, index, prefix)
 	local point = CreateFrame("Frame", prefix..index, parent, "IonMiniOrbTemplate")
 
 	point:SetScript("OnUpdate", updatePoint)
@@ -1236,16 +1165,13 @@ local function createMiniOrb(parent, index, prefix)
 	return point
 end
 
-function ION:DragFrame_OnUpdate(x, y)
 
+function ION:DragFrame_OnUpdate(x, y)
 	local pos, quad, round, radius = nil, nil, nil, GDB.buttonRadius - IonMinimapButton:GetWidth()/math.pi
 	local sqRad = sqrt(2*(radius)^2)
-
 	local xmin, ymin = Minimap:GetLeft(), Minimap:GetBottom()
-
 	local minimapShape = GetMinimapShape and GetMinimapShape() or "ROUND"
 	local quadTable = minimapShapes[minimapShape]
-
 	local xpos, ypos = x, y
 
 	if (not xpos or not ypos) then
@@ -1281,12 +1207,11 @@ function ION:DragFrame_OnUpdate(x, y)
 	end
 
 	IonMinimapButton:SetPoint("TOPLEFT", "Minimap", "TOPLEFT", 52-xpos, ypos-55)
-
-	GDB.buttonLoc = { 52-xpos, ypos-55 }
+	GDB.buttonLoc = {52-xpos, ypos-55}
 end
 
-function ION:MinimapButton_OnLoad(minimap)
 
+function ION:MinimapButton_OnLoad(minimap)
 	minimap:RegisterForClicks("AnyUp")
 	minimap:RegisterForDrag("LeftButton")
 	minimap:RegisterEvent("PLAYER_LOGIN")
@@ -1298,32 +1223,28 @@ function ION:MinimapButton_OnLoad(minimap)
 	minimap:SetFrameStrata(MinimapCluster:GetFrameStrata())
 	minimap:SetFrameLevel(MinimapCluster:GetFrameLevel()+3)
 	minimap:GetHighlightTexture():SetAlpha(0.3)
-
 end
 
-function ION:MinimapButton_OnEvent(minimap)
 
+function ION:MinimapButton_OnEvent(minimap)
 	minimap.orb = createMiniOrb(minimap, 1, "IonMinimapOrb")
 	minimap.orb:SetPoint("CENTER", minimap, "CENTER", 0.5, 0.5)
 	minimap.orb:SetScale(2)
 	minimap.orb:SetFrameLevel(minimap:GetFrameLevel())
 	minimap.orb.texture:SetVertexColor(1,0,0)
-
 	ION:MinimapButton_OnDragStop(minimap)
-
 end
 
-function ION:MinimapButton_OnDragStart(minimap)
 
+function ION:MinimapButton_OnDragStart(minimap)
 	minimap:LockHighlight()
 	minimap:StartMoving()
 	IonMinimapButtonDragFrame:Show()
 end
 
+
 function ION:MinimapButton_OnDragStop(minimap)
-
 	if (minimap) then
-
 		minimap:UnlockHighlight()
 		minimap:StopMovingOrSizing()
 		minimap:SetUserPlaced(false)
@@ -1335,6 +1256,7 @@ function ION:MinimapButton_OnDragStop(minimap)
 	end
 end
 
+
 function ION:MinimapButton_OnShow(minimap)
 
 	if (GDB) then
@@ -1342,32 +1264,31 @@ function ION:MinimapButton_OnShow(minimap)
 	end
 end
 
+
 function ION:MinimapButton_OnHide(minimap)
 
 	minimap:UnlockHighlight()
 	IonMinimapButtonDragFrame:Hide()
 end
 
+
 function ION:MinimapButton_OnEnter(minimap)
-
 	GameTooltip_SetDefaultAnchor(GameTooltip, minimap)
-
 	GameTooltip:SetText(L.ION, 1, 1, 1)
 	GameTooltip:AddLine(L.MINIMAP_TOOLTIP1, 1, 1, 1)
 	GameTooltip:AddLine(L.MINIMAP_TOOLTIP2, 1, 1, 1)
 	GameTooltip:AddLine(L.MINIMAP_TOOLTIP3, 1, 1, 1)
 	GameTooltip:AddLine(L.MINIMAP_TOOLTIP4, 1, 1, 1)
-
 	GameTooltip:Show()
 end
 
-function ION:MinimapButton_OnLeave(minimap)
 
+function ION:MinimapButton_OnLeave(minimap)
 	GameTooltip:Hide()
 end
 
-function ION:MinimapButton_OnClick(minimap, button)
 
+function ION:MinimapButton_OnClick(minimap, button)
 	PlaySound("igChatScrollDown")
 
 	if (InCombatLockdown()) then return end
@@ -1383,19 +1304,20 @@ function ION:MinimapButton_OnClick(minimap, button)
 	end
 end
 
+
 function ION:MinimapMenuClose()
 	IonMinimapButton.popup:Hide()
 end
 
-function ION.SubFramePlainBackdrop_OnLoad(self)
 
+function ION.SubFramePlainBackdrop_OnLoad(self)
 	self:SetBackdrop({
 		bgFile = "",
 		edgeFile = "Interface\\AddOns\\Ion\\Images\\UI-Tooltip-Border",
 		tile = true,
 		tileSize = 16,
 		edgeSize = 22,
-		insets = { left = 5, right = 5, top = 5, bottom = 5 },})
+		insets = {left = 5, right = 5, top = 5, bottom = 5},})
 	self:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
 	self:SetBackdropColor(0,0,0,0)
 	self:GetParent().backdrop = self
@@ -1407,18 +1329,17 @@ function ION.SubFramePlainBackdrop_OnLoad(self)
 	self.bg:SetPoint("BOTTOMRIGHT", -3, 3)
 	self.bg:SetHorizTile(true)
 	self.bg:SetVertTile(true)
-
 end
 
-function ION.SubFrameBlackBackdrop_OnLoad(self)
 
+function ION.SubFrameBlackBackdrop_OnLoad(self)
 	self:SetBackdrop({
 		bgFile = "",
 		edgeFile = "Interface\\AddOns\\Ion\\Images\\UI-Tooltip-Border",
 		tile = true,
 		tileSize = 16,
 		edgeSize = 18,
-		insets = { left = 5, right = 5, top = 5, bottom = 5 },})
+		insets = {left = 5, right = 5, top = 5, bottom = 5},})
 	self:SetBackdropBorderColor(0.25, 0.25, 0.25, 1)
 	self:SetBackdropColor(0,0,0,0)
 	self:GetParent().backdrop = self
@@ -1430,32 +1351,31 @@ function ION.SubFrameBlackBackdrop_OnLoad(self)
 	self.bg:SetPoint("BOTTOMRIGHT", -3, 3)
 	self.bg:SetHorizTile(true)
 	self.bg:SetVertTile(true)
-
 end
 
-function ION.SubFrameBlankBackdrop_OnLoad(self)
 
+function ION.SubFrameBlankBackdrop_OnLoad(self)
 	self:SetBackdrop({
 		bgFile = "",
 		edgeFile = "Interface\\AddOns\\Ion\\Images\\UI-Tooltip-Border",
 		tile = true,
 		tileSize = 16,
 		edgeSize = 12,
-		insets = { left = 5, right = 5, top = 5, bottom = 5 },})
+		insets = {left = 5, right = 5, top = 5, bottom = 5},})
 	self:SetBackdropBorderColor(0.25, 0.25, 0.25, 1)
 	self:SetBackdropColor(0,0,0,0)
 	self:GetParent().backdrop = self
 end
 
-function ION.SubFrameHoneycombBackdrop_OnLoad(self)
 
+function ION.SubFrameHoneycombBackdrop_OnLoad(self)
 	self:SetBackdrop({
 		bgFile = "",
 		edgeFile = "Interface\\AddOns\\Ion\\Images\\UI-Tooltip-Border",
 		tile = true,
 		tileSize = 16,
 		edgeSize = 18,
-		insets = { left = 5, right = 5, top = 5, bottom = 5 },})
+		insets = {left = 5, right = 5, top = 5, bottom = 5},})
 	self:SetBackdropBorderColor(0.25, 0.25, 0.25, 1)
 	self:SetBackdropColor(0,0,0,0)
 	self:GetParent().backdrop = self
@@ -1469,8 +1389,8 @@ function ION.SubFrameHoneycombBackdrop_OnLoad(self)
 	self.bg:SetVertTile(true)
 end
 
-function ION.IonAdjustOption_AddOnClick(frame, button, down)
 
+function ION.IonAdjustOption_AddOnClick(frame, button, down)
 	frame.elapsed = 0
 	frame.pushed = frame:GetButtonState()
 
@@ -1481,8 +1401,8 @@ function ION.IonAdjustOption_AddOnClick(frame, button, down)
 	end
 end
 
-function ION.IonAdjustOption_AddOnUpdate(frame, elapsed)
 
+function ION.IonAdjustOption_AddOnUpdate(frame, elapsed)
 	frame.elapsed = frame.elapsed + elapsed
 
 	if (frame.pushed == "NORMAL") then
@@ -1493,8 +1413,8 @@ function ION.IonAdjustOption_AddOnUpdate(frame, elapsed)
 	end
 end
 
-function ION.IonAdjustOption_SubOnClick(frame, button, down)
 
+function ION.IonAdjustOption_SubOnClick(frame, button, down)
 	frame.elapsed = 0
 	frame.pushed = frame:GetButtonState()
 
@@ -1505,8 +1425,8 @@ function ION.IonAdjustOption_SubOnClick(frame, button, down)
 	end
 end
 
-function ION.IonAdjustOption_SubOnUpdate(frame, elapsed)
 
+function ION.IonAdjustOption_SubOnUpdate(frame, elapsed)
 	frame.elapsed = frame.elapsed + elapsed
 
 	if (frame.pushed == "NORMAL") then
@@ -1517,8 +1437,8 @@ function ION.IonAdjustOption_SubOnUpdate(frame, elapsed)
 	end
 end
 
-function ION:UpdateData(data, defaults)
 
+function ION:UpdateData(data, defaults)
 	-- Add new vars
 	for key,value in pairs(defaults) do
 
@@ -1554,15 +1474,11 @@ function ION:UpdateData(data, defaults)
 	-- Kill old vars
 end
 
+
 function ION:ToggleBlizzBar(on)
-
 	if (InCombatLockdown()) then return end
-
 	if (ION.OpDep) then return end
-
 	if (on) then
-
-
 		local button
 
 		for i=1, NUM_OVERRIDE_BUTTONS do
@@ -1603,9 +1519,7 @@ function ION:ToggleBlizzBar(on)
 
 		ActionBarController_OnLoad(ActionBarController)
 
-
 	else
-
 		local button
 
 		for i=1, NUM_OVERRIDE_BUTTONS do
@@ -1631,18 +1545,16 @@ function ION:ToggleBlizzBar(on)
 		ExtraActionBarFrame:Hide()
 
 		ActionBarController:UnregisterAllEvents()
-
 	end
 end
 
-function ION:BlizzBar()
 
+function ION:BlizzBar()
 	if (GDB.mainbar) then
 		GDB.mainbar = false
 	else
 		GDB.mainbar = true
 	end
-
 	ION:ToggleBlizzBar(GDB.mainbar)
 
 end
@@ -1662,6 +1574,7 @@ function ION:ToggleDraenorBar(on)
 	end
 end
 
+
 --work arround to get the garrison button to reilably hide by adding it to the default bar if it is not allready on it.
 local function DraenorButtonCheck()
 	if not HasDraenorZoneAbility() then return end
@@ -1671,8 +1584,8 @@ local function DraenorButtonCheck()
 		PlaceAction(72)
 		ClearCursor ()
 	end
-
 end
+
 
 function ION:DraenorBar()
 	if (GDB.draenorbar) then
@@ -1685,8 +1598,8 @@ function ION:DraenorBar()
 	ION:ToggleDraenorBar(GDB.draenorbar)
 end
 
-function ION:Animate()
 
+function ION:Animate()
 	if (GDB.animate) then
 		GDB.animate = false
 	else
@@ -1695,14 +1608,12 @@ function ION:Animate()
 
 end
 
-function ION:CreateBar(index, class, id)
 
+function ION:CreateBar(index, class, id)
 	local data, show = ION.RegisteredBarData[class]
 
 	if (data) then
-
 		if (not id) then
-
 			id = 1
 
 			for _ in ipairs(data.GDB) do
@@ -1724,7 +1635,7 @@ function ION:CreateBar(index, class, id)
 			bar[key] = value
 		end
 
-		setmetatable(bar, { __index = BAR })
+		setmetatable(bar, {__index = BAR})
 
 		bar.index = index
 		bar.class = class
@@ -1744,10 +1655,10 @@ function ION:CreateBar(index, class, id)
 		bar:SetID(id)
 		bar:SetWidth(375)
 		bar:SetHeight(40)
-		bar:SetBackdrop({ bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+		bar:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 		                  edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
 		                  tile = true, tileSize = 16, edgeSize = 12,
-		                  insets = { left = 4, right = 4, top = 4, bottom = 4 } })
+		                  insets = {left = 4, right = 4, top = 4, bottom = 4}})
 		bar:SetBackdropColor(0,0,0,0.4)
 		bar:SetBackdropBorderColor(0,0,0,0)
 		bar:SetFrameLevel(2)
@@ -1792,10 +1703,9 @@ function ION:CreateBar(index, class, id)
 	end
 end
 
+
 function ION:CreateNewBar(class, id, firstRun)
-
 	if (class and ION.RegisteredBarData[class]) then
-
 		local index = 1
 
 		for _ in ipairs(BARIndex) do
@@ -1819,11 +1729,9 @@ function ION:CreateNewBar(class, id, firstRun)
 end
 
 function ION:CreateNewObject(class, id, firstRun)
-
 	local data = ION.RegisteredBarData[class]
 
 	if (data) then
-
 		local index = 1
 
 		for _ in ipairs(data.objTable) do
@@ -1857,20 +1765,19 @@ function ION:CreateNewObject(class, id, firstRun)
 
 		object:LoadAux()
 
-		data.objTable[index] = { object, 1 }
+		data.objTable[index] = {object, 1}
 
 		return object
 	end
 end
 
-function ION:ChangeBar(bar)
 
+function ION:ChangeBar(bar)
 	local newBar = false
 
 	if (PEW) then
 
 		if (bar and ION.CurrentBar ~= bar) then
-
 			ION.CurrentBar = bar
 
 			bar.selected = true
@@ -1922,10 +1829,9 @@ function ION:ChangeBar(bar)
 	return newBar
 end
 
+
 function ION:ToggleBars(show, hide)
-
 	if (PEW) then
-
 		if ((ION.BarsShown or hide) and not show) then
 
 			ION.BarsShown = nil
@@ -1963,15 +1869,15 @@ function ION:ToggleBars(show, hide)
 	end
 end
 
-function ION:ToggleButtonGrid(show, hide)
 
+function ION:ToggleButtonGrid(show, hide)
 	for id,btn in pairs(BTNIndex) do
 		btn[1]:SetGrid(show, hide)
 	end
 end
 
-function ION:ToggleMainMenu(show, hide)
 
+function ION:ToggleMainMenu(show, hide)
 	if (not IsAddOnLoaded("Ion-GUI")) then
 		LoadAddOn("Ion-GUI")
 	end
@@ -1983,11 +1889,10 @@ function ION:ToggleMainMenu(show, hide)
 	end
 	]]--
 	InterfaceOptionsFrame_OpenToCategory("Ion");
-
 end
 
-function ION:PrintStateList()
 
+function ION:PrintStateList()
 	local data, list = {}
 
 	for k,v in pairs(ION.MANAGED_ACTION_STATES) do
@@ -2008,19 +1913,18 @@ function ION:PrintStateList()
 	print(list..L.CUSTOM_OPTION)
 end
 
-function ION:PrintBarTypes()
 
+function ION:PrintBarTypes()
 	local data, index, high = {}, 1, 0
 
 	for k,v in pairs(ION.RegisteredBarData) do
-
 		if (v.barCreateMore) then
 
 			index = tonumber(v.createMsg:match("%d+"))
 			barType = v.createMsg:gsub("%d+","")
 
 			if (index and barType) then
-				data[index] = { k, barType }
+				data[index] = {k, barType}
 				if (index > high) then high = index end
 			end
 		end
@@ -2038,6 +1942,7 @@ function ION:PrintBarTypes()
 	end
 
 end
+
 
 function ION:RegisterBarClass(class, ...)
 
@@ -2063,11 +1968,10 @@ function ION:RegisterBarClass(class, ...)
 		objStorage = select(12,...),
 		createMsg = ION.ModuleIndex..select(2,...),
 	}
-
 end
 
-function ION:RegisterGUIOptions(class, ...)
 
+function ION:RegisterGUIOptions(class, ...)
 	ION.RegisteredGUIData[class] = {
 		chkOpt = select(1,...),
 		stateOpt = select(2,...),
@@ -2075,8 +1979,8 @@ function ION:RegisterGUIOptions(class, ...)
 	}
 end
 
-function ION:SetTimerLimit(msg)
 
+function ION:SetTimerLimit(msg)
 	local limit = tonumber(msg:match("%d+"))
 
 	if (limit and limit > 0) then
@@ -2086,6 +1990,7 @@ function ION:SetTimerLimit(msg)
 		print(L.TIMERLIMIT_INVALID)
 	end
 end
+
 
 local function runUpdater(self, elapsed)
 
@@ -2106,7 +2011,6 @@ updater.elapsed = 0
 updater:Hide()
 
 local function control_OnEvent(self, event, ...)
-
 	ION.CurrEvent = event
 
 	if (event == "PLAYER_REGEN_DISABLED") then
@@ -2124,7 +2028,6 @@ local function control_OnEvent(self, event, ...)
 		end
 
 	elseif (event == "ADDON_LOADED" and ... == "Ion") then
-
 		ION.MAS = Ion.MANAGED_ACTION_STATES
 		ION.MBS = Ion.MANAGED_BAR_STATES
 
@@ -2141,7 +2044,6 @@ local function control_OnEvent(self, event, ...)
 		if (not fix03312014) then
 		
 		end
-		
 
 		GDB = IonGDB; CDB = IonCDB; SPEC = IonSpec
 
@@ -2193,7 +2095,6 @@ local function control_OnEvent(self, event, ...)
 		}
 
 	elseif (event == "VARIABLES_LOADED") then
-
 		local index, button, texture = 1
 
 		SlashCmdList["ION"] = slashHandler
@@ -2201,9 +2102,7 @@ local function control_OnEvent(self, event, ...)
 
 		InterfaceOptionsFrame:SetFrameStrata("HIGH")
 
-
 	elseif (event == "PLAYER_LOGIN") then
-
 		local function hideAlerts(frame)
 			if (not GDB.mainbar) then
 				frame:Hide()
@@ -2215,7 +2114,6 @@ local function control_OnEvent(self, event, ...)
 		end
 
 	elseif (event == "PLAYER_ENTERING_WORLD" and not PEW) then
-
 		GDB.firstRun = false
 		CDB.firstRun = false
 
@@ -2239,7 +2137,6 @@ local function control_OnEvent(self, event, ...)
 		end
 
 	elseif (event == "PLAYER_SPECIALIZATION_CHANGED" or event == "PLAYER_TALENT_UPDATE" or event == "PLAYER_LOGOUT" or event == "PLAYER_LEAVING_WORLD") then
-
 		SPEC.cSpec = GetActiveSpecGroup()
 
 	elseif (event == "ACTIVE_TALENT_GROUP_CHANGED" or
@@ -2253,7 +2150,6 @@ local function control_OnEvent(self, event, ...)
 		DraenorButtonCheck()
 
 	elseif (event == "PET_UI_CLOSE" or event == "COMPANION_LEARNED" or event == "COMPANION_UPDATE") then
-
 		ION:UpdateCompanionData()
 
 	elseif (event == "UNIT_PET" and ... == "player") then
@@ -2263,7 +2159,6 @@ local function control_OnEvent(self, event, ...)
 		end
 
 	elseif (event == "UNIT_LEVEL" and ... == "player") then
-
 		ION.level = UnitLevel("player")
 	else
 		--ION:ToggleDraenorBar(GDB.draenorbar)
@@ -2315,16 +2210,12 @@ StaticPopupDialogs["ReloadUI"] = {
 	preferredIndex = 3,  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
 }
 
+
 function IonProfile:RefreshConfig()
 	IonCDB = self.db.profile["IonCDB"]
 	IonGDB = self.db.profile["IonGDB"]
 	IonSpec = {cSpec = GetActiveSpecGroup()}
 	defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
-	
-
-
-
-
 	IONButtonProfileUpdate()
 --IONBarProfileUpdate()
 	StaticPopup_Show("ReloadUI")
@@ -2333,8 +2224,8 @@ end
 
 local addonName = ...
 
-function IonProfile:OnInitialize()
 
+function IonProfile:OnInitialize()
 --[[
   self.db = LibStub("AceDB-3.0"):New("MyAddonDB")
   self.db.char.money = GetMoney()
