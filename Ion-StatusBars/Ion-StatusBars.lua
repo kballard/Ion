@@ -42,8 +42,8 @@ local tsort = table.sort
 local GetMirrorTimerProgress = _G.GetMirrorTimerProgress
 local UnitCastingInfo = _G.UnitCastingInfo
 local GetTime = _G.GetTime
-local	UIDropDownMenu_AddButton = UIDropDownMenu_AddButton
-local	UIDropDownMenu_CreateInfo = UIDropDownMenu_CreateInfo
+local UIDropDownMenu_AddButton = UIDropDownMenu_AddButton
+local UIDropDownMenu_CreateInfo = UIDropDownMenu_CreateInfo
 local MirrorTimerColors = MirrorTimerColors
 
 local CASTING_BAR_ALPHA_STEP = CASTING_BAR_ALPHA_STEP
@@ -113,6 +113,8 @@ local BarRepColors = {
 	[6] = { l="g_Honored", r=0.1, g=0.5, b=0.20, a=1.0 },
 	[7] = { l="h_Revered", r=0.0, g=0.39, b=0.88, a=1.0 },
 	[8] = { l="i_Exalted", r=0.58, g=0.0, b=0.55, a=1.0 },
+	[9] = { l="i_Exalted2", r=0.58, g=0.0, b=0.55, a=1.0 },
+	[10] = { l="i_Exalted3", r=0.58, g=0.0, b=0.55, a=1.0 },
 }
 
 --FACTION_BAR_COLORS = BarRepColors
@@ -299,112 +301,65 @@ end
 
 --These factions return fID but have 8 levels instead of 6
 local BrawlerGuildFactions = {
-[1690] = true, --Aliance WoD
+[1691] = true, --Aliance WoD
 [1419] = true, --Aliance MoP
 [1690] = true, --Horde WoD
 [1374] = true, --Horde MoP
 }
 
+
+--- Creates a table containing provided data
+-- @param name, hasFriendStatus, standing, minrep, maxrep, value, colors
+-- @return reptable:  Table containing provided data
+local function SetRepWatch(name, hasFriendStatus, standing, minrep, maxrep, value, colors)
+local reptable = {}
+	reptable.rep = name.." - "..standing
+	reptable.current = (value-minrep).."/"..(maxrep-minrep)
+	reptable.percent = floor(((value-minrep)/(maxrep-minrep))*100).."%"
+	reptable.rephour = "---"
+	reptable.min = minrep
+	reptable.max = maxrep
+	reptable.value = value
+	reptable.hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
+	reptable.r = colors.r
+	reptable.g = colors.g
+	reptable.b = colors.b
+
+	if hasFriendStatus then
+		reptable.l = "z"..colors.l
+	else
+		reptable.l = colors.l
+	end
+	return reptable
+end
+
 local function repstrings_Update(line)
 
 	if (GetNumFactions() > 0) then
-
-		local _, name, ID, min, max, value, isHeader, hasRep, factionID, standing, colors		
-		local fID, fRep, fMaxRep, fName, fText, fTexture, fTextLevel, fThreshold, nextFThreshold
-
 		wipe(RepWatch)
 
 		for i=1, GetNumFactions() do
-
-			name, _, ID, min, max, value, _, _, isHeader, _, hasRep, _, _, factionID = GetFactionInfo(i)
-			
-			fID, fRep, fMaxRep, fName, fText, fTexture, fTextLevel, fThreshold, nextFThreshold = GetFriendshipReputation(factionID)
+			local name, _, ID, min, max, value, _, _, isHeader, _, hasRep, _, _, factionID = GetFactionInfo(i)
+			local fID, fRep, fMaxRep, fName, fText, fTexture, fTextLevel, fThreshold, nextFThreshold = GetFriendshipReputation(factionID)
+			local colors, standing
+			local hasFriendStatus = false
 
 			if ((not isHeader or hasRep) and not IsFactionInactive(i) and not (isHeader and ID == 8)) then
-			
 				if (fID and not BrawlerGuildFactions[fID]) then
 					colors = BarRepColors[ID+2]; standing = fTextLevel
-
-					if (not RepWatch[i]) then
-						RepWatch[i] = {}
-					end
-
-					RepWatch[i].rep = name.." - "..standing
-					RepWatch[i].current = (value-min).."/"..(max-min)
-					RepWatch[i].percent = floor(((value-min)/(max-min))*100).."%"
-					RepWatch[i].rephour = "---"
-					RepWatch[i].min = min
-					RepWatch[i].max = max
-					RepWatch[i].value = value
-					RepWatch[i].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
-					RepWatch[i].r = colors.r
-					RepWatch[i].g = colors.g
-					RepWatch[i].b = colors.b
-					RepWatch[i].l = "z"..colors.l
-
-					if (line and (line):find(name) or CDB.autoWatch == i) then
-
-						if (not RepWatch[0]) then
-							RepWatch[0] = {}
-						end
-
-						RepWatch[0].rep = name.." - "..standing
-						RepWatch[0].current = (value-min).."/"..(max-min)
-						RepWatch[0].percent = floor(((value-min)/(max-min))*100).."%"
-						RepWatch[0].rephour = "---"
-						RepWatch[0].min = min
-						RepWatch[0].max = max
-						RepWatch[0].value = value
-						RepWatch[0].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
-						RepWatch[0].r = colors.r
-						RepWatch[0].g = colors.g
-						RepWatch[0].b = colors.b
-						RepWatch[0].l = "z"..colors.l
-
-						CDB.autoWatch = i
-					end				
-				
+					hasFriendStatus = true
+				elseif (fID and BrawlerGuildFactions[fID]) then
+					colors = BarRepColors[ID]; standing = fTextLevel
+					hasFriendStatus = true
 				else
 					colors = BarRepColors[ID]; standing = (colors.l):gsub("^%a%p", "")
+				end
 
-					if (not RepWatch[i]) then
-						RepWatch[i] = {}
-					end
-
-					RepWatch[i].rep = name.." - "..standing
-					RepWatch[i].current = (value-min).."/"..(max-min)
-					RepWatch[i].percent = floor(((value-min)/(max-min))*100).."%"
-					RepWatch[i].rephour = "---"
-					RepWatch[i].min = min
-					RepWatch[i].max = max
-					RepWatch[i].value = value
-					RepWatch[i].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
-					RepWatch[i].r = colors.r
-					RepWatch[i].g = colors.g
-					RepWatch[i].b = colors.b
-					RepWatch[i].l = colors.l
-
-					if (line and (line):find(name) or CDB.autoWatch == i) then
-
-						if (not RepWatch[0]) then
-							RepWatch[0] = {}
-						end
-
-						RepWatch[0].rep = name.." - "..standing
-						RepWatch[0].current = (value-min).."/"..(max-min)
-						RepWatch[0].percent = floor(((value-min)/(max-min))*100).."%"
-						RepWatch[0].rephour = "---"
-						RepWatch[0].min = min
-						RepWatch[0].max = max
-						RepWatch[0].value = value
-						RepWatch[0].hex = format("%02x%02x%02x", colors.r*255, colors.g*255, colors.b*255)
-						RepWatch[0].r = colors.r
-						RepWatch[0].g = colors.g
-						RepWatch[0].b = colors.b
-						RepWatch[0].l = colors.l
-
-						CDB.autoWatch = i
-					end
+				local repData = SetRepWatch(name, hasFriendStatus, standing, min, max, value, colors)
+				RepWatch[i] = repData
+				if (line and (line):find(name) or CDB.autoWatch == i) then
+					RepWatch[0] = repData
+					CDB.autoWatch = i
 				end
 			end
 		end
