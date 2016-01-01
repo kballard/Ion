@@ -30,7 +30,6 @@ local barOpt = { chk = {}, adj = {}, pri = {}, sec = {}, swatch = {} }
 local popupData = {}
 
 local chkOptions = {
-
 	[1] = { [0] = "AUTOHIDE", L.AUTOHIDE, 1, "AutoHideBar" },
 	[2] = { [0] = "SHOWGRID", L.SHOWGRID, 1, "ShowGridSet" },
 	[3] = { [0] = "SNAPTO", L.SNAPTO, 1, "SnapToBar" },
@@ -51,7 +50,6 @@ local chkOptions = {
 }
 
 local adjOptions = {
-
 	[1] = { [0] = "SCALE", L.SCALE, 1, "ScaleBar", 0.01, 0.1, 4 },
 	[2] = { [0] = "SHAPE", L.SHAPE, 2, "ShapeBar", nil, nil, nil, ION.BarShapes },
 	[3] = { [0] = "COLUMNS", L.COLUMNS, 1, "ColumnsSet", 1 , 0},
@@ -69,7 +67,6 @@ local adjOptions = {
 }
 
 local swatchOptions = {
-
 	[1] = { [0] = "BINDTEXT", L.BINDTEXT, 1, "BindTextSet", true, nil, "bindColor" },
 	[2] = { [0] = "MACROTEXT", L.MACROTEXT, 1, "MacroTextSet", true, nil, "macroColor" },
 	[3] = { [0] = "COUNTTEXT", L.COUNTTEXT, 1, "CountTextSet", true, nil, "countColor" },
@@ -81,10 +78,8 @@ local swatchOptions = {
 }
 
 local function round(num, idp)
-
-      local mult = 10^(idp or 0)
-      return math.floor(num * mult + 0.5) / mult
-
+	local mult = 10^(idp or 0)
+	return math.floor(num * mult + 0.5) / mult
 end
 
 local function insertLink(text)
@@ -590,6 +585,19 @@ function ION:UpdateBarGUI(newBar)
 				end
 			end
 
+			local customStateList = ""
+			if (bar and bar.cdata.customNames) then
+				
+				for index,state in pairs(bar.cdata.customNames) do
+					if (index == "homestate") then
+						customStateList = state..";"
+					else
+						customStateList = customStateList..state..";"
+					end
+				end
+			end
+			barOpt.customstate:SetText(customStateList)
+
 			wipe(popupData)
 
 			for state, value in pairs(ION.STATES) do
@@ -625,6 +633,7 @@ function ION:UpdateObjectGUI(reset)
 	end
 end
 
+
 local function updateBarName(frame)
 
 	local bar = ION.CurrentBar
@@ -643,6 +652,7 @@ local function updateBarName(frame)
 	end
 end
 
+
 local function resetBarName(frame)
 
 	local bar = ION.CurrentBar
@@ -651,6 +661,28 @@ local function resetBarName(frame)
 		frame:SetText(bar.gdata.name)
 		frame:ClearFocus()
 	end
+end
+
+local function updateCustomState(frame)
+	local bar = ION.CurrentBar
+	local state = "custom "..frame:GetText()
+
+	if (bar) then
+		bar:SetState("custom", true, false)  --turns off custom state to clear any previous stored items
+		bar:SetState(state, true, true)
+	end
+		local customStateList = ""
+			if (bar and bar.cdata.customNames) then
+				
+				for index,state in pairs(bar.cdata.customNames) do
+					if (index == "homestate") then
+						customStateList = state..";"
+					else
+						customStateList = customStateList..state..";"
+					end
+				end
+			end
+			barOpt.customstate:SetText(customStateList)
 end
 
 local function countOnMouseWheel(frame, delta)
@@ -1528,7 +1560,6 @@ function ION:ActionEditor_OnLoad(frame)
 	end
 
 	for index,state in ipairs(states) do
-
 		if (MAS[state].homestate) then
 
 			f = CreateFrame("CheckButton", nil, frame.presets.primary, "IonOptionsCheckButtonTemplate")
@@ -1583,6 +1614,17 @@ function ION:ActionEditor_OnLoad(frame)
 			count = count + 1
 
 			tinsert(barOpt.sec, f)
+
+		elseif state == "custom" then 
+			f = CreateFrame("CheckButton", nil, frame.custom, "IonOptionsCheckButtonTemplate")
+			f:SetID(index)
+			f:SetWidth(18)
+			f:SetHeight(18)
+			f:SetScript("OnClick", setBarActionState)
+			f.text:SetText(L["GUI_"..state:upper()])
+			f.option = state
+			f:SetPoint("TOPLEFT", frame.custom, "TOPLEFT", 10, -10)
+			tinsert(barOpt.sec, f)
 		end
 	end
 
@@ -1630,6 +1672,30 @@ function ION:ActionEditor_OnLoad(frame)
 	f.popup:SetPoint("BOTTOMLEFT")
 	f.popup:SetPoint("BOTTOMRIGHT")
 	barOpt.remapto = f
+
+--Custom State Tabs
+	f = frame.custom
+	f.text = f:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall");
+	f.text:SetPoint("TOPLEFT", frame.custom, "TOPLEFT", 10, -60)
+	f.text:SetPoint("TOPRIGHT", frame.custom, "TOPRIGHT", -10, -60)
+	f.text:SetJustifyH("CENTER")
+	f.text:SetText(L.CUSTOM_OPTION)
+	f.text:SetWordWrap(true)
+
+	f = CreateFrame("EditBox", "$parentCostomStateEdit", frame.custom, "IonEditBoxTemplateSmall")
+	--f:SetWidth(550)
+	f:SetHeight(26)
+	f:SetPoint("TOPLEFT", frame.custom, "TOPLEFT", 10, -30)
+	f:SetPoint("TOPRIGHT", frame.custom, "TOPRIGHT", -10, -30)
+	f:SetJustifyH("LEFT")
+	f:SetTextInsets(10, 0, 0, 0)
+
+	f:SetScript("OnEnterPressed", updateCustomState)
+	f:SetScript("OnTabPressed", updateCustomState)
+	f:SetScript("OnEscapePressed", updateCustomState)
+	frame.search = f
+
+	barOpt.customstate = f
 
 	ION.SubFrameBlackBackdrop_OnLoad(f)
 end

@@ -2916,12 +2916,9 @@ end
 local statetable = {}
 
 function BAR:SetState(msg, gui, checked, query)
-
 	if (msg) then
-
 		local state = msg:match("^%S+")
 		local command = msg:gsub(state, ""); command = command:gsub("^%s+", "")
-
 		if (not MAS[state]) then
 			if (not gui) then
 				ION:PrintStateList()
@@ -2995,21 +2992,25 @@ function BAR:SetState(msg, gui, checked, query)
 				self.cdata.customNames = {}
 
 				for states in gmatch(command, "[^;]+") do
+					if string.find(states, "%[(.+)%]") then 
+						self.cdata.customRange = "1;"..count
 
-					self.cdata.customRange = "1;"..count
+						if (count == 0) then
+							newstates = states.." homestate; "
+							self.cdata.customNames["homestate"] = states
+						else
+							newstates = newstates..states.." custom"..count.."; "
+							self.cdata.customNames["custom"..count] = states
+						end
 
-					if (count == 0) then
-						newstates = states.." homestate; "
-						self.cdata.customNames["homestate"] = states
+						count = count + 1
 					else
-						newstates = newstates..states.." custom"..count.."; "
-						self.cdata.customNames["custom"..count] = states
+						print(states.." not formated properly and skipped")
 					end
-
-					count = count + 1
 				end
 
-				self.cdata.custom = newstates or ""
+				self.cdata.custom = newstates or false --""
+				
 
 			else
 				self.cdata.customNames = false
