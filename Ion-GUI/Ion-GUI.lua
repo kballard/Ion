@@ -25,7 +25,7 @@ IonGUICDB = {
 
 local defGDB, defCDB = CopyTable(IonGUIGDB), CopyTable(IonGUICDB)
 
-local barOpt = { chk = {}, adj = {}, pri = {}, sec = {}, swatch = {} }
+local barOpt = { chk = {}, adj = {}, pri = {}, sec = {}, swatch = {}, vis = {} }
 
 local popupData = {}
 
@@ -533,29 +533,32 @@ function ION:UpdateBarGUI(newBar)
 				IBE.baropt.colorpicker:Hide()
 			end
 
-			if (GUIData[bar.class].stateOpt) then
+			if (editor.presets:IsVisible()) then
+				if (GUIData[bar.class].stateOpt) then
 
-				editor.tab1:Enable()
-				editor.tab2:Enable()
-				editor.tab1.text:SetTextColor(0.85, 0.85, 0.85)
-				editor.tab2.text:SetTextColor(0.85, 0.85, 0.85)
+					editor.tab1:Enable()
+					editor.tab2:Enable()
+					editor.tab1.text:SetTextColor(0.85, 0.85, 0.85)
+					editor.tab2.text:SetTextColor(0.85, 0.85, 0.85)
 
-				editor.tab1:Click()
+					editor.tab1:Click()
 
-				editor:SetPoint("BOTTOMRIGHT", IBE.barstates, "TOPRIGHT", 0, -170)
+					editor:SetPoint("BOTTOMRIGHT", IBE.barstates, "TOPRIGHT", 0, -170)
 
-			else
-				editor.tab3:Click()
+				else
+					editor.tab3:Click()
 
-				editor.tab1:Disable()
-				editor.tab2:Disable()
-				editor.tab1.text:SetTextColor(0.4, 0.4, 0.4)
-				editor.tab2.text:SetTextColor(0.4, 0.4, 0.4)
+					editor.tab1:Disable()
+					editor.tab2:Disable()
+					editor.tab1.text:SetTextColor(0.4, 0.4, 0.4)
+					editor.tab2.text:SetTextColor(0.4, 0.4, 0.4)
 
-				editor:SetPoint("BOTTOMRIGHT", IBE.barstates, "TOPRIGHT", 0, -30)
+					editor:SetPoint("BOTTOMRIGHT", IBE.barstates, "TOPRIGHT", 0, -30)
 
+				end
 			end
 
+ --Sets bar primaary options
 			for i,f in ipairs(barOpt.pri) do
 				if (f.option == "stance" and (GetNumShapeshiftForms() < 1 or ION.class == "DEATHKNIGHT" or ION.class == "PALADIN" or ION.class == "HUNTER")) then
 					f:SetChecked(nil)
@@ -568,6 +571,7 @@ function ION:UpdateBarGUI(newBar)
 				end
 			end
 
+--Sets bar secondary options
 			for i,f in ipairs(barOpt.sec) do
 
 				if (f.stance ) then
@@ -584,19 +588,6 @@ function ION:UpdateBarGUI(newBar)
 					f:SetChecked(bar.cdata[f.option])
 				end
 			end
-
-			local customStateList = ""
-			if (bar and bar.cdata.customNames) then
-				
-				for index,state in pairs(bar.cdata.customNames) do
-					if (index == "homestate") then
-						customStateList = state..";"
-					else
-						customStateList = customStateList..state..";"
-					end
-				end
-			end
-			barOpt.customstate:SetText(customStateList)
 
 			wipe(popupData)
 
@@ -621,8 +612,23 @@ function ION:UpdateBarGUI(newBar)
 				barOpt.remapto:SetText("")
 			end
 		end
+
+--Sets bar custom state options
+		local customStateList = ""
+		if (bar and bar.cdata.customNames) then
+			
+			for index,state in pairs(bar.cdata.customNames) do
+				if (index == "homestate") then
+					customStateList = state..";"
+				else
+					customStateList = customStateList..state..";"
+				end
+			end
+		end
+		barOpt.customstate:SetText(customStateList)
 	end
 end
+
 
 function ION:UpdateObjectGUI(reset)
 
@@ -666,23 +672,26 @@ end
 local function updateCustomState(frame)
 	local bar = ION.CurrentBar
 	local state = "custom "..frame:GetText()
+	local customStateList = ""
 
 	if (bar) then
 		bar:SetState("custom", true, false)  --turns off custom state to clear any previous stored items
 		bar:SetState(state, true, true)
 	end
-		local customStateList = ""
-			if (bar and bar.cdata.customNames) then
-				
-				for index,state in pairs(bar.cdata.customNames) do
-					if (index == "homestate") then
-						customStateList = state..";"
-					else
-						customStateList = customStateList..state..";"
-					end
+
+		if (bar and bar.cdata.customNames) then
+			for index,state in pairs(bar.cdata.customNames) do
+				if (index == "homestate") then
+					customStateList = state..";"..customStateList
+				else
+					customStateList = customStateList..state..";"
 				end
 			end
-			barOpt.customstate:SetText(customStateList)
+		end
+
+	barOpt.customstate:SetText(customStateList)
+	ION.VisEditorScrollFrameUpdate()
+	frame:ClearFocus()
 end
 
 local function countOnMouseWheel(frame, delta)
@@ -1438,6 +1447,14 @@ local function setBarActionState(frame)
 	end
 end
 
+local function setBarVisability(button)
+	local bar = ION.CurrentBar
+	if (bar) then
+		bar:SetVisibility(button.msg, true)
+	end
+end
+
+
 local function remapOnTextChanged(frame)
 
 	local bar = ION.CurrentBar
@@ -1689,6 +1706,7 @@ function ION:ActionEditor_OnLoad(frame)
 	f:SetPoint("TOPRIGHT", frame.custom, "TOPRIGHT", -10, -30)
 	f:SetJustifyH("LEFT")
 	f:SetTextInsets(10, 0, 0, 0)
+	f:SetMaxLetters(0)
 
 	f:SetScript("OnEnterPressed", updateCustomState)
 	f:SetScript("OnTabPressed", updateCustomState)
@@ -1713,10 +1731,146 @@ end
 --	control = 	vehicle0;	vehicle1;	possess0;	possess1;	override0;	override1;	extrabar0;	extrabar1;
 
 function ION:VisEditor_OnLoad(frame)
-
+	local f = CreateFrame("CheckButton", nil, frame, "IonCheckButtonTabTemplate")
+	f:SetWidth(160)
+	f:SetHeight(25)
+	f:SetPoint("BOTTOMLEFT", frame, "TOPLEFT",5,-5)
+	f:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT",-5,-5)
+	f:SetFrameLevel(frame:GetFrameLevel())
+	f:SetBackdropColor(0.3,0.3,0.3,1)
+	f.text:SetText(L.BAR_VISABLE_STATES)
+	f.selected = true
+	
 	ION.SubFrameHoneycombBackdrop_OnLoad(frame)
-
 end
+
+
+local numVisShown = 21
+
+function ION.VisEditorScrollFrame_OnLoad(self)
+
+	self.offset = 0
+	self.scrollChild = _G[self:GetName().."ScrollChildFrame"]
+
+	self:SetBackdropBorderColor(0.5, 0.5, 0.5)
+	self:SetBackdropColor(0,0,0,0.5)
+
+	local anchor, button, lastButton, rowButton, count, script = false, false, false, false, 1
+
+	for i=1,numVisShown do
+
+		button = CreateFrame("CheckButton", self:GetName().."Button"..i, self:GetParent(), "IonOptionsCheckButtonTemplate")
+
+		button.frame = self:GetParent()
+		button.numShown = numVisShown
+		button:SetCheckedTexture("Interface\\Addons\\Ion\\Images\\RoundCheckGreen.tga")
+		button:SetScript("OnClick", setBarVisability)
+
+
+		button:SetScript("OnShow",
+			function(self)
+				self:SetHeight((self.frame:GetHeight()-10)/self.numShown)
+			end)
+
+			--f = CreateFrame("CheckButton", nil, frame.visscroll, "IonOptionsCheckButtonTemplate")
+			--f:SetID(index)
+			button:SetWidth(18)
+			button:SetHeight(18)
+			button:SetHitRectInsets(0, 0, 0, 0)
+
+		--button:SetID(i)
+		button:SetFrameLevel(self:GetFrameLevel()+2)
+
+		if (not anchor) then
+			button:SetPoint("TOPLEFT", 10, -8)
+			anchor = button; lastButton = button
+		elseif (count == 8) then
+			button:SetPoint("LEFT", anchor, "RIGHT", 125, 0)
+			anchor = button; lastButton = button; count = 1
+		else
+			button:SetPoint("TOPLEFT", lastButton, "BOTTOMLEFT", 0, -6)
+			lastButton = button
+		end
+		count = count + 1
+	end
+
+	ION.VisEditorScrollFrameUpdate()
+end
+
+local VisSTateList = {}
+
+function ION.VisEditorScrollFrameUpdate(frame, tableList, alt)
+
+	if (not IonBarEditorBarStatesVisEditor:IsVisible()) then return end
+	local bar = Ion.CurrentBar
+
+	if (not tableList) then
+
+		wipe(VisSTateList)
+
+		tableList = ION.STATES
+	end
+
+	if (not frame) then
+		frame = IonBarEditorBarStatesVisEditorScrollFrame
+	end
+
+	local dataOffset, count, data, button, text, datum = FauxScrollFrame_GetOffset(frame), 1, {}
+
+	for k in pairs(tableList) do
+		local val = k:match("%d+$")
+
+		if (val and (k ~= "custom0"))then
+			data[count] = k; count = count + 1
+		end
+	end
+	
+	table.sort(data)
+
+	local customStateData = {}
+	if (bar and bar.cdata.customNames) then
+			local i = 0
+			for index,state in pairs(bar.cdata.customNames) do
+			data[count] = state; count = count + 1
+			customStateData[state] = i; i=i+1
+			end
+		end
+
+	frame:Show()
+
+	for i=1,numVisShown do
+
+		button = _G["IonBarEditorBarStatesVisEditorScrollFrameButton"..i]
+		button:SetChecked(nil)
+
+		count = dataOffset + i
+
+		if (data[count]) then
+			text = ION.STATES[data[count]] or data[count]
+
+			if customStateData[data[count]] then 
+			button.msg ="custom "..customStateData[data[count]]
+			button:SetChecked(not bar.gdata.hidestates:find("custom"..customStateData[data[count]]))
+			else
+			button.msg = data[count]:match("%a+").." "..data[count]:match("%d+$")
+			button:SetChecked(not bar.gdata.hidestates:find(data[count]))
+			end
+
+			button.text:SetText(text)
+
+			button:Enable()
+			button:Show()
+			button:SetWidth(18)
+			button:SetHeight(18)
+		else
+
+			button:Hide()
+		end
+	end
+
+	FauxScrollFrame_Update(frame, #data, numVisShown, 18)
+end
+
 
 function ION:StateList_OnLoad(frame)
 
@@ -1878,7 +2032,6 @@ end
 local stateList = {}
 
 function ION.ActionListScrollFrameUpdate(frame)
-
 	if (not IonButtonEditorActionList:IsVisible()) then return end
 
 	local bar, i
@@ -1892,11 +2045,8 @@ function ION.ActionListScrollFrameUpdate(frame)
 		stateList["00"..L.HOMESTATE] = "homestate"
 
 		for state, values in pairs(MAS) do
-
 			if (bar.cdata[state]) then
-
 				for index, name in pairs(ION.STATES) do
-
 					if (index ~= "laststate" and name ~= ATTRIBUTE_NOOP and values.states:find(index)) then
 
 						i = index:match("%d+")
@@ -1934,6 +2084,14 @@ function ION.ActionListScrollFrameUpdate(frame)
 	end
 
 	table.sort(data)
+
+	if (bar and bar.cdata.customNames) then
+			local i = 0
+			for index,state in pairs(bar.cdata.customNames) do
+				stateList[state] = index
+				data[count] = state; count = count + 1
+			end
+		end
 
 	frame:Show()
 

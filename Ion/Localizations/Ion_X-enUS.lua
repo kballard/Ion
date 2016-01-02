@@ -409,3 +409,6 @@ Only use Ion right now if you do not mind the occasional bug and not being able 
 L.OPTIONS_BLIZZBAR = "Show Blizzard's Action Bar"
 L.OPTIONS_ANIMATE = "Enable Ion's Orb Animation"
 L.OPTIONS_DRAENORBAR = "Show the Draenor Garrison Action Icon"
+
+--NEW
+L.BAR_VISABLE_STATES = "Bar Visibility Toggles"

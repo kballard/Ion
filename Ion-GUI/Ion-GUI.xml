@@ -911,14 +911,51 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<Frame name="$parentVisEditor" parentKey="visedit">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativeTo="$parentActionEditor" relativePoint="BOTTOMLEFT">
-								<Offset x="0" y="-35"/>
+								<Offset x="0" y="-55"/>
 							</Anchor>
 							<Anchor point="BOTTOMRIGHT">
 								<Offset x="0" y="0"/>
 							</Anchor>
 						</Anchors>
 						<Frames>
-
+							<ScrollFrame name="$parentScrollFrame" inherits="IonScrollFrameTemplate1">
+								<Anchors>
+									<Anchor point="TOPLEFT">
+										<Offset x="5" y="-5"/>
+									</Anchor>
+									<Anchor point="BOTTOMRIGHT">
+										<Offset x="-27" y="5"/>
+									</Anchor>
+								</Anchors>
+								<ScrollChild>
+									<Frame name="$parentScrollChildFrame">
+										<Anchors>
+											<Anchor point="TOPLEFT">
+												<Offset x="5" y="-5"/>
+											</Anchor>
+											<Anchor point="BOTTOMRIGHT">
+												<Offset x="-5" y="5"/>
+											</Anchor>
+										</Anchors>
+									</Frame>
+									<Scripts>
+										<OnShow>
+											--self:SetValue(0)
+										</OnShow>
+									</Scripts>
+								</ScrollChild>
+								<Scripts>
+									<OnLoad>
+										Ion.VisEditorScrollFrame_OnLoad(self)
+									</OnLoad>
+									<OnShow>
+										Ion.VisEditorScrollFrameUpdate()
+									</OnShow>
+									<OnVerticalScroll>
+										FauxScrollFrame_OnVerticalScroll(self, offset, 18, Ion.VisEditorScrollFrameUpdate)
+									</OnVerticalScroll>
+								</Scripts>
+							</ScrollFrame>
 						</Frames>
 						<Scripts>
 							<OnLoad>
