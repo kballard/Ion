@@ -655,10 +655,12 @@ function ION:UpdatePetSpellIndex()
 
 		if (isKnown and petIndex and petName and #petName > 0) then
 			local spellName = GetSpellInfo(spellID)
-			local spellData = SetSpellInfo(v.index, v.booktype, v.spellName, nil, v.subName, spellID, spellID_Alt, v.spellType, v.spellLvl, v.isPassive, v.icon)
+			--local spellData = SetSpellInfo(v.index, v.booktype, v.spellName, nil, v.subName, spellID, spellID_Alt, v.spellType, v.spellLvl, v.isPassive, v.icon)
 
 			for k,v in pairs(ION.sIndex) do
 				if (v.spellName:find(petName.."$")) then
+					local spellData = SetSpellInfo(v.index, v.booktype, v.spellName, nil, v.subName, spellID, spellID_Alt, v.spellType, v.spellLvl, v.isPassive, v.icon)
+
 					ION.sIndex[(spellName):lower()] = spellData
 					ION.sIndex[(spellName):lower().."()"] = spellData
 					ION.sIndex[spellID] = spellData
