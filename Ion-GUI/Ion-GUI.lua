@@ -317,6 +317,19 @@ local function IonPanelTemplates_TabResize(tab, padding, absoluteSize, minWidth,
 
 end
 
+-- This builds the string of any custom states in the order that they were originaly entered. 
+local function generateCustomStateList(bar)
+	local start = tonumber(string.match(bar.cdata.customRange, "^%d+"))
+	local stop = tonumber(string.match(bar.cdata.customRange, "%d+$"))
+	local customStateList = bar.cdata.customNames["homestate"]..";"
+
+	for index = start, stop, 1 do
+		customStateList = customStateList..bar.cdata.customNames["custom"..index]..";"
+	end
+
+	return customStateList
+end
+
 function ION:UpdateBarGUI(newBar)
 
 	ION.BarListScrollFrameUpdate()
@@ -617,14 +630,18 @@ function ION:UpdateBarGUI(newBar)
 		local customStateList = ""
 		if (bar and bar.cdata.customNames) then
 			
-			for index,state in pairs(bar.cdata.customNames) do
+customStateList = generateCustomStateList(bar)
+--[[
+for index,state in pairs(bar.cdata.customNames) do
 				if (index == "homestate") then
 					customStateList = state..";"
 				else
 					customStateList = customStateList..state..";"
 				end
 			end
+			--]]
 		end
+		
 		barOpt.customstate:SetText(customStateList)
 	end
 end
@@ -669,25 +686,20 @@ local function resetBarName(frame)
 	end
 end
 
+
 local function updateCustomState(frame)
 	local bar = ION.CurrentBar
-	local state = "custom "..frame:GetText()
+	local state = frame:GetText()
 	local customStateList = ""
 
-	if (bar) then
-		bar:SetState("custom", true, false)  --turns off custom state to clear any previous stored items
-		bar:SetState(state, true, true)
+	bar:SetState("custom", true, false)  --turns off custom state to clear any previous stored items
+	if (bar and state ~= "") then
+		bar:SetState("custom "..state, true, true)
 	end
 
-		if (bar and bar.cdata.customNames) then
-			for index,state in pairs(bar.cdata.customNames) do
-				if (index == "homestate") then
-					customStateList = state..";"..customStateList
-				else
-					customStateList = customStateList..state..";"
-				end
-			end
-		end
+	if (bar and bar.cdata.customNames) then
+		customStateList = generateCustomStateList(bar)
+	end
 
 	barOpt.customstate:SetText(customStateList)
 	ION.VisEditorScrollFrameUpdate()
@@ -1827,7 +1839,11 @@ function ION.VisEditorScrollFrameUpdate(frame, tableList, alt)
 	
 	table.sort(data)
 
-	local customStateData = {}
+
+local customStateData = {}
+--This adds cusom states to the visability menu,  currently disabled untill I get custom state visability to work 
+--[[
+	
 	if (bar and bar.cdata.customNames) then
 			local i = 0
 			for index,state in pairs(bar.cdata.customNames) do
@@ -1835,7 +1851,7 @@ function ION.VisEditorScrollFrameUpdate(frame, tableList, alt)
 			customStateData[state] = i; i=i+1
 			end
 		end
-
+]]--
 	frame:Show()
 
 	for i=1,numVisShown do
@@ -2137,6 +2153,7 @@ function ION:MacroEditorUpdate()
 		local button, IBTNE = ION.CurrentObject, IonButtonEditor
 		local state = button.bar.handler:GetAttribute("fauxstate")
 		local buttonSpec = button:GetSpec()
+
 		local data = button.specdata[buttonSpec][state]
 
 		if (data) then
@@ -2423,7 +2440,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f.edit:SetScript("OnEditFocusLost", macroText_OnEditFocusLost)
 	frame.macroedit = f
 
-	f = CreateFrame("Button", nil, frame.macro)
+	f = CreateFrame("Button", "macroedit", frame.macro)
 	f:SetPoint("TOPLEFT", frame.macroedit, "TOPLEFT", -10, 10)
 	f:SetPoint("BOTTOMRIGHT", -18, 0)
 	f:SetWidth(350)
@@ -2440,7 +2457,7 @@ function ION:ButtonEditor_OnLoad(frame)
 
 	ION.SubFrameBlackBackdrop_OnLoad(f)
 
-	f = CreateFrame("CheckButton", nil, frame.macro, "IonMacroIconButtonTemplate")
+	f = CreateFrame("CheckButton", "macroicon", frame.macro, "IonMacroIconButtonTemplate")
 	f:SetID(0)
 	f:SetPoint("BOTTOMLEFT", frame.macroedit, "TOPLEFT", -6, 15)
 	f:SetWidth(54)
@@ -2459,7 +2476,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f.iconlist:SetScript("OnHide", function() IonObjectEditor.done:Show() end)
 	frame.macroicon = f
 
-	f = CreateFrame("Button", nil, frame.macro)
+	f = CreateFrame("Button", "otehrspec", frame.macro)
 	f:SetPoint("BOTTOMLEFT", frame.macroicon, "BOTTOMRIGHT", 2, -7)
 	f:SetWidth(34)
 	f:SetHeight(34)
@@ -2469,7 +2486,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f:SetHighlightTexture("Interface\\AddOns\\Ion\\Images\\UI-Common-MouseHilight")
 	frame.otherspec = f
 
-	f = CreateFrame("CheckButton", nil, frame.macro, "IonCheckButtonTemplate1")
+	f = CreateFrame("CheckButton", "maast", frame.macro, "IonCheckButtonTemplate1")
 	f:SetWidth(104)
 	f:SetHeight(33.5)
 	f:SetPoint("LEFT", frame.otherspec, "RIGHT", -1, 1.25)
@@ -2478,7 +2495,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f.text:SetText("")
 	frame.macromaster = f
 
-	f = CreateFrame("CheckButton", nil, frame.macro, "IonCheckButtonTemplate1")
+	f = CreateFrame("CheckButton", "snip", frame.macro, "IonCheckButtonTemplate1")
 	f:SetWidth(104)
 	f:SetHeight(33.5)
 	f:SetPoint("LEFT", frame.macromaster, "RIGHT", 0, 0)
@@ -2487,7 +2504,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f.text:SetText("")
 	frame.snippets = f
 
-	f = CreateFrame("CheckButton", nil, frame.macro, "IonCheckButtonTemplate1")
+	f = CreateFrame("CheckButton", "somp", frame.macro, "IonCheckButtonTemplate1")
 	f:SetWidth(104)
 	f:SetHeight(33.5)
 	f:SetPoint("LEFT", frame.snippets, "RIGHT", 0, 0)

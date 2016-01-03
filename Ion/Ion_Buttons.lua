@@ -2681,6 +2681,8 @@ function BUTTON:MACRO_OnHide(...)
 end
 
 function BUTTON:MACRO_OnAttributeChanged(name, value)
+--print(self.bar)
+--print("bar")
 
 	if (value and self.data) then
 
@@ -2709,6 +2711,17 @@ function BUTTON:MACRO_OnAttributeChanged(name, value)
 				self.actionID = false
 
 			end
+			--This will remove any old button state data from the saved varabiels/memory
+			--for id,data in pairs(self.bar.cdata) do
+			for id,data in pairs(self.statedata) do
+				--print("id:"..id)
+				if (self.bar.cdata[id:match("%a+")]) or (id == "" and self.bar.cdata["custom"])  then 
+				--print("STATE FOUND:"..id)
+				elseif not self.bar.cdata[id:match("%a+")] then
+				--print("Old state:"..id)
+					self.statedata[id]= nil
+			end
+		end
 
 			self.specAction = self:GetAttribute("SpecialAction")
 

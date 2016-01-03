@@ -468,6 +468,9 @@ function HANDLER:UpdateVisibility(bar)
 
 				if (state == "stance" and bar.gdata.hidestates:find(":stance8")) then
 					self:AddVisibilityDriver(bar, state, "[stance:2/3,stealth] stance8; "..values.states)
+				--elseif (state == "custom" and bar.cdata.custom) then
+					--self:AddVisibilityDriver(bar, state, bar.cdata.custom)
+					--print(bar.cdata.custom)
 				else
 					self:AddVisibilityDriver(bar, state, values.states)
 				end
@@ -2711,9 +2714,8 @@ function BAR:DeleteBar()
 		if (self.cdata[state] and self[state] and self[state].registered) then
 
 			if (state == "custom" and self.cdata.customRange) then
-
-				local start = tonumber(match(self.cdata.customRange, "^%d+"))
-				local stop = tonumber(match(self.cdata.customRange, "%d+$"))
+				local start = tonumber(string.match(self.cdata.customRange, "^%d+"))
+				local stop = tonumber(string.match(self.cdata.customRange, "%d+$"))
 
 				if (start and stop) then
 					handler:ClearStates(self, state, start, stop)
@@ -2996,10 +2998,10 @@ function BAR:SetState(msg, gui, checked, query)
 						self.cdata.customRange = "1;"..count
 
 						if (count == 0) then
-							newstates = states.." homestate; "
+							newstates = states.." homestate;"
 							self.cdata.customNames["homestate"] = states
 						else
-							newstates = newstates..states.." custom"..count.."; "
+							newstates = newstates..states.." custom"..count..";"
 							self.cdata.customNames["custom"..count] = states
 						end
 
@@ -3009,12 +3011,25 @@ function BAR:SetState(msg, gui, checked, query)
 					end
 				end
 
-				self.cdata.custom = newstates or false --""
+				if (newstates ~= "" ) then
+					self.cdata.custom = newstates
+				else
+					self.cdata.custom = false
+					self.cdata.customNames = false
+					self.cdata.customRange = false
+				end
 				
 
 			else
 				self.cdata.customNames = false
 				self.cdata.customRange = false
+			end
+
+			--Clears any previous set cusom vis settings
+			for states in gmatch(self.gdata.hidestates, "custom%d+") do
+				self.gdata.hidestates = self.gdata.hidestates:gsub(states..":", "")
+			end
+			if not self.gdata.hidestates then print("OOPS")
 			end
 		end
 
@@ -3069,7 +3084,7 @@ function BAR:SetVisibility(msg, gui, checked, query)
 
 					local hidestate = ION.STATEINDEX[toggle]..num
 
-					if (ION.STATES[hidestate]) then
+					if (ION.STATES[hidestate]) or (toggle == "custom" and self.cdata.customNames) then
 
 						if (self.gdata.hidestates:find(hidestate)) then
 							self.gdata.hidestates = self.gdata.hidestates:gsub(hidestate..":", "")
