@@ -15,6 +15,12 @@ local GUIData = ION.RegisteredGUIData
 
 local ICONS = ION.iIndex
 
+
+local sIndex = ION.sIndex  --Spell index
+local cIndex = ION.cIndex  --Battle pet & Mount index
+local iIndex = ION.iIndex  --Items Index
+local ItemCache = IonItemCache
+
 IonGUIGDB = {
 	firstRun = true,
 }
@@ -77,10 +83,13 @@ local swatchOptions = {
 	[8] = { [0] = "AURAIND", L.AURAIND, 1, "AuraIndSet", true, true, "buffcolor", "debuffcolor" },
 }
 
+local specoveride = GetActiveSpecGroup()
+
 local function round(num, idp)
 	local mult = 10^(idp or 0)
 	return math.floor(num * mult + 0.5) / mult
 end
+
 
 local function insertLink(text)
 
@@ -2146,22 +2155,57 @@ function ION.ActionListScrollFrameUpdate(frame)
 	FauxScrollFrame_Update(frame, #data, numShown, 2)
 end
 
+
+--sets button icon based on current specoveride setting
+local function specUpdateIcon(button,data)
+
+	local texture = IBTNE.macroicon.icon:SetTexture("")
+
+	local spell = data.macro_Text:match("/cast%s+(%C+)") or
+			data.macro_Text:match("/use%s+(%C+)") or
+			data.macro_Text:match("/summonpet%s+(%C+)") or
+			data.macro_Text:match("/equipset%s+(%C+)")
+			or data.macro_Text
+
+	if (data.macro_Text:match("/cast%s+(%C+)")) then
+			spell = (spell):lower()
+			if (sIndex[spell]) then
+				local spell_id = sIndex[spell].spellID
+				texture = GetSpellTexture(spell_id)
+			elseif (cIndex[spell]) then
+				texture = cIndex[spell].icon
+			elseif (spell) then
+				texture = GetSpellTexture(spell)
+			end 
+	elseif ItemCache[spell] then
+		texture = GetItemIcon("item:"..ItemCache[spell]..":0:0:0:0:0:0:0")
+	end
+	return texture
+end
+
+
 function ION:MacroEditorUpdate()
 
 	if (ION.CurrentObject and ION.CurrentObject.objType == "ACTIONBUTTON") then
 
 		local button, IBTNE = ION.CurrentObject, IonButtonEditor
 		local state = button.bar.handler:GetAttribute("fauxstate")
-		local buttonSpec = button:GetSpec()
+		local buttonSpec = specoveride--button:GetSpec()
 
+		--Sets spec tab to current spec
 		local data = button.specdata[buttonSpec][state]
+		IBTNE.spec1:SetChecked(nil)
+		IBTNE.spec2:SetChecked(nil)
+		IBTNE["spec"..buttonSpec]:SetChecked(true)
+
+		--Sets current spec marker to proper tab
+		IBTNE.activespc:SetParent(IBTNE["spec"..GetActiveSpecGroup()])
+		IBTNE.activespc:SetPoint("LEFT")
 
 		if (data) then
-
 			IBTNE.macroedit.edit:SetText(data.macro_Text)
-
 			if (not data.macro_Icon) then
-				IBTNE.macroicon.icon:SetTexture(button.iconframeicon:GetTexture())
+				IBTNE.macroicon.icon:SetTexture(specUpdateIcon(button, data))--button.iconframeicon:GetTexture())
 			elseif (data.macro_Icon == "BLANK") then
 				IBTNE.macroicon.icon:SetTexture("")
 			else
@@ -2184,6 +2228,8 @@ function ION.ButtonEditorUpdate(reset)
 		bar.handler:SetAttribute("fauxstate", bar.handler:GetAttribute("activestate"))
 
 		IonButtonEditor.macroicon.icon:SetTexture("")
+
+		specoveride = GetActiveSpecGroup()
 	end
 
 	ION.ActionListScrollFrameUpdate()
@@ -2224,7 +2270,7 @@ local function macroText_OnTextChanged(self)
 	if (self.hasfocus) then
 
 		local button = ION.CurrentObject
-		local buttonSpec = button:GetSpec()
+		local buttonSpec = specoveride --button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
 		if (button and buttonSpec and state) then
@@ -2242,7 +2288,7 @@ local function macroNameEdit_OnTextChanged(self)
 	if (self.hasfocus) then
 
 		local button = ION.CurrentObject
-		local buttonSpec = button:GetSpec()
+		local buttonSpec = specoveride --button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
 		if (button and buttonSpec and state) then
@@ -2266,7 +2312,7 @@ local function macroNoteEdit_OnTextChanged(self)
 	if (self.hasfocus) then
 
 		local button = ION.CurrentObject
-		local buttonSpec = button:GetSpec()
+		local buttonSpec = specoveride --button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
 		if (button and buttonSpec and state) then
@@ -2412,6 +2458,31 @@ local function customDoneOnClick(self)
 	self:GetParent():Hide()
 end
 
+--Resets all the fields in the editor for the curently selected buttton
+local function ResetButtonFields()
+	local button, IBTNE = ION.CurrentObject, IonButtonEditor
+	local state = button.bar.handler:GetAttribute("fauxstate")
+	local buttonSpec = specoveride--button:GetSpec()
+	local data = button.specdata[buttonSpec][state]
+
+	data.actionID = false
+	data.macro_Text = ""
+	data.macro_Icon = false
+	data.macro_Name = ""
+	data.macro_Auto = false
+	data.macro_Watch = false
+	data.macro_Equip = false
+	data.macro_Note = ""
+
+	IBTNE.nameedit:SetText("")
+	IBTNE.noteedit:SetFocus()
+	IBTNE.noteedit:SetText("")
+	IBTNE.macroedit.edit:SetFocus()
+	IBTNE.macroedit.edit:SetText("")
+	IBTNE.macroedit.edit:ClearFocus()
+end
+
+
 function ION:ButtonEditor_OnLoad(frame)
 
 	frame:RegisterForDrag("LeftButton", "RightButton")
@@ -2420,6 +2491,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	ION.Editors.ACTIONBUTTON[4] = ION.ButtonEditorUpdate
 
 	frame.tabs = {}
+	frame.specs = {}
 
 	local f
 
@@ -2440,7 +2512,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f.edit:SetScript("OnEditFocusLost", macroText_OnEditFocusLost)
 	frame.macroedit = f
 
-	f = CreateFrame("Button", "macroedit", frame.macro)
+	f = CreateFrame("Button", "focus", frame.macro)
 	f:SetPoint("TOPLEFT", frame.macroedit, "TOPLEFT", -10, 10)
 	f:SetPoint("BOTTOMRIGHT", -18, 0)
 	f:SetWidth(350)
@@ -2457,7 +2529,7 @@ function ION:ButtonEditor_OnLoad(frame)
 
 	ION.SubFrameBlackBackdrop_OnLoad(f)
 
-	f = CreateFrame("CheckButton", "macroicon", frame.macro, "IonMacroIconButtonTemplate")
+	f = CreateFrame("CheckButton", nil, frame.macro, "IonMacroIconButtonTemplate")
 	f:SetID(0)
 	f:SetPoint("BOTTOMLEFT", frame.macroedit, "TOPLEFT", -6, 15)
 	f:SetWidth(54)
@@ -2476,42 +2548,88 @@ function ION:ButtonEditor_OnLoad(frame)
 	f.iconlist:SetScript("OnHide", function() IonObjectEditor.done:Show() end)
 	frame.macroicon = f
 
-	f = CreateFrame("Button", "otehrspec", frame.macro)
+	f = CreateFrame("Button", nil, frame.macro)
 	f:SetPoint("BOTTOMLEFT", frame.macroicon, "BOTTOMRIGHT", 2, -7)
 	f:SetWidth(34)
 	f:SetHeight(34)
-	f:SetScript("OnClick", function(self) end)
+	--f:SetScript("OnClick", function(self) SetActiveSpecGroup(GetActiveSpecGroup() == 1 and 2 or 1);  end)
+	f:SetScript("OnClick", ResetButtonFields)
+	f:SetScript("OnEnter", function(self)
+						if ( self.tooltipText ) then
+							GameTooltip:SetOwner(self, self.tooltipOwnerPoint or "ANCHOR_RIGHT")
+							GameTooltip:SetText(self.tooltipText)
+						end
+						GameTooltip:Show();
+						end)
+	f:SetScript("OnLeave", function(self)
+						GameTooltip:Hide();
+						end)
 	f:SetNormalTexture("Interface\\AddOns\\Ion\\Images\\UI-RotationRight-Button-Up")
 	f:SetPushedTexture("Interface\\AddOns\\Ion\\Images\\UI-RotationRight-Button-Down")
 	f:SetHighlightTexture("Interface\\AddOns\\Ion\\Images\\UI-Common-MouseHilight")
-	frame.otherspec = f
+	f.tooltipText = "Reset" -- Localize
+	frame.reset_button = f
 
-	f = CreateFrame("CheckButton", "maast", frame.macro, "IonCheckButtonTemplate1")
+	local function SpecOnClick(cTab, silent)
+
+		for tab, panel in pairs(frame.specs) do
+
+			if (tab == cTab) then
+				tab:SetChecked(1)
+				if (MouseIsOver(cTab)) then
+					PlaySound("igCharacterInfoTab")
+				end
+			else
+				tab:SetChecked(nil)
+			end
+			tab:SetBackdropBorderColor(.5, .5, .5 , .5)
+
+		end
+	end
+
+	f = CreateFrame("CheckButton", nil, frame.macro, "IonCheckButtonTemplate1")
 	f:SetWidth(104)
 	f:SetHeight(33.5)
-	f:SetPoint("LEFT", frame.otherspec, "RIGHT", -1, 1.25)
-	f:SetScript("OnClick", function(self) end)
+	f:SetPoint("LEFT", frame.reset_button, "RIGHT", -1, 1.25)
+	f:SetScript("OnClick", function(self) SpecOnClick(self); specoveride = 1 ; ION.ButtonEditorUpdate() end)
 	f:SetChecked(nil)
-	f.text:SetText("")
-	frame.macromaster = f
+	f.text:SetText("Spec1")
+	f.tooltipText = "Display button for spec 1" -- Localize
+	frame.spec1 = f; frame.specs[f] = frame.spec1
 
-	f = CreateFrame("CheckButton", "snip", frame.macro, "IonCheckButtonTemplate1")
+	f = CreateFrame("frame", nil, frame.spec1)
+	f:SetWidth(20)
+	f:SetHeight(20)
+	f:SetPoint("LEFT",10)
+	f.texture = f:CreateTexture(nil, "OVERLAY")
+	f.texture:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+	f.texture:SetAlpha(1)
+	f.texture:SetAllPoints()
+	f:Show()
+	frame.activespc = f
+
+	f = CreateFrame("CheckButton", nil, frame.macro, "IonCheckButtonTemplate1")
 	f:SetWidth(104)
 	f:SetHeight(33.5)
-	f:SetPoint("LEFT", frame.macromaster, "RIGHT", 0, 0)
-	f:SetScript("OnClick", function(self) end)
+	f:SetPoint("LEFT", frame.spec1, "RIGHT", 0, 0)
+	f:SetScript("OnClick", function(self) SpecOnClick(self); specoveride = 2 ; ION.ButtonEditorUpdate() end)
 	f:SetChecked(nil)
-	f.text:SetText("")
-	frame.snippets = f
+	f.text:SetText("Spec2")
+	f.tooltipText = "Display button for spec 2" -- Localize
+	frame.spec2 = f; frame.specs[f] = frame.spec2
 
-	f = CreateFrame("CheckButton", "somp", frame.macro, "IonCheckButtonTemplate1")
+	f = CreateFrame("Button", nil, frame.macro, "UIPanelButtonTemplate")--"IonCheckButtonTemplate1")
 	f:SetWidth(104)
 	f:SetHeight(33.5)
-	f:SetPoint("LEFT", frame.snippets, "RIGHT", 0, 0)
-	f:SetScript("OnClick", function(self) end)
-	f:SetChecked(nil)
-	f.text:SetText("")
-	frame.somethingsomething = f
+	f:SetPoint("LEFT", frame.spec2, "RIGHT", 0, 0)
+	f:SetScript("OnClick", function(self)
+						frame.macroedit.edit:ClearFocus()
+						frame.nameedit:ClearFocus()
+						frame.noteedit:ClearFocus()
+						end)
+	f:SetText("Save")
+	f.tooltipText = "Save" -- Localize
+	frame.savestate = f
 
 	f = CreateFrame("EditBox", nil, frame.macro)
 	f:SetMultiLine(false)
