@@ -205,10 +205,6 @@ local PetActions = ION.PetActions
 -- Chakra: Renew: 81207 - 88682
 -- Chakra: Heal: 81208 - 88684
 
-local morphSpells = {
-	[8921] = false,
-	[88625] = false,
-}
 
 --Spells that need their primary spell name overwritten
 local AlternateSpellNameList = {

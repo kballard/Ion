@@ -136,6 +136,8 @@ ION.STATES = {
 	prowl0 = L.PROWL0,
 	prowl1 = L.PROWL1,
 	custom0 = L.CUSTOM0,
+	target0 = L.TARGET0,
+	target1 = L.TARGET1,
 }
 
 ION.STATEINDEX = {
@@ -156,6 +158,7 @@ ION.STATEINDEX = {
 	extrabar = L.EXTRABAR,
 	prowl = L.PROWL,
 	custom = L.CUSTOM,
+	target = L.TARGET,
 
 	[L.PAGED] = "paged",
 	[L.STANCE] = "stance",
@@ -174,6 +177,7 @@ ION.STATEINDEX = {
 	[L.EXTRABAR] = "extrabar",
 	[L.PROWL] = "prowl",
 	[L.CUSTOM] = "custom",
+	[L.TARGET] = "target",
 }
 
 local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")

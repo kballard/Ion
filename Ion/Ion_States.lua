@@ -124,6 +124,60 @@ Ion.MANAGED_ACTION_STATES = {
 		rangeStop = 1,
 		order = 17
 	},
+	target = {
+		states = "[exists] target1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 18,
+	},
+	indoors = {
+		states = "[indoors] indoors1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 19,
+	},
+	outdoors = {
+		states = "[outdoors] outdoors1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 20,
+	},
+	mounted = {
+		states = "[mounted] mounted1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 21,
+	},
+	flying = {
+		states = "[flying] flying1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 22,
+	},
+	help = {
+		states = "[help] help1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 23,
+	},
+	harm = {
+		states = "[harm] harm1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 24,
+	},
+	resting = {
+		states = "[resting] resting1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 25,
+	},
+	swimming = {
+		states = "[swimming] swimming1; laststate",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 26,
+	},
 }
 
 Ion.MANAGED_BAR_STATES = {
@@ -248,5 +302,61 @@ Ion.MANAGED_BAR_STATES = {
 		rangeStart = 1,
 		rangeStop = 1,
 		order = 17,
+	},
+
+	target = {
+		states = "[noexists] target0; [exists] target1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 18,
+	},
+
+	indoors = {
+		states = "[noindoors] indoors0; [indoors] indoors1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 19,
+	},
+	outdoors = {
+		states = "[nooutdoors] outdoors0; [outdoors] outdoors1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 20,
+	},
+	mounted = {
+		states = "[nomounted] mounted0; [mounted] mounted1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 21,
+	},
+	flying = {
+		states = "[noflying] flying0; [flying] flying1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 22,
+	},
+	help = {
+		states = "[nohelp] help0; [help] help1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 23,
+	},
+	harm = {
+		states = "[noharm] harm0; [harm] harm1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 24,
+	},
+	resting = {
+		states = "[noresting] resting0; [resting] resting1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 25,
+		},
+	swimming = {
+		states = "[noswimming] swimming0; [swimming] swimming1",
+		rangeStart = 1,
+		rangeStop = 1,
+		order = 26,
 	},
 }
