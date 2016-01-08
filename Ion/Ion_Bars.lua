@@ -143,6 +143,12 @@ ION.barCDEF = {
 	shift = false,
 	target = false,
 
+	selfCast = false,
+	focusCast = false,
+	rightClickTarget = false,
+	mouseOverCast = false,
+	
+
 	custom = false,
 	customRange = false,
 	customNames = false,
@@ -3522,6 +3528,71 @@ function IONBarProfileUpdate()
 			
 			bar:Load()
 		end
-
-
 end
+
+--- Sets a Target Casting state for a bar
+-- @param value(string): Database refrence value to be set
+-- @param gui(Bool): Toggle to determine if call was from the GUI
+-- @param checked(Bool) : Used when using a GUI checkbox - It is the box's current state
+-- @param query: N/A
+function BAR:SetCastingTarget(value, gui, checked, query)
+	if (value) then
+	--[[	
+		if (not MAS[state]) then
+			if (not gui) then
+				ION:PrintStateList()
+			else
+				print("GUI option error")
+			end
+
+			return
+		end
+--]]
+		if (gui) then
+
+			if (checked) then
+				self.cdata[value] = true
+			else
+				self.cdata[value] = false
+			end
+
+		else
+
+			local toggle = self.cdata[value]
+
+			if (toggle) then
+				self.cdata[value] = false
+			else
+				self.cdata[value] = true
+			end
+		end
+		--print(value)
+		--print(self.cdata[value])
+		--self.stateschanged = true
+		BUTTON:UpdateMacroCastTargets()
+		self:Update()
+	elseif (not gui) then
+--[[
+		wipe(statetable)
+
+		for k,v in pairs(ION.STATEINDEX) do
+
+			if (self.cdata[k]) then
+				tinsert(statetable, k..": on")
+			else
+				tinsert(statetable, k..": off")
+			end
+		end
+
+		tsort(statetable)
+
+		for k,v in ipairs(statetable) do
+			print(v)
+		end
+		
+		--]]
+	end
+end
+
+
+

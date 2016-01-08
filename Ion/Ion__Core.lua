@@ -1,6 +1,39 @@
 --Ion, a World of Warcraft® user interface addon.
 --Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
+-------------------------------------------------------------------------------
+-- Localized Lua globals.
+-------------------------------------------------------------------------------
+local _G = getfenv(0)
+
+-- Functions
+local next = _G.next
+local pairs = _G.pairs
+local tonumber = _G.tonumber
+local tostring = _G.tostring
+local type = _G.type
+
+-- Libraries
+local string = _G.string
+local table = _G.table
+
+
+-------------------------------------------------------------------------------
+-- AddOn namespace.
+-------------------------------------------------------------------------------
+--local FOLDER_NAME, private = ...
+
+--local Dialog = _G.LibStub("LibDialog-1.0")
+--local Toast = _G.LibStub("LibToast-1.0")
+
+--local L = private.L
+--_G._NPCScan = private
+
+local debugger -- Only defined if needed.
+
+-- Create a new Add-on object using AceAddon for Profile DB
+--private.Ace = LibStub("AceAddon-3.0"):NewAddon(FOLDER_NAME)
+
 Ion = {
 	SLASHCMDS = {},
 	SLASHHELP = {},
@@ -64,6 +97,7 @@ IonCDB = {
 
 	selfCast = false,
 	focusCast = false,
+	mouseOverMod= "NONE",
 
 	layOut = 1,
 
@@ -187,8 +221,10 @@ local opDepList = {"BarKeep", "Bartender4", "Dominos", "MagnetButtons", "nMainba
 local level, stanceStringsUpdated, PEW
 
 
-IonProfile = LibStub("AceAddon-3.0"):NewAddon("IonProfile")
+IonProfile = LibStub("AceAddon-3.0"):NewAddon("Ion")
 
+
+--ACE GUI OPTION TABLE
 local options = {
 	name = "Ion",
 	type = 'group',
@@ -198,34 +234,36 @@ local options = {
 			type = "group",
 			args={
 				AnimateIcon = {
-				 name = "Animate Icon",
-				 desc = "Toggles the Animation of the Ion Icon",
-				 type = "toggle",
-				 set = function() ION:Animate() end,
-				 get = function() return IonGDB.animate end,
-				 width = "full",
+					order = 0,
+					name = "Animate Icon",
+					desc = "Toggles the Animation of the Ion Icon",
+					type = "toggle",
+					set = function() ION:Animate() end,
+					get = function() return IonGDB.animate end,
+					width = "full",
 				},
 				BlizzardBar = {
-				 name = "Display Blizzard Bar",
-				 desc = "Shows / Hides the Default Blizzard Bar",
-				 type = "toggle",
-				 set = function() ION:BlizzBar() end,
-				 get = function() return IonGDB.mainbar end,
-				 width = "full",
+					order = 1,
+					name = "Display Blizzard Bar",
+					desc = "Shows / Hides the Default Blizzard Bar",
+					type = "toggle",
+					set = function() ION:BlizzBar() end,
+					get = function() return IonGDB.mainbar end,
+					width = "full",
 				},
 				DraenorBar = {
-				 name = "Display Draenor Garrison Bar",
-				 desc = "Shows / Hides the Draenor Garrison Bar",
-				 type = "toggle",
-				 set = function() ION:DraenorBar() end,
-				 get = function() return IonGDB.draenorbar end,
-				 width = "full",
+					order = 2,
+					name = "Display Draenor Garrison Bar",
+					desc = "Shows / Hides the Draenor Garrison Bar",
+					type = "toggle",
+					set = function() ION:DraenorBar() end,
+					get = function() return IonGDB.draenorbar end,
+					width = "full",
 				},
 			},
 		},
 	} ,
 }
---ION:BlizzBar()
 
 local defaults = {
 	profile = {
@@ -264,6 +302,7 @@ local defaults = {
 
 			selfCast = false,
 			focusCast = false,
+			mouseOverMod= "NONE",
 
 			layOut = 1,
 
@@ -717,7 +756,7 @@ function ION:UpdateCompanionData()
 		local link = GetSpellLink(creatureName)
 		local spellID
 		if (link) then
-			 _, spellID = link:match("(spell:)(%d+)")
+			_, spellID = link:match("(spell:)(%d+)")
 			spellID = tonumber(spellID)
 		end
 
@@ -2231,4 +2270,3 @@ end
 
 
 --161691
-

@@ -3124,7 +3124,6 @@ function BUTTON:LoadData(spec, state)
 end
 
 function BUTTON:BuildStateData()
-
 	for state, data in pairs(self.statedata) do
 		self:SetAttribute(state.."-macro_Text", data.macro_Text)
 		self:SetAttribute(state.."-actionID", data.actionID)
@@ -3132,7 +3131,6 @@ function BUTTON:BuildStateData()
 end
 
 function BUTTON:Reset()
-
 	self:SetAttribute("unit", nil)
 	self:SetAttribute("useparent-unit", nil)
 	self:SetAttribute("type", nil)
@@ -3521,23 +3519,33 @@ function BUTTON:SetFauxState(state)
 	end
 end
 
-
+--this will generate a spell macro
+--spell: name of spell to use
+--subname: subname of spell to use (optional)
+--return: macro text
 function BUTTON:AutoWriteMacro(spell, subName)
-	local modifier, modkey = " "
+	local modifier, modkey = " ", nil
+	local bar = Ion.CurrentBar or self.bar
 
-	if (GDB.selfCast) then
-		modKey = ((GDB.selfCast):match("^%a+")):lower(); modifier = modifier.."[@player,mod:"..modKey.."]"
+	if (bar.cdata.mouseOverCast and IonCDB.mouseOverMod ~= "NONE" ) then
+		modKey = IonCDB.mouseOverMod; modifier = modifier.."[@mouseover,mod:"..modKey.."]"
+	elseif (bar.cdata.mouseOverCast and IonCDB.mouseOverMod == "NONE" ) then
+		modifier = modifier.."[@mouseover,exists]"
 	end
 
-	if (GDB.focusCast) then
-		modKey = ((GDB.focusCast):match("^%a+")):lower(); modifier = modifier.."[@focus,mod:"..modKey.."]"
+	if (bar.cdata.selfCast and GetModifiedClick("SELFCAST") ~= "NONE" ) then
+		modKey = GetModifiedClick("SELFCAST"); modifier = modifier.."[@player,mod:"..modKey.."]"
 	end
 
-	if (GDB.rightClickTarget) then
-		modKey = GDB.rightClickTarget; modifier = modifier.."[@"..modKey..",btn:2]"
+	if (bar.cdata.focusCast and GetModifiedClick("FOCUSCAST") ~= "NONE" ) then
+		modKey = GetModifiedClick("FOCUSCAST"); modifier = modifier.."[@focus,exists,mod:"..modKey.."]"
 	end
 
-	if (modKey) then
+	if (bar.cdata.rightClickTarget) then
+		modKey = ""; modifier = modifier.."[@player"..modKey..",btn:2]"
+	end
+
+	if (modifier ~= " " ) then --(modKey) then
 		modifier = modifier.."[] "
 	end
 
@@ -3547,6 +3555,34 @@ function BUTTON:AutoWriteMacro(spell, subName)
 		return "#autowrite\n/cast"..modifier..spell.."()"
 	end
 end
+
+--This will update the modifier value in a macro when a bar is set twith a target condiional
+--@spell:  this is hte macro text to be updated
+--return: updated macro text
+function BUTTON:AutoUpdateMacro(macro)
+	if (GetModifiedClick("SELFCAST") ~= "NONE" ) then
+		macro = macro:gsub("%[@player,mod:%u+%]", "[@player,mod:"..GetModifiedClick("SELFCAST").."]")
+		else 
+		macro = macro:gsub("%[@player,mod:%u+%]", "")
+	end
+
+	if (GetModifiedClick("FOCUSCAST") ~= "NONE" ) then
+		macro = macro:gsub("%[@focus,mod:%u+%]", "[@focus,exists,mod:"..GetModifiedClick("FOCUSCAST").."]")
+	else
+		macro = macro:gsub("%[@focus,mod:%u+%]", "")
+	end
+
+	if (IonCDB.mouseOverMod ~= "NONE" ) then
+		macro = macro:gsub("%[@mouseover,mod:%u+%]", "[@mouseover,mod:"..IonCDB.mouseOverMod .."]")
+		macro = macro:gsub("%[@mouseover,exists]", "[@mouseover,mod:"..IonCDB.mouseOverMod .."]")
+	else
+		macro = macro:gsub("%[@mouseover,mod:%u+%]", "[@mouseover,exists]")
+	end
+	
+	--macro = info.macro_Text:gsub("%[.*%]", "")
+	return macro
+end
+
 
 function BUTTON:GetPosition(oFrame)
 	local relFrame, point
@@ -3707,4 +3743,57 @@ function IONButtonProfileUpdate()
 		btnGDB = GDB.buttons
 
 		btnCDB = CDB.buttons
+end
+
+--- This will itterate through a set of buttons. For any buttons that have the #autowrite flag in its macro, that
+-- macro will then be updated to via AutoWriteMacro to include selected target macro option, or via AutoUpdateMacro 
+-- to update a current target macro's toggle mofifier.
+-- @param global(boolean): if true will go though all buttons, else it will just update the button set for the current bar
+function BUTTON:UpdateMacroCastTargets(global_update)
+	local button_list = {}
+
+	if global_update then
+		local button_count =(#IonCDB.buttons)
+		for index = 1, button_count, 1 do
+			tinsert(button_list, _G["IonActionButton"..index])
+		end
+	else
+		local bar = Ion.CurrentBar
+		for index in gmatch(bar.gdata.objectList, "[^;]+") do
+			tinsert(button_list, _G["IonActionButton"..index])
+		end
+	end
+
+	for index, button in pairs(button_list) do
+		local cur_button = button.specdata
+		local macro_update = false
+
+		for i = 1,2 do 
+				for state, info in pairs(cur_button[i]) do
+					if info.macro_Text and info.macro_Text:find("#autowrite\n/cast") then 
+						local spell, subName = "", ""
+
+						spell = info.macro_Text:gsub("%[.*%]", "")
+						spell, subName = spell:match("#autowrite\n/cast%s*(.+)%((.*)%)")
+
+						if spell then 
+							if global_update then 
+								info.macro_Text = ION.BUTTON:AutoUpdateMacro(info.macro_Text)
+								--print(info.macro_Text)
+							else
+								info.macro_Text = ION.BUTTON:AutoWriteMacro(spell, subName)
+								--print(info.macro_Text)
+							end
+							
+						end
+						macro_update = true
+					end
+				end
+		end
+		if macro_update then
+			button:UpdateFlyout()
+			button:BuildStateData()
+			button:SetType()
+		end
+	end
 end

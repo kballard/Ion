@@ -424,3 +424,26 @@ L.GUI_RESTING = "Resting"
 L.GUI_SWIMMING = "Swimming"
 L.GUI_HARM = "Haarm"
 L.GUI_HELP = "Help"
+
+L.SPELL_TARGETING_OPTIONS = "Spell Target Options"
+
+L["None"] = "None"
+L["ALT"] = "ALT"
+L["SHIFT"] = "SHIFT"
+L["CTRL"] =  "CTRL"
+
+L["Self-Cast by modifier"] = "Self-Cast by modifier"
+L["Toggle the use of the modifier-based self-cast functionality."] = true
+
+L["Right-click Self-Cast"] = "Right-click Self-Cast"
+L["Toggle the use of the right-click self-cast functionality."] = "Toggle the use of the right-click self-cast functionality."
+ L["Self-Cast Modifier"] = "Self-Cast Modifier"
+ L["Select the Self-Cast Modifier"] ="Select the Self-Cast Modifier"
+L["Focus-Cast by modifier"] ="Focus-Cast by modifier"
+L["Toggle the use of the modifier-based focus-cast functionality."] = "Toggle the use of the modifier-based focus-cast functionality."
+ L["Focus-Cast Modifier"] ="Focus-Cast Modifier"
+L["Select the Focus-Cast Modifier"] ="Select the Focus-Cast Modifier"
+L["Mouse-Over Casting Modifier"] = "Mouse-Over Casting Modifier"
+L["Select a modifier for Mouse-Over Casting"] = "Select a modifier for Mouse-Over Casting"
+L["\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."] = "\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."
+

@@ -85,6 +85,12 @@ local swatchOptions = {
 
 local specoveride = GetActiveSpecGroup()
 
+
+local addonName = ...
+
+
+local AceGUI = LibStub("AceGUI-3.0")
+
 local function round(num, idp)
 	local mult = 10^(idp or 0)
 	return math.floor(num * mult + 0.5) / mult
@@ -653,6 +659,10 @@ for index,state in pairs(bar.cdata.customNames) do
 		
 		barOpt.customstate:SetText(customStateList)
 	end
+--Set visisbility buttons
+	ION.VisEditorScrollFrameUpdate(frame, tableList, alt)
+	LibStub("AceConfigDialog-3.0"):Open(addonName, IBE.ACEmenu , "moreoptions")
+
 end
 
 
@@ -772,7 +782,7 @@ function ION:BarEditor_OnLoad(frame)
 	f:SetScript("OnClick", function(self) TabsOnClick(self, true) end)
 	f:SetFrameLevel(frame:GetFrameLevel()+1)
 	f:SetChecked(nil)
-	f.text:SetText("")
+	f.text:SetText(L.SPELL_TARGETING_OPTIONS)
 	frame.tab3 = f; frame.tabs[f] = frame.bargroups
 
 	f = CreateFrame("CheckButton", nil, frame, "IonCheckButtonTemplate1")
@@ -1757,8 +1767,19 @@ function ION:VisEditor_OnLoad(frame)
 	f:SetHeight(25)
 	f:SetPoint("BOTTOMLEFT", frame, "TOPLEFT",5,-5)
 	f:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT",-5,-5)
-	f:SetFrameLevel(frame:GetFrameLevel())
-	f:SetBackdropColor(0.3,0.3,0.3,1)
+	f:SetFrameLevel(frame:GetFrameLevel()+1)
+	f:SetBackdrop({
+		bgFile = "Interface\\AddOns\\Ion\\Images\\UI-Panel-Tab-Background",
+		edgeFile = "Interface\\AddOns\\Ion\\Images\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 24,
+		edgeSize = 16,
+		insets = {left = 5, right = 5, top = 5, bottom = 5},})
+
+	f:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
+	--f:SetBackdropColor(0.7,0.7,0.7,1)
+	f:SetBackdropColor(1,1,1,1)
+	--f:SetBackdropColor(0.3,0.3,0.3,1)
 	f.text:SetText(L.BAR_VISABLE_STATES)
 	f.selected = true
 	
@@ -1910,6 +1931,26 @@ function ION:BarStates_OnLoad(frame)
 end
 
 function ION:BarGroups_OnLoad(frame)
+	--Container Support
+	local content = CreateFrame("Frame", "opcont", frame)
+	content:SetPoint("TOPLEFT",5,-5 )
+	content:SetPoint("BOTTOMRIGHT",-5,5)
+	
+	local widget = {
+		frame     = frame,
+		content   = content,
+		type      = "t1"
+	}
+	widget["OnRelease"] = function(self)
+		self.status = nil
+		wipe(self.localstatus)
+	end
+	
+	IonBarEditor.ACEmenu = widget
+	AceGUI:RegisterAsContainer(widget)
+--content:SetScript("OnUpdate",function () LibStub("AceConfigDialog-3.0"):Open(addonName, widget, "moreoptions") end)
+--content:SetScript("OnShow",function () LibStub("AceConfigDialog-3.0"):Open(addonName, widget, "moreoptions") end)
+--content:SetScript("OnClose", function(widget) AceGUI:Release(widget) end)
 
 	ION.SubFrameHoneycombBackdrop_OnLoad(frame)
 
@@ -2155,8 +2196,11 @@ function ION.ActionListScrollFrameUpdate(frame)
 	FauxScrollFrame_Update(frame, #data, numShown, 2)
 end
 
-
---sets button icon based on current specoveride setting
+--TODO REVISIT & CLEAN
+--- Sets button icon based on current specoveride setting
+-- @param button
+-- @param data:
+-- @returns: Button texture
 local function specUpdateIcon(button,data)
 
 	local texture = IBTNE.macroicon.icon:SetTexture("")
@@ -2249,6 +2293,9 @@ function ION:ButtonEditor_OnHide(frame)
 
 end
 
+
+--- Triggers when macro editor's text box loses focus
+-- @param self: macro editor frame
 local function macroText_OnEditFocusLost(self)
 
 	self.hasfocus = nil
@@ -2265,6 +2312,9 @@ local function macroText_OnEditFocusLost(self)
 	end
 end
 
+
+--- Triggers when text in the  macro editor changes
+-- @param self: macro editor frame
 local function macroText_OnTextChanged(self)
 
 	if (self.hasfocus) then
@@ -2275,10 +2325,13 @@ local function macroText_OnTextChanged(self)
 
 		if (button and buttonSpec and state) then
 			button.specdata[buttonSpec][state].macro_Text = self:GetText()
+			button.specdata[buttonSpec][state].macro_Watch = false
 		end
 	end
 end
 
+--- Triggers when the text in the macro editor's name text box changes
+-- @param self: macro editor name edit box frame
 local function macroNameEdit_OnTextChanged(self)
 
 	if (strlen(self:GetText()) > 0) then
@@ -2300,6 +2353,9 @@ local function macroNameEdit_OnTextChanged(self)
 	end
 end
 
+
+--- Triggers when the text in the macro editor's note text box changes
+-- @param self: macro editor note edit box frame
 local function macroNoteEdit_OnTextChanged(self)
 
 	if (strlen(self:GetText()) > 0) then
@@ -2321,8 +2377,11 @@ local function macroNoteEdit_OnTextChanged(self)
 	end
 end
 
-local function macroOnEditFocusLost(self)
 
+--TODO Revisit & Check description
+--- Triggers when macro editor loses focus
+-- @param self: macro editor frame
+local function macroOnEditFocusLost(self)
 	self.hasfocus = nil
 
 	local button = ION.CurrentObject
@@ -3071,3 +3130,113 @@ frame:SetScript("OnEvent", controlOnEvent)
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+
+
+--- ACE GUI OPTION GET & SET FUnctions
+-- @param self: macro editor frame
+local function settingGetter(info)
+	if Ion.CurrentBar then 
+		return Ion.CurrentBar.cdata[ info[#info]]
+	end
+end
+local function SetBarCastTarget(value, toggle)
+		if Ion.CurrentBar then 
+		Ion.CurrentBar:SetCastingTarget(value, true, toggle)
+	end
+end
+
+
+--ACE GUI OPTION TABLE for Bar Targeting
+local target_options = {
+	name = "Ion",
+	type = 'group',
+	args = {
+		moreoptions={
+			name = "Options",
+			type = "group",
+			args={
+				selfCast = {
+					order = 10,
+					type = "toggle",
+					name = L["Self-Cast by modifier"],
+					desc = L["Toggle the use of the modifier-based self-cast functionality."],
+					get = function(info)  return settingGetter(info) end, --getFunc,
+					set = function(info, value) SetBarCastTarget("selfCast", value) end,
+				
+				},
+				setselfcastmod = {
+					order = 20,
+					type = "select",
+					name = L["Self-Cast Modifier"],
+					desc = L["Select the Self-Cast Modifier"],
+					get = function(info) return GetModifiedClick("SELFCAST") end,
+					set = function(info, value) SetModifiedClick("SELFCAST", value); SaveBindings(GetCurrentBindingSet() or 1); ION.BUTTON:UpdateMacroCastTargets(true) end,
+					values = { NONE = L["None"], ALT = L["ALT"], SHIFT = L["SHIFT"], CTRL = L["CTRL"] },
+				},
+				selfcast_nl = {
+					order = 30,
+					type = "description",
+					name = "",
+				},
+				focusCast = {
+					order = 50,
+					type = "toggle",
+					name = L["Focus-Cast by modifier"],
+					desc = L["Toggle the use of the modifier-based focus-cast functionality."],
+					get = function(info)  return settingGetter(info) end, --getFunc,
+					set = function(info, value) SetBarCastTarget("focusCast", value) end,
+					},
+				setfocuscastmod = {
+					order = 60,
+					type = "select",
+					name = L["Focus-Cast Modifier"],
+					desc = L["Select the Focus-Cast Modifier"],
+					get = function(info) return GetModifiedClick("FOCUSCAST") end,
+					set = function(info, value) SetModifiedClick("FOCUSCAST", value); SaveBindings(GetCurrentBindingSet() or 1); ION.BUTTON:UpdateMacroCastTargets(true) end,
+					values = { NONE = L["None"], ALT = L["ALT"], SHIFT = L["SHIFT"], CTRL = L["CTRL"] },
+				},
+				focuscast_nl = {
+					order = 70,
+					type = "description",
+					name = "",
+				},
+				rightClickTarget = {
+					order = 80,
+					type = "toggle",
+					name = L["Right-click Self-Cast"],
+					desc = L["Toggle the use of the right-click self-cast functionality."],
+					get = function(info)  return settingGetter(info) end, --getFunc,
+					set = function(info, value) SetBarCastTarget("rightClickTarget", value) end,
+					},
+				rightclickselfcast_nl = {
+					order = 90,
+					type = "description",
+					name = "",
+				},
+				mouseOverCast = {
+					order = 180,
+					type = "toggle",
+					name = "Mouseobe togge", --Localize
+					desc = "Mouseobe togge", --Localize
+					get = function(info)  return settingGetter(info) end, --getFunc,
+					set = function(info, value) SetBarCastTarget("mouseOverCast", value) end,
+					},
+				mouseovermod = {
+					order = 301,
+					type = "select",
+					name = L["Mouse-Over Casting Modifier"],
+					desc = L["Select a modifier for Mouse-Over Casting"],
+					get = function() return IonCDB.mouseOverMod end, --getFunc,
+					set = function(info, value) IonCDB.mouseOverMod = value; ION.BUTTON:UpdateMacroCastTargets(true) end,
+					values = { NONE = L["None"], ALT = L["ALT"], SHIFT = L["SHIFT"], CTRL = L["CTRL"] },
+				},
+				mouseovermod_desc = {
+					order = 302,
+					type = "description",
+					name = "\n" .. L["\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."],
+				},
+			},
+		},
+	} ,
+}
+LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, target_options)
