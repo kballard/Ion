@@ -412,6 +412,7 @@ local slashFunctions = {
 	[45] = "",
 	[46] = "Animate",
 	[47] = "DraenorBar",
+	[48] = "Debuger",
 }
 
 
@@ -2288,3 +2289,30 @@ end
 
 
 --161691
+-------------------------------------------------------------------------------
+-- Debugger.
+-------------------------------------------------------------------------------
+local function CreateDebugFrame()
+	return _G.LibStub("LibTextDump-1.0"):New(("%s Debug Output"):format("ION"), 640, 480)
+end
+
+function Ion.Debuger()
+			debugger = debugger or CreateDebugFrame()
+
+			if debugger:Lines() == 0 then
+				debugger:AddLine("Nothing to report.")
+				debugger:Display()
+				debugger:Clear()
+				return
+			end
+			debugger:Display()
+		end
+
+function ION.Debug(...)
+	--@debug@
+	debugger = debugger or CreateDebugFrame()
+	debugger:AddLine(string.format(...))
+	local frame = _G.LibStub("LibTextDump-1.0").frames[debugger]
+	if frame:IsVisible() then debugger:Display() end
+	--@end-debug@
+end

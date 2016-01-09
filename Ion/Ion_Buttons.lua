@@ -2442,7 +2442,6 @@ function BUTTON:MACRO_SetItemTooltip(item)
 
 	local name, link = GetItemInfo(item)
 	local itemID =ItemCache[item]
-
 	if (link) then
 		if (self.UberTooltips) then
 			if (PlayerHasToy(itemID)) then

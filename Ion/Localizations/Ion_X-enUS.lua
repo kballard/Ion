@@ -154,6 +154,10 @@ L.SLASH_CMD46_DESC = "Toggle Ion's Orb Animation"
 L.SLASH_CMD47 = "DraenorBar"
 L.SLASH_CMD47_DESC = "Toggle Draenor Garrison Bar"
 
+L.SLASH_CMD48 = "Debug"
+L.SLASH_CMD48_DESC = "Degutool"
+
+
 L.BARTYPES_USAGE = "Usage: |cffffff00/ion create <type>|r\n"
 L.BARTYPES_TYPES = "     Types -\n"
 L.BARTYPES_LINE = "Creates a bar for %ss"
