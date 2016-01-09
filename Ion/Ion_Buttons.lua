@@ -1414,8 +1414,8 @@ function BUTTON:MACRO_UpdateUsableSpell(spell)
 end
 
 function BUTTON:MACRO_UpdateUsableItem(item)
+	local isUsable, notEnoughMana = IsUsableItem(item) or PlayerHasToy(ItemCache[item])
 
-      local isUsable, notEnoughMana = IsUsableItem(item)
 	if (notEnoughMana and self.manacolor) then
 
 		self.iconframeicon:SetVertexColor(self.manacolor[1], self.manacolor[2], self.manacolor[3])
@@ -2441,11 +2441,16 @@ end
 function BUTTON:MACRO_SetItemTooltip(item)
 
 	local name, link = GetItemInfo(item)
+	local itemID =ItemCache[item]
 
 	if (link) then
-
 		if (self.UberTooltips) then
-			GameTooltip:SetHyperlink(link)
+			if (PlayerHasToy(itemID)) then
+				GameTooltip:ClearLines()
+				GameTooltip:SetToyByItemID(itemID)
+			else
+				GameTooltip:SetHyperlink(link)
+			end
 		else
 			GameTooltip:SetText(name, 1, 1, 1)
 		end
