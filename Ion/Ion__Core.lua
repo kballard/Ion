@@ -56,6 +56,7 @@ Ion = {
 	StartDrag = false,
 	maxActionID = 132,
 	maxPetID = 10,
+	maxStanceID = _G.NUM_STANCE_SLOTS, --(10)
 	OpDep = false,
 }
 
@@ -67,6 +68,9 @@ IonGDB = {
 
 	xbars = {},
 	xbtns = {},
+
+	sbars = {},
+	sbtns = {},
 
 	buttonLoc = {-0.85, -111.45},
 	buttonRadius = 87.5,
@@ -81,6 +85,8 @@ IonGDB = {
 
 	firstRun = true,
 	xbarFirstRun = true,
+	sbarFirstRun = true,
+
 
 	betaWarning = true,
 
@@ -94,6 +100,10 @@ IonCDB = {
 
 	xbars = {},
 	xbtns = {},
+
+	sbars = {},
+	sbtns = {},
+
 
 	selfCast = false,
 	focusCast = false,
@@ -292,6 +302,9 @@ local defaults = {
 			xbars = {},
 			xbtns = {},
 
+			sbars = {},
+			sbtns = {},
+
 			buttonLoc = {-0.85, -111.45},
 			buttonRadius = 87.5,
 
@@ -305,6 +318,7 @@ local defaults = {
 
 			firstRun = true,
 			xbarFirstRun = true,
+			sbarFirstRun = true,
 
 			betaWarning = true,
 
@@ -317,6 +331,8 @@ local defaults = {
 
 			xbars = {},
 			xbtns = {},
+			sbars = {},
+			sbtns = {},
 
 			selfCast = false,
 			focusCast = false,

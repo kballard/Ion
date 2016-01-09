@@ -42,6 +42,7 @@ Ion_Flyouts.lua
 Ion_SnapTo.lua
 
 Ion_ExtraBar.lua
+Ion_StanceBar.lua
 
 Ion-Broker.lua
 test.lua
