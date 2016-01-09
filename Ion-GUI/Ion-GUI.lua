@@ -85,7 +85,6 @@ local swatchOptions = {
 
 local specoveride = GetActiveSpecGroup()
 
-
 local addonName = ...
 
 
@@ -696,7 +695,6 @@ end
 
 
 local function resetBarName(frame)
-
 	local bar = ION.CurrentBar
 
 	if (bar) then
@@ -705,6 +703,14 @@ local function resetBarName(frame)
 	end
 end
 
+local function resetMacroText(frame)
+	local bar = ION.CurrentBar
+
+	if (bar) then
+		frame:SetText(bar.gdata.name)
+		frame:ClearFocus()
+	end
+end
 
 local function updateCustomState(frame)
 	local bar = ION.CurrentBar
@@ -783,7 +789,7 @@ function ION:BarEditor_OnLoad(frame)
 	f:SetFrameLevel(frame:GetFrameLevel()+1)
 	f:SetChecked(nil)
 	f.text:SetText(L.SPELL_TARGETING_OPTIONS)
-	frame.tab3 = f; frame.tabs[f] = frame.bargroups
+	frame.tab3 = f; frame.tabs[f] = frame.targetoptions
 
 	f = CreateFrame("CheckButton", nil, frame, "IonCheckButtonTemplate1")
 	f:SetWidth(140)
@@ -1930,16 +1936,17 @@ function ION:BarStates_OnLoad(frame)
 
 end
 
-function ION:BarGroups_OnLoad(frame)
+--- OnLoad event for Bar editor Spell Target Options frame
+function ION:TargetOptions_OnLoad(frame)
 	--Container Support
-	local content = CreateFrame("Frame", "opcont", frame)
-	content:SetPoint("TOPLEFT",5,-5 )
-	content:SetPoint("BOTTOMRIGHT",-5,5)
-	
+	local content = CreateFrame("Frame",nil, frame)
+	content:SetPoint("TOPLEFT",10,-5 )
+	content:SetPoint("BOTTOMRIGHT",-10,5)
+	--This creats a cusomt AceGUI container which lets us imbed a AceGUI menu into our frame.
 	local widget = {
 		frame     = frame,
 		content   = content,
-		type      = "t1"
+		type      = "IonContainer"
 	}
 	widget["OnRelease"] = function(self)
 		self.status = nil
@@ -1948,10 +1955,6 @@ function ION:BarGroups_OnLoad(frame)
 	
 	IonBarEditor.ACEmenu = widget
 	AceGUI:RegisterAsContainer(widget)
---content:SetScript("OnUpdate",function () LibStub("AceConfigDialog-3.0"):Open(addonName, widget, "moreoptions") end)
---content:SetScript("OnShow",function () LibStub("AceConfigDialog-3.0"):Open(addonName, widget, "moreoptions") end)
---content:SetScript("OnClose", function(widget) AceGUI:Release(widget) end)
-
 	ION.SubFrameHoneycombBackdrop_OnLoad(frame)
 
 end
@@ -2201,10 +2204,22 @@ end
 -- @param button
 -- @param data:
 -- @returns: Button texture
-local function specUpdateIcon(button,data)
+local function specUpdateIcon(button,state)
+--data = button.specdata[buttonSpec][state]
+--specUpdateIcon(button, data))--button.iconframeicon:GetTexture())
+--((button.bar.cdata.dualSpec and specoveride) or 1)
+--data.macro_Icon
+	local texture = "" --"INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK"
 
-	local texture = IBTNE.macroicon.icon:SetTexture("")
+--local buttonSpec = button:GetSpec()
 
+local buttonSpec = button:GetSpec() 
+
+--print(data.macro_Icon)
+--button.specdata[buttonSpec][state]
+local data = button.specdata[specoveride][state]
+if (button.bar.cdata.dualSpec and specoveride ~= buttonSpec) then
+	
 	local spell = data.macro_Text:match("/cast%s+(%C+)") or
 			data.macro_Text:match("/use%s+(%C+)") or
 			data.macro_Text:match("/summonpet%s+(%C+)") or
@@ -2224,20 +2239,28 @@ local function specUpdateIcon(button,data)
 	elseif ItemCache[spell] then
 		texture = GetItemIcon("item:"..ItemCache[spell]..":0:0:0:0:0:0:0")
 	end
+
+else
+	texture = button.iconframeicon:GetTexture()
+end
+	--print("SETTER")
+	--print(texture)
 	return texture
 end
 
 
-function ION:MacroEditorUpdate()
 
+function ION:MacroEditorUpdate()
 	if (ION.CurrentObject and ION.CurrentObject.objType == "ACTIONBUTTON") then
 
 		local button, IBTNE = ION.CurrentObject, IonButtonEditor
 		local state = button.bar.handler:GetAttribute("fauxstate")
-		local buttonSpec = specoveride--button:GetSpec()
+		local buttonSpec = button:GetSpec()
+
+	if (button.bar.cdata.dualSpec) then
+		buttonSpec = specoveride--button:GetSpec()
 
 		--Sets spec tab to current spec
-		local data = button.specdata[buttonSpec][state]
 		IBTNE.spec1:SetChecked(nil)
 		IBTNE.spec2:SetChecked(nil)
 		IBTNE["spec"..buttonSpec]:SetChecked(true)
@@ -2245,11 +2268,30 @@ function ION:MacroEditorUpdate()
 		--Sets current spec marker to proper tab
 		IBTNE.activespc:SetParent(IBTNE["spec"..GetActiveSpecGroup()])
 		IBTNE.activespc:SetPoint("LEFT")
+		IBTNE.spec1:Show()
+		IBTNE.spec2:Show()
+	else
+		buttonSpec = 1
+		IBTNE.spec1:Hide()
+		IBTNE.spec2:Hide()
+	end
 
+	local data = button.specdata[buttonSpec][state]
+
+		if not data then
+		
+			button.specdata[buttonSpec][state] = ION.BUTTON:MACRO_build()
+			
+			data = button.specdata[buttonSpec][state]
+			button:UpdateFlyout()
+			button:BuildStateData()
+			button:SetType()
+		end
+	
 		if (data) then
 			IBTNE.macroedit.edit:SetText(data.macro_Text)
 			if (not data.macro_Icon) then
-				IBTNE.macroicon.icon:SetTexture(specUpdateIcon(button, data))--button.iconframeicon:GetTexture())
+				IBTNE.macroicon.icon:SetTexture(specUpdateIcon(button, state))--button.iconframeicon:GetTexture())
 			elseif (data.macro_Icon == "BLANK") then
 				IBTNE.macroicon.icon:SetTexture("")
 			else
@@ -2259,6 +2301,13 @@ function ION:MacroEditorUpdate()
 			IBTNE.nameedit:SetText(data.macro_Name)
 			IBTNE.noteedit:SetText(data.macro_Note)
 			IBTNE.usenote:SetChecked(data.macro_UseNote)
+
+		else
+			--print("notinghere")
+			--button.specdata[buttonSpec][state] = ION.BUTTON:MACRO_build()
+			--ION.BUTTON:MACRO_build(button.specdata[buttonSpec][state])
+			---print(button.specdata[buttonSpec][state])
+			--end
 		end
 	end
 end
@@ -2318,17 +2367,62 @@ end
 local function macroText_OnTextChanged(self)
 
 	if (self.hasfocus) then
-
 		local button = ION.CurrentObject
-		local buttonSpec = specoveride --button:GetSpec()
+		local buttonSpec = ((button.bar.cdata.dualSpec and specoveride) or 1) --specoveride --button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
-
+		
 		if (button and buttonSpec and state) then
-			button.specdata[buttonSpec][state].macro_Text = self:GetText()
-			button.specdata[buttonSpec][state].macro_Watch = false
+
+
+			if button.specdata[buttonSpec][state] then
+				button.specdata[buttonSpec][state].macro_Text = self:GetText()
+				button.specdata[buttonSpec][state].macro_Watch = false
+			else
+			--print("notinghere")
+			--button.specdata[buttonSpec][state] = ION.BUTTON:MACRO_build()
+			--ION.BUTTON:MACRO_build(button.specdata[buttonSpec][state])
+			--print(button.specdata[buttonSpec][state])
+			end
+
 		end
 	end
 end
+
+--- Triggers when text in the  macro editor changes
+-- @param self: macro editor frame
+local function macroButton_Changed(self, button, down)
+
+	local object = ION.CurrentObject
+
+	local data = object.data
+		local buttonSpec = ((object.bar.cdata.dualSpec and specoveride) or 1)
+		local state = object.bar.handler:GetAttribute("fauxstate")
+
+--handler to check if viewing non current spec button settings
+	if (specoveride ~= object:GetSpec()) then
+		data = object.specdata[buttonSpec][state]
+	end
+
+	if (object and data) then
+		
+		if (self.texture == "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK") then
+			data.macro_Icon = false
+		else
+			data.macro_Icon = self.texture
+		end
+		object:MACRO_UpdateIcon()
+
+		ION:UpdateObjectGUI()
+	end
+
+	self:SetFrameLevel(self.fl-1)
+	self.click = true
+	self.elapsed = 0
+	self:GetParent():Hide()
+	self:SetChecked(nil)
+
+end
+
 
 --- Triggers when the text in the macro editor's name text box changes
 -- @param self: macro editor name edit box frame
@@ -2341,7 +2435,7 @@ local function macroNameEdit_OnTextChanged(self)
 	if (self.hasfocus) then
 
 		local button = ION.CurrentObject
-		local buttonSpec = specoveride --button:GetSpec()
+		local buttonSpec = ((button.bar.cdata.dualSpec and specoveride) or 1) --specoveride --button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
 		if (button and buttonSpec and state) then
@@ -2368,7 +2462,7 @@ local function macroNoteEdit_OnTextChanged(self)
 	if (self.hasfocus) then
 
 		local button = ION.CurrentObject
-		local buttonSpec = specoveride --button:GetSpec()
+		local buttonSpec = ((button.bar.cdata.dualSpec and specoveride) or 1) --specoveride --button:GetSpec()
 		local state = button.bar.handler:GetAttribute("fauxstate")
 
 		if (button and buttonSpec and state) then
@@ -2521,7 +2615,7 @@ end
 local function ResetButtonFields()
 	local button, IBTNE = ION.CurrentObject, IonButtonEditor
 	local state = button.bar.handler:GetAttribute("fauxstate")
-	local buttonSpec = specoveride--button:GetSpec()
+	local buttonSpec = ((button.bar.cdata.dualSpec and specoveride) or 1) --specoveride --button:GetSpec()
 	local data = button.specdata[buttonSpec][state]
 
 	data.actionID = false
@@ -2787,27 +2881,7 @@ function ION:ButtonEditor_OnLoad(frame)
 							self.slot:SetPoint("BOTTOMRIGHT", 2, -2)
 						end)
 		f.onclick_func = function(self, button, down)
-
-							local object = ION.CurrentObject
-
-							if (object and object.data) then
-
-								if (self.texture == "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK") then
-									object.data.macro_Icon = false
-								else
-									object.data.macro_Icon = self.texture
-								end
-
-								object:MACRO_UpdateIcon()
-
-								ION:UpdateObjectGUI()
-							end
-
-							self:SetFrameLevel(self.fl-1)
-							self.click = true
-							self.elapsed = 0
-							self:GetParent():Hide()
-							self:SetChecked(nil)
+						macroButton_Changed(self, button, down)
 					   end
 
 		count = count + 1

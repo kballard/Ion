@@ -2730,6 +2730,12 @@ function BUTTON:MACRO_OnAttributeChanged(name, value)
 	end
 end
 
+function BUTTON:MACRO_build()
+local button = CopyTable(stateData)
+print(button.macro_Text)
+return button
+end
+
 function BUTTON:MACRO_Reset()
 
 	self.macrospell = nil
