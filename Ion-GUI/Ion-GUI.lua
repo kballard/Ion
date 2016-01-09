@@ -1051,14 +1051,28 @@ function ION:CreateButton_OnLoad(button)
 
 end
 
-function ION:BarEditor_CreateNewBar(button)
 
+--- Checks to see if a one only bar type has been deleted.  If so it will allow the bar
+-- to be created
+-- @param bar: type of bar being checked
+-- @rerurn allow : (boolean) 
+local function MissingBarCheck(bar)
+	local allow = true
+	if (bar == "stancebar" and IonCDB.sbars[1]) or (bar == "extrabar" and IonCDB.xbars[1]) then
+		allow = false
+	end
+	return allow
+end
+
+
+function ION:BarEditor_CreateNewBar(button)
 	if (button.type == "create") then
 
 		local data = { [L.SELECT_BAR_TYPE] = "none" }
 
 		for class,info in pairs(ION.RegisteredBarData) do
-			if (info.barCreateMore) then
+
+			if (info.barCreateMore or MissingBarCheck(class)) then
 				data[info.barLabel] = class
 			end
 		end
