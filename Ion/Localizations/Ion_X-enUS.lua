@@ -447,3 +447,11 @@ L["Mouse-Over Casting Modifier"] = "Mouse-Over Casting Modifier"
 L["Select a modifier for Mouse-Over Casting"] = "Select a modifier for Mouse-Over Casting"
 L["\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."] = "\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."
 
+L.LINE1 = "TEST"
+L.LINE2 = "TEST"
+L.LINE3 = "TEST"
+L.LINE4 = "TEST"
+L.LINE5 = "TEST"
+
+L.FAQ = "F.A.Q."
+L.FAQ_LONG = "Frequently Asked Questions"

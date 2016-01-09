@@ -262,7 +262,25 @@ local options = {
 				},
 			},
 		},
-	} ,
+		faq = {
+			name = L.FAQ,
+			desc = L.FAQ_LONG,
+			type = "group",
+			order = 1000,
+			args = {
+				line1 = {
+					type = "description",
+					name = "|cffffd200" .. L.LINE1 .. "|r",
+					order = 1,
+				},
+				line2 = {
+					type = "description",
+					name = L.LINE2,
+					order = 2,
+				},
+			},
+		},
+	},
 }
 
 local defaults = {
@@ -2198,7 +2216,7 @@ end
 --end
 	self.db = LibStub("AceDB-3.0"):New("IonProfilesDB", defaults)
 	LibStub("AceConfigRegistry-3.0"):ValidateOptionsTable(options, addonName)
-	LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, options)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, options)--, {"/myslash", "/my"})
 
 	options.args.profile = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addonName, addonName)
