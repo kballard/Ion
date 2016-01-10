@@ -72,6 +72,9 @@ IonGDB = {
 	sbars = {},
 	sbtns = {},
 
+	draenorbars = {},
+	draenorbtns = {},
+
 	buttonLoc = {-0.85, -111.45},
 	buttonRadius = 87.5,
 
@@ -86,7 +89,7 @@ IonGDB = {
 	firstRun = true,
 	xbarFirstRun = true,
 	sbarFirstRun = true,
-
+	draenorbarFirstRun = true,
 
 	betaWarning = true,
 
@@ -104,6 +107,8 @@ IonCDB = {
 	sbars = {},
 	sbtns = {},
 
+	draenorbars = {},
+	draenorbtns = {},
 
 	selfCast = false,
 	focusCast = false,
@@ -261,6 +266,7 @@ local options = {
 					get = function() return IonGDB.mainbar end,
 					width = "full",
 				},
+				--[[
 				DraenorBar = {
 					order = 2,
 					name = "Display Draenor Garrison Bar",
@@ -269,7 +275,7 @@ local options = {
 					set = function() ION:DraenorBar() end,
 					get = function() return IonGDB.draenorbar end,
 					width = "full",
-				},
+				},]]--
 			},
 		},
 		faq = {
@@ -305,6 +311,9 @@ local defaults = {
 			sbars = {},
 			sbtns = {},
 
+			draenorbars = {},
+			draenorbtns = {},
+
 			buttonLoc = {-0.85, -111.45},
 			buttonRadius = 87.5,
 
@@ -319,6 +328,7 @@ local defaults = {
 			firstRun = true,
 			xbarFirstRun = true,
 			sbarFirstRun = true,
+			draenorbarFirstRun = true,
 
 			betaWarning = true,
 
@@ -331,8 +341,12 @@ local defaults = {
 
 			xbars = {},
 			xbtns = {},
+
 			sbars = {},
 			sbtns = {},
+
+			draenorbars = {},
+			draenorbtns = {},
 
 			selfCast = false,
 			focusCast = false,
@@ -1566,12 +1580,13 @@ end
 --work arround to get the garrison button to reilably hide by adding it to the default bar if it is not allready on it.
 local function DraenorButtonCheck()
 	if not HasDraenorZoneAbility() then return end
-
+--[[
 	if not HasDraenorZoneSpellOnBar(DraenorZoneAbilityFrame)then
 		PickupSpell(161691)
 		PlaceAction(72)
 		ClearCursor ()
 	end
+	--]]
 end
 
 

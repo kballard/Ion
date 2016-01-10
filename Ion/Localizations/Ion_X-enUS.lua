@@ -459,3 +459,5 @@ L.LINE5 = "TEST"
 
 L.FAQ = "F.A.Q."
 L.FAQ_LONG = "Frequently Asked Questions"
+
+L.DRAENOR_BAR_BORDER = "Hide Bar Border"

@@ -90,6 +90,7 @@ ION.barGDEF = {
 	buffcolor = "0;0.8;0;1",
 	debuffcolor = "0.8;0;0;1",
 	rangecolor = "0.7;0.15;0.15;1",
+	border = true,
 }
 
 
