@@ -1189,24 +1189,11 @@ function BUTTON:MACRO_UpdateAuraWatch(unit, spell)
 end
 
 function BUTTON:MACRO_SetSpellCooldown(spell)
-	local start, duration, enable, charges, maxCharges, chStart, chDuration
 	spell = (spell):lower()
+	local spell_id = spell
 
-	if (cIndex[spell]) then
-
-		--local companion, index = cIndex[spell].creatureType, cIndex[spell].index
-		start, duration, enable = GetSpellCooldown(spell)
-		charges, maxCharges, chStart, chDuration = GetSpellCharges(spell)	
- 		start, duration, enable = GetSpellCooldown(spell)
-
-		if maxCharges and charges < maxCharges then
-			start = chStart
-			duration = chDuration
-		end
-
-	elseif (sIndex[spell]) then
-
-		local spell_id = sIndex[spell].spellID
+	if (sIndex[spell]) then
+		spell_id = sIndex[spell].spellID
 		local DraenorZoneAbilityID = DraenorZoneAbilityFrame.SpellButton.currentSpellID
 		local FairyFireID = 770
 		local FairySwarmID = 102355
@@ -1224,32 +1211,25 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 		if (spell_id == GarrisonAbilityID and DraenorZoneAbilityID) then spell_id = DraenorZoneAbilityID end
 
 		if (morphSpells[spell_id]) then
-			charges, maxCharges, chStart, chDuration = GetSpellCharges(morphSpells[spell_id])	
- 			start, duration, enable = GetSpellCooldown(morphSpells[spell_id])
-
-			if maxCharges and charges < maxCharges then
-				start = chStart
-				duration = chDuration
-			end
-		else
-			charges, maxCharges, chStart, chDuration = GetSpellCharges(spell_id)
- 			start, duration, enable = GetSpellCooldown(spell_id)
-
-			if maxCharges and charges < maxCharges then
-				start = chStart
-				duration = chDuration
-			end
+			spell_id = morphSpells[spell_id]
 		end
 	end
+
+	local start, duration, enable = GetSpellCooldown(spell)
+	local charges, maxCharges, chStart, chDuration = GetSpellCharges(spell)
+ 	start, duration, enable = GetSpellCooldown(spell)
 
 	if (duration and duration >= GDB.timerLimit and self.iconframeaurawatch.active) then
 		self.auraQueue = self.iconframeaurawatch.queueinfo
 		self.iconframeaurawatch.duration = 0
 		self.iconframeaurawatch:Hide()
 	end
+		
+	if (charges and maxCharges and maxCharges > 0 and charges < maxCharges) then
+		StartChargeCooldown(self, chStart, chDuration);
+	end
 
 	self:SetTimer(self.iconframecooldown, start, duration, enable, self.cdText, self.cdcolor1, self.cdcolor2, self.cdAlpha)
-
 end
 
 function BUTTON:MACRO_SetItemCooldown(item)
