@@ -441,7 +441,7 @@ local slashFunctions = {
 	[44] = "BlizzBar",
 	[45] = "",
 	[46] = "Animate",
-	[47] = "DraenorBar",
+	--[47] = "DraenorBar",
 	[48] = "Debuger",
 }
 
@@ -675,31 +675,8 @@ function ION:UpdateSpellIndex()
 			end
 		end
 	end
---[[
-	spellID = 161691  --Draenor Garrison Ability not currently in spellbook
-	spellName, subName, icon, castTime, minRange, maxRange = GetSpellInfo(spellID)
 
-						if (not ION.sIndex[(spellName):lower()]) then
-							ION.sIndex[(spellName):lower()] = {}
-						end
-
-						curSpell = ION.sIndex[(spellName):lower()]
-						curSpell.spellName = spellName
-						curSpell.subName = subName
-						curSpell.spellID = spellID
-						curSpell.icon = icon
-
-						if (not ION.sIndex[(spellName):lower().."()"]) then
-							ION.sIndex[(spellName):lower().."()"] = {}
-						end
-
-						curSpell = ION.sIndex[(spellName):lower().."()"]
-						curSpell.spellName = spellName
-						curSpell.subName = subName
-						curSpell.spellID = spellID
-						curSpell.icon = icon
-					
-]]--
+	--spellID = 161691  --Draenor Garrison Ability not currently in spellbook
 end
 
 
@@ -1561,47 +1538,6 @@ function ION:BlizzBar()
 
 end
 
-
-function ION:ToggleDraenorBar(on)
-	if (InCombatLockdown()) then return end
-
-	if (ION.OpDep) then return end
-
-	if (on) and (HasDraenorZoneAbility()) then
-	DraenorZoneAbilityFrame:Show()
-	DraenorZoneAbilityFrame:SetAttribute("statehidden", nil);
-	else
-	DraenorZoneAbilityFrame:Hide()
-	DraenorZoneAbilityFrame:SetAttribute("statehidden", true);
-	end
-end
-
-
---work arround to get the garrison button to reilably hide by adding it to the default bar if it is not allready on it.
-local function DraenorButtonCheck()
-	if not HasDraenorZoneAbility() then return end
---[[
-	if not HasDraenorZoneSpellOnBar(DraenorZoneAbilityFrame)then
-		PickupSpell(161691)
-		PlaceAction(72)
-		ClearCursor ()
-	end
-	--]]
-end
-
-
-function ION:DraenorBar()
-	if (GDB.draenorbar) then
-		GDB.draenorbar = false
-		DraenorButtonCheck()
-	else
-		GDB.draenorbar = true
-	end
-
-	ION:ToggleDraenorBar(GDB.draenorbar)
-end
-
-
 function ION:Animate()
 	if (GDB.animate) then
 		GDB.animate = false
@@ -2128,8 +2064,6 @@ local function control_OnEvent(self, event, ...)
 		--Fix for Titan causing the Main Bar to not be hidden
 		if (IsAddOnLoaded("Titan")) then TitanUtils_AddonAdjust("MainMenuBar", true) end
 		ION:ToggleBlizzBar(GDB.mainbar)
-		ION:ToggleDraenorBar(GDB.draenorbar)
-		DraenorButtonCheck()
 
 		CDB.fix07312012 = true
 
@@ -2149,8 +2083,6 @@ local function control_OnEvent(self, event, ...)
 
 		updater.elapsed = 0
 		updater:Show()
-		ION:ToggleDraenorBar(GDB.draenorbar)
-		DraenorButtonCheck()
 
 	elseif (event == "PET_UI_CLOSE" or event == "COMPANION_LEARNED" or event == "COMPANION_UPDATE") then
 		ION:UpdateCompanionData()
@@ -2163,8 +2095,6 @@ local function control_OnEvent(self, event, ...)
 
 	elseif (event == "UNIT_LEVEL" and ... == "player") then
 		ION.level = UnitLevel("player")
-	else
-		--ION:ToggleDraenorBar(GDB.draenorbar)
 	end
 end
 
@@ -2280,44 +2210,6 @@ end
 
 
 --local defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
-
---Hooking on DraenorZoneAbilityFrame_OnShow in case it tries to get displayed
---[[
-local function DreanorCheck()
-	ION:ToggleDraenorBar(GDB.draenorbar)
-end
-hooksecurefunc("DraenorZoneAbilityFrame_OnShow", DreanorCheck);
---]]
-
---[[
-local origDraenorZoneAbilityFrame_OnEvent = DraenorZoneAbilityFrame_OnEvent
-
-DraenorZoneAbilityFrame_OnEvent = function(...)
-	if (InCombatLockdown()) then return end
-	print("nocom")
-	origDraenorZoneAbilityFrame_OnEvent(...);
-	
-end
-
-
-DraenorZoneAbilityFrame:SetScript("OnEvent", DraenorZoneAbilityFrame_OnEvent)
-
-
-
-local origHasDraenorZoneSpellOnBar = HasDraenorZoneSpellOnBar
-
-HasDraenorZoneSpellOnBar = function(...)
-print("Call")
-	if not GDB.draenorbar then 
-		return true;
-	else
-		return origHasDraenorZoneSpellOnBar(...);
-	end
-end
---]]
-
-
-
 
 --161691
 -------------------------------------------------------------------------------

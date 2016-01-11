@@ -67,14 +67,6 @@ local function controlOnUpdate(self, elapsed)
 
 end
 
---Useds
-
---used
-
-
-
-
-
 --- Updates button's texture
 --@pram: force - (boolean) will force a texture update
 
@@ -99,14 +91,6 @@ function DRAENORBTN:OnUpdate(elapsed)
 
 	if (self.elapsed > IonGDB.throttle) then
 		self:STANCE_UpdateButton(self.actionID)
-	end
-
-	if (not InCombatLockdown()) then
-		--local _,spell = GetShapeshiftFormInfo(self.actionID)
-
-		if (self.spellName) then
-			self:SetAttribute("*macrotext1", "/cast Garrison Ability();")
-		end
 	end
 end
 
@@ -148,30 +132,29 @@ local function DraenorZoneAbilityFrame_Update(self)
 	local start, duration, enable = GetSpellCooldown(name);
 	
 	if (usesCharges and charges < maxCharges) then
-		--StartChargeCooldown(self.SpellButton, chargeStart, chargeDuration, enable);
+		StartChargeCooldown(self, chargeStart, chargeDuration, enable);
 	end
 
-				if (duration and duration >= IonGDB.timerLimit and self.iconframeaurawatch.active) then
-				self.auraQueue = self.iconframeaurawatch.queueinfo
-				self.iconframeaurawatch.duration = 0
-				self.iconframeaurawatch:Hide()
-			end
+				--if (duration and duration >= IonGDB.timerLimit and self.iconframeaurawatch.active) then
+				--self.auraQueue = self.iconframeaurawatch.queueinfo
+				--self.iconframeaurawatch.duration = 0
+				--self.iconframeaurawatch:Hide()
+			--end
 	if (start) then
 		--CooldownFrame_SetTimer(self.SpellButton.Cooldown, start, duration, enable);
 		self:SetTimer(self.iconframecooldown, start, duration, enable, self.cdText, self.cdcolor1, self.cdcolor2, self.cdAlpha)
-
 	end
 
 	self.spellName = self.CurrentSpell;
 	self.spellID = spellID;
 
-	if (self.spellName) then
+	if (self.spellName and not InCombatLockdown()) then
 			self:SetAttribute("*macrotext1", "/cast Garrison Ability();")
 	end
 end
 
 function DRAENORBTN:OnEvent(event, ...)
-
+	
 	if (event == "SPELLS_CHANGED") then
 		if (not self.baseName) then
 			self.baseName = GetSpellInfo(DraenorZoneAbilitySpellID);
@@ -183,34 +166,34 @@ function DRAENORBTN:OnEvent(event, ...)
 	end
 
 	local lastState = self.BuffSeen;
-	
+	local display = false
+	self:SetChecked(nil)
 	self.BuffSeen = HasDraenorZoneAbility();
 	if (self.BuffSeen) then
-		--if (not HasDraenorZoneSpellOnBar(self)) then
-		--[[
-			if ( not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY) ) then
-				DraenorZoneAbilityButtonAlert:SetHeight(DraenorZoneAbilityButtonAlert.Text:GetHeight()+42);
-				DraenorZoneAbilityButtonAlert:Show();
-				SetCVarBitfield( "closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY, true );
-			end
-			]]--
-			self:Show();
-		--else
-			--DraenorZoneAbilityButtonAlert:Hide();
-			--self:Hide();
-		--end
+		if ( not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY) ) then
+			DraenorZoneAbilityButtonAlert:SetParent("IonDraenorActionButton1")
+			DraenorZoneAbilityButtonAlert:SetPoint("BOTTOM" ,"IonDraenorActionButton1" ,"TOP" ,0,8)
+			DraenorZoneAbilityButtonAlert:SetHeight(DraenorZoneAbilityButtonAlert.Text:GetHeight()+42);
+			
+			SetCVarBitfield( "closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY, true );
+		end
+
+		display = true
 		DraenorZoneAbilityFrame_Update(self);
 	else
 		if (not self.CurrentTexture) then
 			self.CurrentTexture = select(3, GetSpellInfo(self.baseName));
 		end
-		self:Hide();
+		display = false
 	end
 
-	--i--f (lastState ~= self.BuffSeen) then
-		--UIParent_ManageFramePositions();
-		--ActionBarController_UpdateAll(true);
-	--end
+	if (not InCombatLockdown() and display) then
+		self:Show();
+		DraenorZoneAbilityButtonAlert:Show();
+	elseif (not InCombatLockdown() and not display) then
+		self:Hide();
+		DraenorZoneAbilityButtonAlert:Hide();
+	end
 end
 
 
@@ -314,7 +297,7 @@ function DRAENORBTN:SetData(bar)
 	self:SetFrameLevel(4)
 	self.iconframe:SetFrameLevel(2)
 	self.iconframecooldown:SetFrameLevel(3)
-	self.iconframeaurawatch:SetFrameLevel(3)
+	--self.iconframeaurawatch:SetFrameLevel(3)
 	self.iconframeicon:SetTexCoord(0.05,0.95,0.05,0.95)
 
 	self:GetSkinned()
@@ -452,6 +435,9 @@ function DRAENORBTN:SetType(save)
 	self:RegisterEvent("SPELLS_CHANGED");
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED");
 
+	self:RegisterEvent("UNIT_SPELLCAST_FAILED")
+	--BUTTON.MACRO_UNIT_SPELLCAST_FAILED
+
 
 
 	self.actionID = self.id
@@ -495,13 +481,13 @@ local function controlOnEvent(self, event, ...)
 
 		ION:RegisterBarClass("draenorbar", "Draenor Action Bar", "Draenor Action Button", draenorbarsGDB, draenorbarsCDB, DRAENORBTNIndex, draenorbtnsGDB, "CheckButton", "IonActionButtonTemplate", { __index = DRAENORBTN }, 1, false, STORAGE, gDef, nil, false)
 
-		ION:RegisterGUIOptions("draenorbar", { AUTOHIDE = false,
-		                                SHOWGRID = true,
+		ION:RegisterGUIOptions("draenorbar", { AUTOHIDE = true,
+		                                SHOWGRID = false,
 		                                SNAPTO = true,
 		                                UPCLICKS = true,
 		                                DOWNCLICKS = true,
-		                                HIDDEN = false,
-		                                LOCKBAR = true,
+		                                HIDDEN = true,
+		                                LOCKBAR = false,
 		                                TOOLTIPS = true,
 							  BINDTEXT = true,
 							  RANGEIND = true,
@@ -551,12 +537,8 @@ frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 --hooking original bar check to hide
-
-local orgHasDraenorZoneSpellOnBar = HasDraenorZoneSpellOnBar; 
-HasDraenorZoneSpellOnBar = function(self) 
-
-return true
-end
+DraenorZoneAbilityFrame:SetScript('OnEvent', nil)
+DraenorZoneAbilityFrame:Hide()
 
 
 function BAR:HideDraenorBorder(msg, gui, checked, query)
@@ -585,3 +567,5 @@ function BAR:HideDraenorBorder(msg, gui, checked, query)
 	self:Update()
 	DRAENORBTN:UpdateFrame()
 end
+
+--local alertframe = n

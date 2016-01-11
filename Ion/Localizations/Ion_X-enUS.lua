@@ -151,8 +151,8 @@ L.SLASH_CMD45_DESC = "Toggle Blizzard's Vehicle Bar"
 L.SLASH_CMD46 = "Animate"
 L.SLASH_CMD46_DESC = "Toggle Ion's Orb Animation"
 
-L.SLASH_CMD47 = "DraenorBar"
-L.SLASH_CMD47_DESC = "Toggle Draenor Garrison Bar"
+--L.SLASH_CMD47 = "DraenorBar"
+--L.SLASH_CMD47_DESC = "Toggle Draenor Garrison Bar"
 
 L.SLASH_CMD48 = "Debug"
 L.SLASH_CMD48_DESC = "Degutool"
@@ -460,4 +460,4 @@ L.LINE5 = "TEST"
 L.FAQ = "F.A.Q."
 L.FAQ_LONG = "Frequently Asked Questions"
 
-L.DRAENOR_BAR_BORDER = "Hide Bar Border"
+L.DRAENOR_BAR_BORDER = "Show Bar Border"
