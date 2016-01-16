@@ -22,10 +22,22 @@
 				Ion.CharacterButton_OnLoad(self)
 			</OnLoad>
 			<OnMouseDown>
-				Ion.CharacterButton_OnMouseDown(self)
+				if ( self.down ) then
+					self.down = nil
+					ToggleCharacter("PaperDollFrame")
+					return
+				end
+				Ion.CharacterButton_SetPushed(self)
+				self.down = 1
 			</OnMouseDown>
 			<OnMouseUp>
-				Ion.CharacterButton_OnMouseUp(self)
+				if ( self.down ) then
+					self.down = nil
+					ToggleCharacter("PaperDollFrame")
+					return
+				end
+				Ion.CharacterButton_SetPushed(self)
+				self.down = 1
 			</OnMouseUp>
 			<OnEvent>
 				Ion.CharacterButton_OnEvent(self, event, ...)
@@ -36,10 +48,14 @@
 	<Button name="IonSpellbookButton" inherits="SecureActionButtonTemplate, MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>
-				Ion.SpellbookButton_OnLoad(self)
+				self:SetAttribute("type", "macro")
+				self:SetAttribute("*macrotext*", "/click SpellbookMicroButton")
+				LoadMicroButtonTextures(self, "Spellbook")
+				Ion.AddMenuElement(self)
 			</OnLoad>
 			<OnEnter>
-				Ion.SpellbookButton_OnEnter(self)
+				self.tooltipText = MicroButtonTooltipText(_G.SPELLBOOK_ABILITIES_BUTTON, "TOGGLESPELLBOOK")
+				GameTooltip_AddNewbieTip(self, self.tooltipText, 1.0, 1.0, 1.0, _G.NEWBIE_TOOLTIP_SPELLBOOK)
 			</OnEnter>
 		</Scripts>
 	</Button>
@@ -47,41 +63,71 @@
 	<Button name="IonTalentButton" inherits="SecureActionButtonTemplate, MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>
-				Ion.TalentButton_OnLoad(self)
+				LoadMicroButtonTextures(self, "Talents")
+
+				--self:SetAttribute("type", "macro")
+				--self:SetAttribute("*macrotext*", "/click TalentMicroButton")
+
+				self.tooltipText = MicroButtonTooltipText(_G.TALENTS_BUTTON, "TOGGLETALENTS")
+				self.newbieText = _G.NEWBIE_TOOLTIP_TALENTS
+
+				self.minLevel = SHOW_SPEC_LEVEL
+				self:RegisterEvent("PLAYER_LEVEL_UP")
+				self:RegisterEvent("UPDATE_BINDINGS")
+				self:RegisterEvent("PLAYER_TALENT_UPDATE")
+				self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+				self:RegisterEvent("PLAYER_CHARACTER_UPGRADE_TALENT_COUNT_CHANGED")
+
+				self:RegisterEvent("UNIT_LEVEL")
+				Ion.AddMenuElement(self)
+
+				Ion.CreateAnimationLayer(self)
 			</OnLoad>
 			<OnEvent>
 				Ion.TalentButton_OnEvent(self, event, ...)
 			</OnEvent>
+			<OnClick>
+				ToggleTalentFrame()
+			</OnClick>
 		</Scripts>
 	</Button>
 
 	<Button name="IonAchievementButton" inherits="MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>
-				Ion.AchievementButton_OnLoad(self)
+				LoadMicroButtonTextures(self, "Achievement")
+				self:RegisterEvent("RECEIVED_ACHIEVEMENT_LIST")
+				self:RegisterEvent("ACHIEVEMENT_EARNED")
+				self:RegisterEvent("UPDATE_BINDINGS")
+				self:RegisterEvent("PLAYER_ENTERING_WORLD")
+				self.tooltipText = MicroButtonTooltipText(_G.ACHIEVEMENT_BUTTON, "TOGGLEACHIEVEMENT")
+				self.newbieText = _G.NEWBIE_TOOLTIP_ACHIEVEMENT
+				self.minLevel = 10	--Just used for display. But we know that it will become available by level 10 due to the level 10 achievement.
+				Ion.AddMenuElement(self)
 			</OnLoad>
 			<OnEvent>
 				Ion.AchievementButton_OnEvent(self, event, ...)
 			</OnEvent>
 			<OnClick>
-				Ion.AchievementButton_OnClick(self)
+				ToggleAchievementFrame()
 			</OnClick>
-			<OnEnter>
-				Ion.AchievementButton_OnEnter(self)
-			</OnEnter>
+
 		</Scripts>
 	</Button>
 
 	<Button name="IonQuestLogButton" inherits="MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>
-				Ion.QuestLogButton_OnLoad(self)
+				LoadMicroButtonTextures(self, "Quest")
+				self.tooltipText = MicroButtonTooltipText(_G.QUESTLOG_BUTTON, "TOGGLEQUESTLOG")
+				self.newbieText = _G.NEWBIE_TOOLTIP_QUESTLOG
+				Ion.AddMenuElement(self)
 			</OnLoad>
 			<OnEvent>
-				Ion.QuestLogButton_OnEvent(self, event, ...)
+				self.tooltipText = MicroButtonTooltipText(_G.QUESTLOG_BUTTON, "TOGGLEQUESTLOG")
 			</OnEvent>
 			<OnClick>
-				Ion.QuestLogButton_OnClick(self)
+				ToggleQuestLog()
 			</OnClick>
 		</Scripts>
 	</Button>
@@ -115,7 +161,21 @@
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				Ion.GuildButton_OnLoad(self)
+				self:SetAttribute("type", "macro")
+				self:SetAttribute("*macrotext*", "/click GuildMicroButton")
+
+				LoadMicroButtonTextures(self, "Socials")
+				self.tooltipText = MicroButtonTooltipText(_G.LOOKINGFORGUILD, "TOGGLEGUILDTAB")
+				self.newbieText = _G.NEWBIE_TOOLTIP_LOOKINGFORGUILDTAB
+				self:RegisterEvent("UPDATE_BINDINGS")
+				self:RegisterEvent("PLAYER_GUILD_UPDATE")
+				self:RegisterEvent("NEUTRAL_FACTION_SELECT_RESULT")
+				Ion.updateTabard(true)
+				if ( IsTrialAccount() or (IsVeteranTrialAccount() and not IsInGuild()) ) then
+					self:Disable()
+					self.disabledTooltip = _G.ERR_RESTRICTED_ACCOUNT_TRIAL
+				end
+				Ion.AddMenuElement(self)
 			</OnLoad>
 			<OnEvent>
 				Ion.GuildButton_OnEvent(self, event, ...)
@@ -125,32 +185,61 @@
 	<Button name="IonLFDButton" inherits="MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>
-				Ion.LFDButton_OnLoad(self)
+				LoadMicroButtonTextures(self, "LFG")
+				SetDesaturation(self:GetDisabledTexture(), true)
+				self.tooltipText = MicroButtonTooltipText(_G.DUNGEONS_BUTTON, "TOGGLEGROUPFINDER")
+				self.newbieText = _G.NEWBIE_TOOLTIP_LFGPARENT
+				self.minLevel = math.min(_G.SHOW_LFD_LEVEL, _G.SHOW_PVP_LEVEL)
+				Ion.AddMenuElement(self)
 			</OnLoad>
 			<OnEvent>
-				Ion.LFDButton_OnEvent(self, event, ...)
+				self.tooltipText = MicroButtonTooltipText(_G.DUNGEONS_BUTTON, "TOGGLEGROUPFINDER")
+				self.newbieText = _G.NEWBIE_TOOLTIP_LFGPARENT
+				Ion.updateMicroButtons()
 			</OnEvent>
 			<OnClick>
-				Ion.LFDButton_OnClick(self)
+				PVEFrame_ToggleFrame()
 			</OnClick>
 		</Scripts>
 	</Button>
 
-	<Button name="IonCompanionButton" inherits="MainMenuBarMicroButton" parent="UIParent">
+	<Button name="IonCollectionsButton" inherits="SecureActionButtonTemplate, MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>
-				Ion.CompanionButton_OnLoad(self)
+				self:SetAttribute("type", "macro")
+				self:SetAttribute("*macrotext*", "/click CollectionsMicroButton")
+				LoadMicroButtonTextures(self, "Mounts")
+				SetDesaturation(self:GetDisabledTexture(), true)
+				self.tooltipText = MicroButtonTooltipText(_G.COLLECTIONS, "TOGGLECOLLECTIONS")
+				self.newbieText = _G.NEWBIE_TOOLTIP_MOUNTS_AND_PETS
+
+				self:RegisterEvent("HEIRLOOMS_UPDATED")
+				self:RegisterEvent("PET_JOURNAL_NEW_BATTLE_SLOT")
+				self:RegisterEvent("TOYS_UPDATED")
+
+				Ion.AddMenuElement(self)
+				Ion.CreateAnimationLayer(self)
 			</OnLoad>
 			<OnEvent>
-				Ion.CompanionButton_OnEvent(self, event, ...)
+				Ion.CollectionsButton_OnEvent(self, event, ...)
 			</OnEvent>
-			<OnClick>
-				Ion.CompanionButton_OnClick(self)
-			</OnClick>
 		</Scripts>
 	</Button>
 
 	<Button name="IonEJButton" inherits="MainMenuBarMicroButton" parent="UIParent">
+		<Frames>
+			<Frame parentKey="NewAdventureNotice" hidden="true">
+				<Size x="28" y="28"/>
+				<Anchors>
+					<Anchor point="RIGHT" x="8" y="2"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY" setAllPoints="true">
+						<Texture  atlas="adventureguide-microbutton-alert"/>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
 		<Scripts>
 			<OnLoad>
 				Ion.EJButton_OnLoad(self)
@@ -159,7 +248,7 @@
 				Ion.EJButton_OnEvent(self, event, ...)
 			</OnEvent>
 			<OnClick>
-				Ion.EJButton_OnClick(self)
+				ToggleEncounterJournal()
 			</OnClick>
 		</Scripts>
 	</Button>
@@ -167,14 +256,15 @@
 	<Button name="IonStoreButton" inherits="MainMenuBarMicroButton" parent="UIParent">
 		<Scripts>
 			<OnLoad>
-				Ion.StoreButton_OnLoad(self)
+				LoadMicroButtonTextures(self, "BStore")
+				self.tooltipText = _G.BLIZZARD_STORE
+				self:RegisterEvent("STORE_STATUS_CHANGED")
+				Ion.AddMenuElement(self)
 			</OnLoad>
 			<OnEvent>
-				Ion.StoreButton_OnEvent(self, event, ...)
+				Ion.updateMicroButtons()
 			</OnEvent>
-			<OnClick>
-				Ion.StoreButton_OnClick(self)
-			</OnClick>
+			<OnClick function="ToggleStoreUI"/>
 		</Scripts>
 	</Button>	
 
@@ -197,6 +287,16 @@
 						</Anchor>
 					</Anchors>
 				</Texture>
+				<Texture name="IONMainMenuBarDownload" file="Interface\BUTTONS\UI-MicroStream-Yellow" hidden="true">
+					<Size>
+						<AbsDimension x="28" y="28"/>
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOM" relativeTo="IonLatencyButton" relativePoint="BOTTOM">
+							<Offset x="0" y="7"/>
+						</Anchor>
+					</Anchors>
+				</Texture>
 			</Layer>
 		</Layers>
 		<Scripts>
@@ -216,7 +316,57 @@
 				Ion.LatencyButton_OnLeave(self)
 			</OnLeave>
 			<OnUpdate>
-				Ion.LatencyButton_OnUpdate(self, elapsed)
+				if (self.updateInterval > 0) then
+					self.updateInterval = self.updateInterval - elapsed
+				else
+					self.updateInterval = PERFORMANCEBAR_UPDATE_INTERVAL
+					status = _G.GetFileStreamingStatus()
+					if(status==0) then
+						status = (GetBackgroundLoadingStatus()~=0) and 1 or 0
+					end
+					if(status == 0) then
+						IONMainMenuBarDownload:Hide()
+						--self:SetNormalTexture("Interface\\Buttons\\UI-MicroButton-MainMenu-Up")
+						--self:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-MainMenu-Down")
+						--self:SetDisabledTexture("Interface\\Buttons\\UI-MicroButton-MainMenu-Disabled")
+					else
+						--self:SetNormalTexture("Interface\\Buttons\\UI-MicroButtonStreamDL-Up")
+						--self:SetPushedTexture("Interface\\Buttons\\UI-MicroButtonStreamDL-Down")
+						--self:SetDisabledTexture("Interface\\Buttons\\UI-MicroButtonStreamDL-Up")
+						if (status == 1) then
+							IONMainMenuBarDownload:SetTexture("Interface\\BUTTONS\\UI-MicroStream-Green")
+						elseif (status == 2) then
+							IONMainMenuBarDownload:SetTexture("Interface\\BUTTONS\\UI-MicroStream-Yellow")
+						elseif (status == 3) then
+							IONMainMenuBarDownload:SetTexture("Interface\\BUTTONS\\UI-MicroStream-Red")
+						end
+						IONMainMenuBarDownload:SetDrawLayer("OVERLAY", 3)
+						IONMainMenuBarDownload:Show()
+					end
+					local bandwidthIn, bandwidthOut, latencyHome, latencyWorld = GetNetStats()
+					local latency = latencyHome > latencyWorld and latencyHome or latencyWorld
+					if (latency > _G.PERFORMANCEBAR_MEDIUM_LATENCY) then
+						self.overlay:SetVertexColor(1, 0, 0)									
+					elseif (latency > _G.PERFORMANCEBAR_LOW_LATENCY) then
+						self.overlay:SetVertexColor(1, 1, 0)
+					else
+						self.overlay:SetVertexColor(0, 1, 0)
+					end
+					if (self.hover) then
+						MainMenuBarPerformanceBarFrame_OnEnter(self) --Ion.LatencyButton_OnEnter(self)
+					end
+					if (self.enabled) then
+
+						UpdateAddOnCPUUsage()
+						UpdateAddOnMemoryUsage()
+
+						self.lastUsage = self.currUsage or 0
+
+						self.currUsage = GetScriptCPUUsage()
+
+						self.usage = self.currUsage - self.lastUsage
+					end
+				end
 			</OnUpdate>
 		</Scripts>
 		<NormalTexture file="Interface\AddOns\Ion-MenuBar\Images\MirageUI_LatencyMicroButton_Frame"/>
@@ -228,13 +378,83 @@
 	<Button name="IonHelpButton" inherits="MainMenuBarMicroButton" parent="UIParent" hidden="true">
 		<Scripts>
 			<OnLoad>
-				Ion.HelpButton_OnLoad(self)
+				LoadMicroButtonTextures(self, "Help")
+				self.tooltipText = _G.HELP_BUTTON
+				self.newbieText = _G.NEWBIE_TOOLTIP_HELP
+				Ion.AddMenuElement(self)
 			</OnLoad>
-			<OnClick>
-				Ion.HelpButton_OnClick(self)
-			</OnClick>
+			<OnClick function="ToggleHelpFrame"/>
 		</Scripts>
 	</Button>
+
+	<Frame name="IonTalentMicroButtonAlert" inherits="MicroButtonAlertTemplate">
+		<Anchors>
+			<Anchor point="BOTTOM" relativeTo="IonTalentButton" relativePoint="TOP" x="0" y="-8"/>
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				_G.MicroButtonAlert_OnLoad(self)
+				self.Text:SetText(_G.TALENT_MICRO_BUTTON_SPEC_TUTORIAL)
+			</OnLoad>
+			<OnShow>
+				Ion.CheckAlertPosition(self, IonTalentButton)
+			</OnShow>
+			<OnUpdate>
+				Ion.CheckAlertPosition(self, IonTalentButton)
+			</OnUpdate>
+		</Scripts>
+	</Frame>
+	<Frame name="IonCollectionsMicroButtonAlert" inherits="MicroButtonAlertTemplate">
+		<Anchors>
+			<Anchor point="BOTTOM" relativeTo="IonCollectionsButton" relativePoint="TOP" x="0" y="-8"/>
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				_G.MicroButtonAlert_OnLoad(self)
+			</OnLoad>
+			<OnShow>
+				Ion.CheckAlertPosition(self, IonCollectionsButton)
+			</OnShow>
+			<OnUpdate>
+				Ion.CheckAlertPosition(self, IonCollectionsButton)
+			</OnUpdate>
+		</Scripts>
+	</Frame>
+	<Frame name="IonLFDMicroButtonAlert" inherits="MicroButtonAlertTemplate">
+		<Anchors>
+			<Anchor point="BOTTOM" relativeTo="IonLFDButton" relativePoint="TOP" x="0" y="-8"/>
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				MicroButtonAlert_OnLoad(self)
+				self.Text:SetText(_G.LFG_MICRO_BUTTON_SPEC_TUTORIAL)
+			</OnLoad>
+			<OnShow>
+				Ion.CheckAlertPosition(self, IonLFDMicroButtonAlert)
+			</OnShow>
+			<OnUpdate>
+				Ion.CheckAlertPosition(self, IonLFDMicroButtonAlert)
+			</OnUpdate>
+		</Scripts>
+	</Frame>
+
+	<Frame name="IonEJMicroButtonAlert" inherits="MicroButtonAlertTemplate">
+		<Anchors>
+			<Anchor point="BOTTOM" relativeTo="IonEJButton" relativePoint="TOP" x="0" y="-8"/>
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				MicroButtonAlert_OnLoad(self)
+				self.Text:SetText(_G.AJ_MICRO_BUTTON_ALERT_TEXT)
+			</OnLoad>
+			<OnShow>
+				Ion.CheckAlertPosition(self, IonEJButton)
+			</OnShow>
+			<OnUpdate>
+				Ion.CheckAlertPosition(self, IonEJButton)
+			</OnUpdate>
+		</Scripts>
+	</Frame>
 
 	<GameTooltip name="IonMenuBarTooltip" inherits="GameTooltipTemplate" parent="UIParent" enableMouse="true" toplevel="true" movable="true" frameStrata="TOOLTIP" hidden="true">
 		<Size x="128" y="64"/>

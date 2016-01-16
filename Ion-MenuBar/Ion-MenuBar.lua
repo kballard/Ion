@@ -1,6 +1,31 @@
 --Ion Menu Bar, a World of Warcraft® user interface addon.
 --Copyright© 2006-2014 Connor H. Chenoweth, aka Maul - All rights reserved.
 
+--Most of this code is based off of the 6.2.3 version of Blizzard's
+-- MainMenuBarMicroButtons.lua & MainMenuBarMicroButtons.xml files 
+
+
+-------------------------------------------------------------------------------
+-- Localized Lua globals.
+-------------------------------------------------------------------------------
+local _G = getfenv(0)
+
+-- Functions
+local next = _G.next
+local pairs = _G.pairs
+local tonumber = _G.tonumber
+local tostring = _G.tostring
+local type = _G.type
+
+-- Libraries
+local string = _G.string
+local table = _G.table
+
+-------------------------------------------------------------------------------
+-- AddOn namespace.
+-------------------------------------------------------------------------------
+
+
 local ION, GDB, CDB, PEW = Ion
 
 ION.MENUIndex = {}
@@ -28,7 +53,6 @@ IonMenuCDB = {
 }
 
 local gDef = {
-
 	snapTo = false,
 	snapToFrame = false,
 	snapToPoint = false,
@@ -55,696 +79,515 @@ local GetParentKeys = ION.GetParentKeys
 local defGDB, defCDB = CopyTable(IonMenuGDB), CopyTable(IonMenuCDB)
 
 local configData = {
-
 	stored = false,
 }
 
-local function updateTabard(button)
 
-	local emblem = select(10, GetGuildLogoInfo())
+---  This replaces the Blizzard Flash function that causes massive taint when used.
+-- pram: self  - the frame to create animation layer.  This layer should have a "$parentFlash" texture layer to it
+function ION.CreateAnimationLayer(self)
+	local frame = _G[self:GetName().."Flash"]
+	frame:SetAlpha(0)
+	frame:Show()
 
-	if (emblem) then
+	local flasher = frame:CreateAnimationGroup()
+	flasher:SetLooping("REPEAT")
 
-		if (not button.tabard:IsShown()) then
+	-- Flashing in
+	local fade1 = flasher:CreateAnimation("Alpha")
+	fade1:SetDuration(0.5)
+	fade1:SetChange(1)
+	fade1:SetOrder(1)
 
-			button:SetNormalTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Up")
-			button:SetPushedTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Down")
+	-- Holding it visible for 1 second
+	fade1:SetEndDelay(.5)
 
-			button.tabard:Show()
-		end
+	-- Flashing out
+	local fade2 = flasher:CreateAnimation("Alpha")
+	fade2:SetDuration(0.5)
+	fade2:SetChange(-1)
+	fade2:SetOrder(3)
 
-		SetSmallGuildTabardTextures("player", button.tabard.emblem, button.tabard.background)
+	-- Holding it for 1 second before calling OnFinished
+	fade2:SetEndDelay(.5)
 
+	flasher:SetScript("OnFinished", function() f:SetAlpha(0) end)
+
+	self.Animate = flasher
+end
+
+
+--- Toggle for the flash animation layer
+-- pram: self - Layer contining the animation layer
+-- pram: control - Stop- stops the animation, any other command start it
+function IMicroButtonPulse(self, control)
+	if control == "Stop" then
+		self.Animate:Stop()
 	else
-		if (button.tabard:IsShown()) then
-
-			button:SetNormalTexture("Interface\\Buttons\\UI-MicroButton-Socials-Up")
-			button:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Socials-Down")
-			button:SetDisabledTexture("Interface\\Buttons\\UI-MicroButton-Socials-Disabled")
-
-			button.tabard:Hide()
-		end
+		self.Animate:Play()
 	end
 end
 
-local function updateMicroButtons()
 
-	local playerLevel = UnitLevel("player")
+--- Updates the microbuttons and sets the textures or if it is currently unavailable.
+--   The :Enable() & :Disable() blocks have CombatLockdown tests to prevent taint.
+local function updateMicroButtons()
+	local playerLevel = _G.UnitLevel("player")
+	local factionGroup = _G.UnitFactionGroup("player")
+
+	if ( factionGroup == "Neutral" ) then
+		IonGuildButton.factionGroup = factionGroup
+		IonLFDButton.factionGroup = factionGroup
+	else
+		IonGuildButton.factionGroup = nil
+		IonLFDButton.factionGroup = nil
+	end
 
 	if (IonCharacterButton and CharacterFrame:IsShown()) then
-
-		IonCharacterButton:SetButtonState("PUSHED", 1)
+		IonCharacterButton:SetButtonState("PUSHED", true)
 		ION.CharacterButton_SetPushed(IonCharacterButton)
-
-	elseif (IonCharacterButton) then
-
+	else
 		IonCharacterButton:SetButtonState("NORMAL")
 		ION.CharacterButton_SetNormal(IonCharacterButton)
 	end
 
-	if (IonSpellbookButton and SpellBookFrame:IsShown()) then
-
-		IonSpellbookButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonSpellbookButton) then
-
+	if (SpellBookFrame and SpellBookFrame:IsShown()) then
+		IonSpellbookButton:SetButtonState("PUSHED", true)
+	else
 		IonSpellbookButton:SetButtonState("NORMAL")
 	end
 
-	if (IonTalentButton and PlayerTalentFrame and PlayerTalentFrame:IsShown()) then
-
-		IonTalentButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonTalentButton) then
-
-		if (playerLevel < SHOW_TALENT_LEVEL) then
-
-			IonTalentButton:GetNormalTexture():SetDesaturated(1)
-			IonTalentButton:GetNormalTexture():SetVertexColor(0.5,0.5,0.5)
-			IonTalentButton:GetPushedTexture():SetDesaturated(1)
-			IonTalentButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Talents-Up")
-			IonTalentButton:SetHighlightTexture("")
-			IonTalentButton.disabledTooltip = format(FEATURE_BECOMES_AVAILABLE_AT_LEVEL, SHOW_TALENT_LEVEL)
-
+	if (PlayerTalentFrame and PlayerTalentFrame:IsShown()) then
+		IonTalentButton:SetButtonState("PUSHED", true)
+		IMicroButtonPulse(IonTalentButton, "Stop")
+		IonTalentMicroButtonAlert:Hide()
+	else
+		if ( playerLevel < _G.SHOW_SPEC_LEVEL ) then
+			if not InCombatLockdown() then IonTalentButton:Disable() end
 		else
-			IonTalentButton:GetNormalTexture():SetDesaturated(nil)
-			IonTalentButton:GetNormalTexture():SetVertexColor(1,1,1)
-			IonTalentButton:GetPushedTexture():SetDesaturated(nil)
-			IonTalentButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Talents-Down")
-			IonTalentButton:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
+			if not InCombatLockdown() then IonTalentButton:Enable() end
 			IonTalentButton:SetButtonState("NORMAL")
-			IonTalentButton.disabledTooltip = nil
 		end
-
 	end
 
-	if (IonQuestLogButton and QuestMapFrame:IsShown()) then
-
-		IonQuestLogButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonQuestLogButton) then
-
+	if (  WorldMapFrame and WorldMapFrame:IsShown() ) then
+		IonQuestLogButton:SetButtonState("PUSHED", true)
+	else
 		IonQuestLogButton:SetButtonState("NORMAL")
 	end
 
-	if (IonLatencyButton and (GameMenuFrame:IsShown() or InterfaceOptionsFrame:IsShown() or (KeyBindingFrame and KeyBindingFrame:IsShown()) or (MacroFrame and MacroFrame:IsShown()))) then
-
-		IonLatencyButton:SetButtonState("PUSHED", 1)
+	if ( ( GameMenuFrame and GameMenuFrame:IsShown() ) 
+		or ( InterfaceOptionsFrame:IsShown()) 
+		or ( KeyBindingFrame and KeyBindingFrame:IsShown()) 
+		or ( MacroFrame and MacroFrame:IsShown()) ) then
+		IonLatencyButton:SetButtonState("PUSHED", true)
 		ION.LatencyButton_SetPushed(IonLatencyButton)
-
-	elseif (IonLatencyButton) then
-
+	else 
 		IonLatencyButton:SetButtonState("NORMAL")
 		ION.LatencyButton_SetNormal(IonLatencyButton)
 	end
---[[
-	if (IonPVPButton and PVPUIFrame and PVPUIFrame:IsShown()) then
 
-		IonPVPButton:SetButtonState("PUSHED", 1)
-		ION.PVPButton_SetPushed(IonPVPButton)
-
-	elseif (IonPVPButton) then
-
-		if (playerLevel < SHOW_PVP_LEVEL) then
-
-			IonPVPButton:GetNormalTexture():SetDesaturated(1)
-			IonPVPButton:GetNormalTexture():SetVertexColor(0.5,0.5,0.5)
-			IonPVPButton:GetPushedTexture():SetDesaturated(1)
-			IonPVPButton.faction:SetDesaturated(1)
-			IonPVPButton.faction:SetVertexColor(0.5,0.5,0.5)
-			IonPVPButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Up")
-			IonPVPButton:SetHighlightTexture("")
-			IonPVPButton.disabledTooltip = format(FEATURE_BECOMES_AVAILABLE_AT_LEVEL, SHOW_PVP_LEVEL)
-
-		else
-			IonPVPButton:GetNormalTexture():SetDesaturated(nil)
-			IonPVPButton:GetNormalTexture():SetVertexColor(1,1,1)
-			IonPVPButton:GetPushedTexture():SetDesaturated(nil)
-			IonPVPButton.faction:SetDesaturated(nil)
-			IonPVPButton.faction:SetVertexColor(1,1,1)
-			IonPVPButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Down")
-			IonPVPButton:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
-			IonPVPButton:SetButtonState("NORMAL")
-			IonPVPButton.disabledTooltip = nil
-			ION.PVPButton_SetNormal(IonPVPButton)
+	ION.updateTabard()
+	if ( _G.IsTrialAccount() or (_G.IsVeteranTrialAccount() and not _G.IsInGuild()) or factionGroup == "Neutral" ) then
+		IonGuildButton:Disable()
+	elseif ( ( GuildFrame and GuildFrame:IsShown() ) or ( LookingForGuildFrame and LookingForGuildFrame:IsShown() ) ) then
+		if not InCombatLockdown() then
+			IonGuildButton:Enable()
 		end
-	end
-]]--
-	if (IonGuildButton and ((GuildFrame and GuildFrame:IsShown()) or (LookingForGuildFrame and LookingForGuildFrame:IsShown()))) then
-
-		IonGuildButton:SetButtonState("PUSHED", 1)
-		IonGuildButton.tabard:SetPoint("TOPLEFT", -1, -1)
-		IonGuildButton.tabard:SetAlpha(0.5)
-
-	elseif (IonGuildButton) then
-
-		IonGuildButton:GetNormalTexture():SetDesaturated(nil)
-		IonGuildButton:GetNormalTexture():SetVertexColor(1,1,1)
-		IonGuildButton:GetPushedTexture():SetDesaturated(nil)
-		IonGuildButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Socials-Down")
-		IonGuildButton:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
+		IonGuildButton:SetButtonState("PUSHED", true)
+		IonGuildButtonTabard:SetPoint("TOPLEFT", -1, -1)
+		IonGuildButtonTabard:SetAlpha(0.70)
+	else
+		if not InCombatLockdown() then
+			IonGuildButton:Enable()
+		end
 		IonGuildButton:SetButtonState("NORMAL")
-		IonGuildButton.tabard:SetPoint("TOPLEFT", 0, 0)
-		IonGuildButton.tabard:SetAlpha(1.0)
-		IonGuildButton.disabledTooltip = nil
-
-		if (IsInGuild()) then
-			updateTabard(IonGuildButton)
-		end
-	end
-
-	if (IonLFDButton and PVEFrame and PVEFrame:IsShown())  then
-
-		IonLFDButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonLFDButton) then
-
-		if (playerLevel < SHOW_LFD_LEVEL) then
-
-			IonLFDButton:GetNormalTexture():SetDesaturated(1)
-			IonLFDButton:GetNormalTexture():SetVertexColor(0.5,0.5,0.5)
-			IonLFDButton:GetPushedTexture():SetDesaturated(1)
-			IonLFDButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-LFG-Up")
-			IonLFDButton:SetHighlightTexture("")
-			IonLFDButton.disabledTooltip = format(FEATURE_BECOMES_AVAILABLE_AT_LEVEL, SHOW_LFD_LEVEL)
-
+		IonGuildButtonTabard:SetPoint("TOPLEFT", 0, 0)
+		IonGuildButtonTabard:SetAlpha(1)	
+		if ( _G.IsInGuild() ) then
+			IonGuildButton.tooltipText = MicroButtonTooltipText(_G.GUILD, "TOGGLEGUILDTAB")
+			IonGuildButton.newbieText = _G.NEWBIE_TOOLTIP_GUILDTAB
 		else
-			IonLFDButton:GetNormalTexture():SetDesaturated(nil)
-			IonLFDButton:GetNormalTexture():SetVertexColor(1,1,1)
-			IonLFDButton:GetPushedTexture():SetDesaturated(nil)
-			IonLFDButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-LFG-Down")
-			IonLFDButton:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
-			IonLFDButton:SetButtonState("NORMAL")
-			IonLFDButton.disabledTooltip = nil
+			IonGuildButton.tooltipText = MicroButtonTooltipText(_G.LOOKINGFORGUILD, "TOGGLEGUILDTAB")
+			IonGuildButton.newbieText = _G.NEWBIE_TOOLTIP_LOOKINGFORGUILDTAB
 		end
-
 	end
 
-	if (IonCompanionButton and CollectionsJournal and CollectionsJournal:IsShown())  then
-
-		IonCompanionButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonCompanionButton) then
-
-		IonCompanionButton:GetNormalTexture():SetDesaturated(nil)
-		IonCompanionButton:GetNormalTexture():SetVertexColor(1,1,1)
-		IonCompanionButton:GetPushedTexture():SetDesaturated(nil)
-		IonCompanionButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Mounts-Down")
-		IonCompanionButton:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
-		IonCompanionButton:SetButtonState("NORMAL")
-		IonCompanionButton.disabledTooltip = nil
-
+	if ( PVEFrame and PVEFrame:IsShown() ) then
+		IonLFDButton:SetButtonState("PUSHED", true)
+	else
+		if ( playerLevel < IonLFDButton.minLevel or factionGroup == "Neutral" ) then
+			if not InCombatLockdown() then IonLFDButton:Disable() end
+		else
+			if not InCombatLockdown() then IonLFDButton:Enable() end
+			IonLFDButton:SetButtonState("NORMAL")
+		end
 	end
 
-	if (IonEJButton and EncounterJournal and EncounterJournal:IsShown())  then
-
-		IonEJButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonEJButton) then
-
-		IonEJButton:GetNormalTexture():SetDesaturated(nil)
-		IonEJButton:GetNormalTexture():SetVertexColor(1,1,1)
-		IonEJButton:GetPushedTexture():SetDesaturated(nil)
-		IonEJButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-EJ-Down")
-		IonEJButton:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
-		IonEJButton:SetButtonState("NORMAL")
-		IonEJButton.disabledTooltip = nil
-
-	end
-
-	if (IonHelpButton and HelpFrame:IsShown()) then
-
-		IonHelpButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonHelpButton) then
-
+	if ( HelpFrame and HelpFrame:IsShown() ) then
+		IonHelpButton:SetButtonState("PUSHED", true)
+	else
 		IonHelpButton:SetButtonState("NORMAL")
 	end
 
-	if (IonAchievementButton and AchievementFrame and AchievementFrame:IsShown()) then
-
-		IonAchievementButton:SetButtonState("PUSHED", 1)
-
-	elseif (IonAchievementButton) then
-
-		if ((HasCompletedAnyAchievement() or IsInGuild()) and CanShowAchievementUI()) then
-
-			IonAchievementButton:GetNormalTexture():SetDesaturated(nil)
-			IonAchievementButton:GetNormalTexture():SetVertexColor(1,1,1)
-			IonAchievementButton:GetPushedTexture():SetDesaturated(nil)
-			IonAchievementButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Achievement-Down")
-			IonAchievementButton:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
+	if ( AchievementFrame and AchievementFrame:IsShown() ) then
+		IonAchievementButton:SetButtonState("PUSHED", true)
+	else
+		if ( ( _G.HasCompletedAnyAchievement() or _G.IsInGuild() ) and _G.CanShowAchievementUI() ) then
+			if not InCombatLockdown() then IonAchievementButton:Enable() end
 			IonAchievementButton:SetButtonState("NORMAL")
-			IonAchievementButton.disabledTooltip = nil
-
 		else
-
-			IonAchievementButton:GetNormalTexture():SetDesaturated(1)
-			IonAchievementButton:GetNormalTexture():SetVertexColor(0.5,0.5,0.5)
-			IonAchievementButton:GetPushedTexture():SetDesaturated(1)
-			IonAchievementButton:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Achievement-Up")
-			IonAchievementButton:SetHighlightTexture("")
-			IonAchievementButton.disabledTooltip = "Feature becomes available after you earn your first achievement"
-
+			if not InCombatLockdown() then IonAchievementButton:Disable() end
 		end
 	end
 
+	if ( EncounterJournal and EncounterJournal:IsShown() ) then
+		IonEJButton:SetButtonState("PUSHED", true)
+		IMicroButtonPulse(IonEJButton, "Stop")
+		IonLFDMicroButtonAlert:Hide()
+	else
+		if ( playerLevel < IonEJButton.minLevel or factionGroup == "Neutral" ) then
+			if not InCombatLockdown() then IonEJButton:Disable() end
+			EJMicroButton_ClearNewAdventureNotice()  --CHECK
+		else
+			 if not InCombatLockdown() then IonEJButton:Enable() end
+			IonEJButton:SetButtonState("NORMAL")
+		end
+	end
 
+	if ( CollectionsJournal and CollectionsJournal:IsShown() ) then
+		if not InCombatLockdown() then IonCollectionsButton:Enable() end
+		IonCollectionsButton:SetButtonState("PUSHED", true)
+		IMicroButtonPulse(IonCollectionsButton, "Stop")
+		IonCollectionsMicroButtonAlert:Hide()
+	else
+		if not InCombatLockdown() then IonCollectionsButton:Enable() end
+		IonCollectionsButton:SetButtonState("NORMAL")
+	end
+
+	if ( StoreFrame and StoreFrame_IsShown() ) then
+		IonStoreButton:SetButtonState("PUSHED", true)
+	else
+		IonStoreButton:SetButtonState("NORMAL")
+	end
+
+	if ( C_StorePublic.IsEnabled() ) then
+		IonLatencyButton:SetPoint("BOTTOMLEFT", IonStoreButton, "BOTTOMRIGHT", -3, 0)
+		IonHelpButton:Hide()
+		IonStoreButton:Show()
+	else
+		IonLatencyButton:SetPoint("BOTTOMLEFT", IonEJButton, "BOTTOMRIGHT", -3, 0)
+		IonHelpButton:Show()
+		IonStoreButton:Hide()
+	end
+
+	if (  _G.GameLimitedMode_IsActive() ) then
+		IonStoreButton.disabledTooltip = _G.ERR_FEATURE_RESTRICTED_TRIAL
+		if not InCombatLockdown() then IonStoreButton:Disable() end
+	elseif (  _G.C_StorePublic.IsDisabledByParentalControls() ) then
+		IonStoreButton.disabledTooltip =  _G.BLIZZARD_STORE_ERROR_PARENTAL_CONTROLS
+		 if not InCombatLockdown() then IonStoreButton:Disable() end
+	else
+		IonStoreButton.disabledTooltip = nil
+		if not InCombatLockdown() then IonStoreButton:Enable() end
+	end
+end
+ION.updateMicroButtons = updateMicroButtons
+
+
+function ION.AchievementButton_OnEvent(self, event, ...)
+	if ( event == "UPDATE_BINDINGS" ) then
+		self.tooltipText = MicroButtonTooltipText(_G.ACHIEVEMENT_BUTTON, "TOGGLEACHIEVEMENT")
+	else
+		updateMicroButtons()
+	end
 end
 
+
+function ION.GuildButton_OnEvent(self, event, ...)
+	if ( event == "UPDATE_BINDINGS" ) then
+		if ( IsInGuild() ) then
+			IonGuildButton.tooltipText = MicroButtonTooltipText(_G.GUILD, "TOGGLEGUILDTAB")
+		else
+			IonGuildButton.tooltipText = MicroButtonTooltipText(_G.LOOKINGFORGUILD, "TOGGLEGUILDTAB")
+		end
+	elseif ( event == "PLAYER_GUILD_UPDATE" or event == "NEUTRAL_FACTION_SELECT_RESULT" ) then
+		IonGuildButtonTabard.needsUpdate = true
+		updateMicroButtons()
+	end
+end
+
+
+--- Updates the guild tabard icon on the menu bar
+-- params: forceUpdate - (boolean) True- forces an update reguardless if has been set to need updateing
+function ION.updateTabard(forceUpdate)
+	local tabard = IonGuildButtonTabard
+	if ( not tabard.needsUpdate and not forceUpdate ) then
+		return
+	end
+	-- switch textures if the guild has a custom tabard	
+	local emblemFilename = select(10, GetGuildLogoInfo())
+	if ( emblemFilename ) then
+		if ( not tabard:IsShown() ) then
+			local button = IonGuildButton
+			button:SetNormalTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Up")
+			button:SetPushedTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Down")
+			-- no need to change disabled texture, should always be available if you're in a guild
+			tabard:Show()
+		end
+		SetSmallGuildTabardTextures("player", tabard.emblem, tabard.background)
+	else
+		if ( tabard:IsShown() ) then
+			local button = IonGuildButton
+			button:SetNormalTexture("Interface\\Buttons\\UI-MicroButton-Socials-Up")
+			button:SetPushedTexture("Interface\\Buttons\\UI-MicroButton-Socials-Down")
+			button:SetDisabledTexture("Interface\\Buttons\\UI-MicroButton-Socials-Disabled")
+			tabard:Hide()
+		end
+	end
+	tabard.needsUpdate = nil
+end
+
+
 function ION.CharacterButton_OnLoad(self)
-
-	self.portrait = _G[self:GetName().."Portrait"]
-	SetPortraitTexture(self.portrait, "player")
-
 	self:SetNormalTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Up")
 	self:SetPushedTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Down")
 	self:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
 	self:RegisterEvent("UNIT_PORTRAIT_UPDATE")
 	self:RegisterEvent("UPDATE_BINDINGS")
-	self.tooltipText = MicroButtonTooltipText(CHARACTER_BUTTON, "TOGGLECHARACTER0")
-	self.newbieText = NEWBIE_TOOLTIP_CHARACTER
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self.tooltipText = MicroButtonTooltipText(_G.CHARACTER_BUTTON, "TOGGLECHARACTER0")
+	self.newbieText = _G.NEWBIE_TOOLTIP_CHARACTER
 
 	menuElements[#menuElements+1] = self
 end
 
-function ION.CharacterButton_OnMouseDown(self)
-
-	if (self.down) then
-		self.down = nil
-		ToggleCharacter("PaperDollFrame")
-		return
-	end
-	ION.CharacterButton_SetPushed(self)
-	self.down = 1
-end
-
-function ION.CharacterButton_OnMouseUp(self)
-
-	if (self.down) then
-		self.down = nil
-		if (self:IsMouseOver()) then
-			ToggleCharacter("PaperDollFrame")
-		else
-			updateMicroButtons()
-		end
-		return
-	end
-	if (self:GetButtonState() == "NORMAL") then
-		ION.CharacterButton_SetPushed(self)
-		self.down = 1
-	else
-		ION.CharacterButton_SetNormal(self)
-		self.down = 1
-	end
-end
 
 function ION.CharacterButton_OnEvent(self, event, ...)
-
-	if (event == "UNIT_PORTRAIT_UPDATE") then
-
-		if (... == "player") then
-			SetPortraitTexture(self.portrait, ...)
+	if ( event == "UNIT_PORTRAIT_UPDATE" ) then
+		local unit = ...
+		if ( not unit or unit == "player" ) then
+			_G.SetPortraitTexture(IonCharacterButtonPortrait, "player")
 		end
-
-	elseif (event == "UPDATE_BINDINGS") then
-
-		self.tooltipText = MicroButtonTooltipText(CHARACTER_BUTTON, "TOGGLECHARACTER0")
+		return
+	elseif ( event == "PLAYER_ENTERING_WORLD" ) then
+		_G.SetPortraitTexture(IonCharacterButtonPortrait, "player")
+	elseif ( event == "UPDATE_BINDINGS" ) then
+		self.tooltipText = MicroButtonTooltipText(_G.CHARACTER_BUTTON, "TOGGLECHARACTER0")
 	end
 end
+
 
 function ION.CharacterButton_SetPushed(self)
-	self.portrait:SetTexCoord(0.2666, 0.8666, 0, 0.8333)
-	self.portrait:SetAlpha(0.5)
+	IonCharacterButtonPortrait:SetTexCoord(0.2666, 0.8666, 0, 0.8333)
+	IonCharacterButtonPortrait:SetAlpha(0.5)
 end
+
 
 function ION.CharacterButton_SetNormal(self)
-	self.portrait:SetTexCoord(0.2, 0.8, 0.0666, 0.9)
-	self.portrait:SetAlpha(1.0)
+	IonCharacterButtonPortrait:SetTexCoord(0.2, 0.8, 0.0666, 0.9)
+	IonCharacterButtonPortrait:SetAlpha(1.0)
 end
 
-function ION.SpellbookButton_OnLoad(self)
-
-	self:SetAttribute("type", "macro")
-	self:SetAttribute("*macrotext*", "/click SpellbookMicroButton")
-	self:RegisterEvent("UPDATE_BINDINGS")
-
-	LoadMicroButtonTextures(self, "Spellbook")
-	menuElements[#menuElements+1] = self
-end
-
-function ION.SpellbookButton_OnClick(self)
-	if (not InCombatLockdown()) then
-		ToggleSpellBook(BOOKTYPE_SPELL)
-	end
-end
-
-function ION.SpellbookButton_OnEnter(self)
-	self.tooltipText = MicroButtonTooltipText(SPELLBOOK_ABILITIES_BUTTON, "TOGGLESPELLBOOK")
-	GameTooltip_AddNewbieTip(self, self.tooltipText, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_SPELLBOOK)
-end
-
-function ION.SpellbookButton_OnEvent(self, event, ...)
-	self.tooltipText = MicroButtonTooltipText(SPELLBOOK_ABILITIES_BUTTON, "TOGGLESPELLBOOK")
-end
-
-function ION.TalentButton_OnLoad(self)
-
-	LoadMicroButtonTextures(self, "Talents")
-
-	self:SetAttribute("type", "macro")
-	self:SetAttribute("*macrotext*", "/click TalentMicroButton")
-
-	self.tooltipText = MicroButtonTooltipText(TALENTS_BUTTON, "TOGGLETALENTS")
-	self.newbieText = NEWBIE_TOOLTIP_TALENTS
-	self:RegisterEvent("PLAYER_LEVEL_UP")
-	self:RegisterEvent("UPDATE_BINDINGS")
-	self:RegisterEvent("UNIT_LEVEL")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-	self:HookScript("OnEnter", function(self) if (self.disabledTooltip) then GameTooltip:AddLine(self.disabledTooltip, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b, true) GameTooltip:Show() end end)
-
-	menuElements[#menuElements+1] = self
-end
 
 function ION.TalentButton_OnEvent(self, event, ...)
-
 	if (event == "PLAYER_LEVEL_UP") then
-
-		updateMicroButtons()
-
-		if (not CharacterFrame:IsShown()) then
-			SetButtonPulse(self, 60, 1)
+		local level = ...
+		if (level == _G.SHOW_SPEC_LEVEL) then
+			IMicroButtonPulse(self)
+			ION.MainMenuMicroButton_ShowAlert(IonTalentMicroButtonAlert, _G.TALENT_MICRO_BUTTON_SPEC_TUTORIAL)
+		elseif (level == _G.SHOW_TALENT_LEVEL) then
+			IMicroButtonPulse(self)
+			ION.MainMenuMicroButton_ShowAlert(IonTalentMicroButtonAlert, _G.TALENT_MICRO_BUTTON_TALENT_TUTORIAL)
 		end
-
-	elseif (event == "UNIT_LEVEL" or event == "PLAYER_ENTERING_WORLD") then
-
-		updateMicroButtons()
-
-	elseif (event == "UPDATE_BINDINGS") then
-
-		self.tooltipText =  MicroButtonTooltipText(TALENTS_BUTTON, "TOGGLETALENTS")
-	end
-end
-
-function ION.AchievementButton_OnLoad(self)
-	LoadMicroButtonTextures(self, "Achievement")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("UPDATE_BINDINGS")
-
-	menuElements[#menuElements+1] = self
-end
-
-function ION.AchievementButton_OnEvent(self, event, ...)
-
-	if (event == "PLAYER_ENTERING_WORLD") then
-		updateMicroButtons()
-	elseif (event == "UPDATE_BINDINGS") then
-		self.tooltipText =  MicroButtonTooltipText(TALENTS_BUTTON, "TOGGLETALENTS")
-	end
-end
-
-function ION.AchievementButton_OnClick(self)
-	ToggleAchievementFrame()
-end
-
-function ION.AchievementButton_OnEnter(self)
-	self.tooltipText = MicroButtonTooltipText(ACHIEVEMENT_BUTTON, "TOGGLEACHIEVEMENT")
-	GameTooltip_AddNewbieTip(self, self.tooltipText, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_ACHIEVEMENT)
-	if (self.disabledTooltip) then
-		GameTooltip:AddLine("\n"..self.disabledTooltip, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b, true)
-	end
-	GameTooltip:Show()
-end
-
-function ION.QuestLogButton_OnLoad(self)
-	LoadMicroButtonTextures(self, "Quest")
-	self.tooltipText = MicroButtonTooltipText(QUESTLOG_BUTTON, "TOGGLEQUESTLOG")
-	self.newbieText = NEWBIE_TOOLTIP_QUESTLOG
-
-	menuElements[#menuElements+1] = self
-end
-
-function ION.QuestLogButton_OnEvent(self, event, ...)
-	self.tooltipText = MicroButtonTooltipText(QUESTLOG_BUTTON, "TOGGLEQUESTLOG")
-end
-
-function ION.QuestLogButton_OnClick(self)
-	ToggleQuestLog()
-end
-
---		IonGuildButton.tabard:SetPoint("TOPLEFT", -1, -1) IonGuildButton.tabard:SetAlpha(0.5)
-
-function ION.GuildButton_OnLoad(self)
-
-	self:SetAttribute("type", "macro")
-	self:SetAttribute("*macrotext*", "/click GuildMicroButton")
-	self:SetScript("OnMouseDown", function(self) self.tabard:SetPoint("TOPLEFT", -1, -1) self.tabard:SetAlpha(0.5) end)
-	self:RegisterEvent("UPDATE_BINDINGS")
-	self:RegisterEvent("PLAYER_GUILD_UPDATE")
-
-	LoadMicroButtonTextures(self, "Socials")
-	self.tooltipText = MicroButtonTooltipText(GUILD, "TOGGLEGUILDTAB")
-	self.newbieText = NEWBIE_TOOLTIP_GUILDTAB
-
-	self:HookScript("OnEnter", function(self) if (self.disabledTooltip) then GameTooltip:AddLine(self.disabledTooltip, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b, true) GameTooltip:Show() end end)
-
-	updateTabard(self)
-
-	menuElements[#menuElements+1] = self
-end
-
-function ION.GuildButton_OnEvent(self, event, ...)
-	if (event == "UPDATE_BINDINGS") then
-		self.tooltipText = MicroButtonTooltipText(GUILD, "TOGGLEGUILDTAB")
-	elseif (event == "PLAYER_GUILD_UPDATE") then
-		updateMicroButtons()
-	end
-end
---[[
-function ION.PVPButton_OnLoad(self)
-
-	self:RegisterEvent("UPDATE_BINDINGS")
-	self:SetNormalTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Up")
-	self:SetPushedTexture("Interface\\Buttons\\UI-MicroButtonCharacter-Down")
-	self:SetHighlightTexture("Interface\\Buttons\\UI-MicroButton-Hilight")
-	self.faction = _G[self:GetName().."Faction"]
-
-	local factionGroup = UnitFactionGroup("player")
-
-	if (factionGroup) then
-		self.factionGroup = factionGroup
-		self.faction:SetTexture("Interface\\TargetingFrame\\UI-PVP-"..self.factionGroup)
-	end
-
-	self.tooltipText = MicroButtonTooltipText(PLAYER_V_PLAYER, "TOGGLECHARACTER4")
-	self.newbieText = NEWBIE_TOOLTIP_PVP
-
-	self:HookScript("OnEnter", function(self) if (self.disabledTooltip) then GameTooltip:AddLine(self.disabledTooltip, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b, true) GameTooltip:Show() end end)
-
-	menuElements[#menuElements+1] = self
-end
-
-function ION.PVPButton_OnEvent(self, event, ...)
-	self.tooltipText = MicroButtonTooltipText(PLAYER_V_PLAYER, "TOGGLECHARACTER4")
-	self.newbieText = NEWBIE_TOOLTIP_PVP
-end
-
-function ION.PVPButton_OnMouseDown(self)
-
-	if (self.disabledTooltip) then
-		self.faction:SetVertexColor(1,1,1)
-		return
-	end
-
-	if (self.down) then
-		self.down = nil
-		if (PVPUIFrame) then
-			ToggleFrame(PVPUIFrame)
+	elseif ( event == "PLAYER_SPECIALIZATION_CHANGED") then
+		-- If we just unspecced, and we have unspent talent points, it's probably spec-specific talents that were just wiped.  Show the tutorial box.
+		local unit = ...
+		if(unit == "player" and _G.GetSpecialization() == nil and _G.GetNumUnspentTalents() > 0) then
+			ION.MainMenuMicroButton_ShowAlert(IonTalentMicroButtonAlert, _G.TALENT_MICRO_BUTTON_UNSPENT_TALENTS)
 		end
-		return
+	elseif ( event == "PLAYER_TALENT_UPDATE" or event == "NEUTRAL_FACTION_SELECT_RESULT" ) then
+		updateMicroButtons()
+		
+		-- On the first update from the server, flash the button if there are unspent points
+		-- Small hack: GetNumSpecializations should return 0 if talents haven't been initialized yet
+		if (not self.receivedUpdate and _G.GetNumSpecializations(false) > 0) then
+			self.receivedUpdate = true
+			local shouldPulseForTalents = _G.GetNumUnspentTalents() > 0 and not _G.AreTalentsLocked()
+			if (UnitLevel("player") >= _G.SHOW_SPEC_LEVEL and (not _G.GetSpecialization() or shouldPulseForTalents)) then
+				IMicroButtonPulse(self)
+			end
+		end
+	elseif ( event == "UPDATE_BINDINGS" ) then
+		self.tooltipText =  MicroButtonTooltipText(_G.TALENTS_BUTTON, "TOGGLETALENTS")
+	elseif ( event == "PLAYER_CHARACTER_UPGRADE_TALENT_COUNT_CHANGED" ) then
+		local prev, current = ...
+		if ( prev == 0 and current > 0 ) then
+			IMicroButtonPulse(self)
+			ION.MainMenuMicroButton_ShowAlert(IonTalentMicroButtonAlert,_G. TALENT_MICRO_BUTTON_TALENT_TUTORIAL)
+		elseif ( prev ~= current ) then
+			IMicroButtonPulse(self)
+			ION.MainMenuMicroButton_ShowAlert	(IonTalentMicroButtonAlert, _G.TALENT_MICRO_BUTTON_UNSPENT_TALENTS)
+		end
+	elseif (event == "PLAYER_ENTERING_WORLD") then
+		updateMicroButtons()
 	end
-
-	ION.PVPButton_SetPushed(self)
-
-	self.down = 1
 end
 
-function ION.PVPButton_OnMouseUp(self)
 
-	if (self.disabledTooltip) then
-		self.faction:SetVertexColor(0.5,0.5,0.5)
-		return
-	end
-
-	if (self.down) then
-		self.down = nil
-
-		if (not IsAddOnLoaded("Blizzard_PVPUI")) then
-			LoadAddOn("Blizzard_PVPUI")
-		end
-
-		if (self:IsMouseOver() and PVPUIFrame) then
-			ToggleFrame(PVPUIFrame)
+do
+	local function SafeSetCollectionJournalTab(tab)
+		if  InCombatLockdown() then return end
+		if CollectionsJournal_SetTab then
+			CollectionsJournal_SetTab(CollectionsJournal, tab)
 		else
+			SetCVar("petJournalTab", tab)
+		end
+	end
+
+
+	function ION.CollectionsButton_OnEvent(self, event, ...)
+		if ( event == "HEIRLOOMS_UPDATED" ) then
+			local itemID, updateReason = ...
+			if itemID and updateReason == "NEW" then
+				if _G.MainMenuMicroButton_ShowAlert(IonCollectionsMicroButtonAlert, _G.HEIRLOOMS_MICRO_BUTTON_SPEC_TUTORIAL, _G.LE_FRAME_TUTORIAL_HEIRLOOM_JOURNAL) then
+					IMicroButtonPulse(self)
+					SafeSetCollectionJournalTab(4)
+				end
+			end
+		elseif ( event == "PET_JOURNAL_NEW_BATTLE_SLOT" ) then
+			IMicroButtonPulse(self)
+			_G.MainMenuMicroButton_ShowAlert(IonCollectionsMicroButtonAlert, _G.COMPANIONS_MICRO_BUTTON_NEW_BATTLE_SLOT)
+			SafeSetCollectionJournalTab(2)
+		elseif ( event == "TOYS_UPDATED" ) then
+			local itemID, new = ...
+			if itemID and new then		
+				if _G.MainMenuMicroButton_ShowAlert(IonCollectionsMicroButtonAlert, _G.TOYBOX_MICRO_BUTTON_SPEC_TUTORIAL, _G.LE_FRAME_TUTORIAL_TOYBOX) then
+					IMicroButtonPulse(self)
+					SafeSetCollectionJournalTab(3)
+				end
+			end
+		else
+			self.tooltipText = MicroButtonTooltipText(_G.COLLECTIONS, "TOGGLECOLLECTIONS")
+			self.newbieText = _G.NEWBIE_TOOLTIP_MOUNTS_AND_PETS
 			updateMicroButtons()
 		end
-		return
 	end
-
-	if (self:GetButtonState() == "NORMAL") then
-		ION.PVPButton_SetPushed(self)
-	else
-		ION.PVPButton_SetNormal(self)
-	end
-
-	self.down = 1
+	
 end
 
-function ION.PVPButton_SetPushed(self)
-	self.faction:SetPoint("TOP", self, "TOP", 5, -31)
-	self.faction:SetAlpha(0.5)
-end
 
-function ION.PVPButton_SetNormal(self)
-	self.faction:SetPoint("TOP", self, "TOP", 6, -30)
-	self.faction:SetAlpha(1.0)
-end
-]]--
-function ION.LFDButton_OnLoad(self)
-
-	self:RegisterEvent("UPDATE_BINDINGS")
-	self.tooltipText = MicroButtonTooltipText(DUNGEONS_BUTTON, "TOGGLELFGPARENT")
-	self.newbieText = NEWBIE_TOOLTIP_LFGPARENT
-
-	LoadMicroButtonTextures(self, "LFG")
-
-	self:HookScript("OnEnter", function(self) if (self.disabledTooltip) then GameTooltip:AddLine(self.disabledTooltip, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b, true) GameTooltip:Show() end end)
-
-	menuElements[#menuElements+1] = self
-end
-
-function ION.LFDButton_OnEvent(self, event, ...)
-	self.tooltipText = MicroButtonTooltipText(DUNGEONS_BUTTON, "TOGGLELFGPARENT")
-	self.newbieText = NEWBIE_TOOLTIP_LFGPARENT
-end
-
-function ION.LFDButton_OnClick(self)
-
-	if (self.disabledTooltip) then
-		return
-	end
-
-	if (ToggleLFDParentFrame) then
-		ToggleLFDParentFrame()
-	elseif (ToggleLFDParentFrame) then
-		ToggleLFDParentFrame()
-	end
-end
-
-function ION.CompanionButton_OnLoad(self)
-
-	self:RegisterEvent("UPDATE_BINDINGS")
-	self.tooltipText = MicroButtonTooltipText(MOUNTS_AND_PETS, "TOGGLEMOUNTJOURNAL")
-	self.newbieText = NEWBIE_TOOLTIP_MOUNTS_AND_PETS
-
-	LoadMicroButtonTextures(self, "Mounts")
-
-	self:HookScript("OnEnter", function(self) if (self.disabledTooltip) then GameTooltip:AddLine(self.disabledTooltip, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b, true) GameTooltip:Show() end end)
-
-	menuElements[#menuElements+1] = self
-
-end
-
-function ION.CompanionButton_OnEvent(self, event, ...)
-
-	self.tooltipText = MicroButtonTooltipText(MOUNTS_AND_PETS, "TOGGLEMOUNTJOURNAL")
-	self.newbieText = NEWBIE_TOOLTIP_MOUNTS_AND_PETS
-end
-
-function ION.CompanionButton_OnClick(self)
-
-	ToggleCollectionsJournal()
-end
-
+-- Encounter Journal
 function ION.EJButton_OnLoad(self)
-
-	self:RegisterEvent("UPDATE_BINDINGS")
-	self.tooltipText = MicroButtonTooltipText(ENCOUNTER_JOURNAL, "TOGGLEENCOUNTERJOURNAL")
-	self.newbieText = NEWBIE_TOOLTIP_ENCOUNTER_JOURNAL
-
 	LoadMicroButtonTextures(self, "EJ")
+	_G.SetDesaturation(self:GetDisabledTexture(), true)
+	self.tooltipText = MicroButtonTooltipText(_G.ENCOUNTER_JOURNAL, "TOGGLEENCOUNTERJOURNAL")
+	self.newbieText = _G.NEWBIE_TOOLTIP_ENCOUNTER_JOURNAL
+	self.minLevel = _G.SHOW_EJ_LEVEL
 
-	self:HookScript("OnEnter", function(self) if (self.disabledTooltip) then GameTooltip:AddLine(self.disabledTooltip, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b, true) GameTooltip:Show() end end)
-
+	--events that can trigger a refresh of the adventure journal
+	self:RegisterEvent("VARIABLES_LOADED")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	ION.CreateAnimationLayer(self)
 	menuElements[#menuElements+1] = self
-
 end
+
 
 function ION.EJButton_OnEvent(self, event, ...)
+	local arg1 = ...
+	if( event == "UPDATE_BINDINGS" ) then
+		self.tooltipText = MicroButtonTooltipText(_G.ADVENTURE_JOURNAL, "TOGGLEENCOUNTERJOURNAL")
+		self.newbieText = _G.NEWBIE_TOOLTIP_ENCOUNTER_JOURNAL
 
-	self.tooltipText = MicroButtonTooltipText(ENCOUNTER_JOURNAL, "TOGGLEENCOUNTERJOURNAL")
-	self.newbieText = NEWBIE_TOOLTIP_ENCOUNTER_JOURNAL
-
+		updateMicroButtons()
+	elseif( event == "VARIABLES_LOADED" ) then
+		local showAlert = GetCVarBool("showAdventureJournalAlerts")
+		if( showAlert ) then
+			local lastTimeOpened = tonumber(GetCVar("advJournalLastOpened"))
+			if ( UnitLevel("player") >= IonEJButton.minLevel and _G.UnitFactionGroup("player") ~= "Neutral" ) then		
+				if ( _G.GetServerTime() - lastTimeOpened > _G.EJ_ALERT_TIME_DIFF ) then
+					IonEJMicroButtonAlert:Show()
+					IMicroButtonPulse(IonEJButton)
+				end
+			
+				if ( lastTimeOpened ~= 0 ) then
+					SetCVar("advJournalLastOpened", GetServerTime() )
+				end
+			end
+			
+			EJMicroButton_UpdateAlerts(true)
+		end
+	elseif ( event == "PLAYER_ENTERING_WORLD" ) then
+		_G.C_AdventureJournal.UpdateSuggestions()	
+	elseif ( event == "UNIT_LEVEL" and arg1 == "player" ) then		
+		EJMicroButton_UpdateNewAdventureNotice(true)  --Check
+	elseif event == "PLAYER_AVG_ITEM_LEVEL_UPDATE" then
+		local playerLevel = _G.UnitLevel("player")
+		if ( playerLevel == _G.MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then
+			EJMicroButton_UpdateNewAdventureNotice(false)--Check
+		end
+	end
 end
 
-function ION.EJButton_OnClick(self)
 
-	if (self.disabledTooltip) then
-		return
-	end
-
-	if (not EncounterJournal) then
-		EncounterJournal_LoadUI()
-	end
-
-	if (EncounterJournal) then
-		ToggleFrame(EncounterJournal)
+local function EJMicroButton_UpdateNewAdventureNotice(levelUp)
+	if ( IonEJButton:IsEnabled() and _G.C_AdventureJournal.UpdateSuggestions(levelUp) ) then
+		if( not EncounterJournal or not EncounterJournal:IsShown() ) then
+			IonEJButton.Flash:Show()
+			IonEJButton.NewAdventureNotice:Show()
+		end
 	end
 end
 
-function Ion.StoreButton_OnLoad(self)
 
-	LoadMicroButtonTextures(self, "BStore")
-	self.tooltipText = BLIZZARD_STORE
-	self:RegisterEvent("STORE_STATUS_CHANGED")
-	
+local function EJMicroButton_ClearNewAdventureNotice()
+	IonEJButton.Flash:Hide()
+	IonEJButton.NewAdventureNotice:Hide()
+end
+
+
+local function EJMicroButton_UpdateAlerts( flag )
+	if ( flag ) then
+		IonEJButton:RegisterEvent("UNIT_LEVEL")
+		IonEJButton:RegisterEvent("PLAYER_AVG_ITEM_LEVEL_UPDATE")
+		EJMicroButton_UpdateNewAdventureNotice(false)
+	else
+		IonEJButton:UnregisterEvent("UNIT_LEVEL")
+		IonEJButton:UnregisterEvent("PLAYER_AVG_ITEM_LEVEL_UPDATE")
+		EJMicroButton_ClearNewAdventureNotice()
+	end
+end
+
+
+--- This adds a frame element to the table.
+function ION.AddMenuElement(self)
 	menuElements[#menuElements+1] = self
-
 end
 
-function Ion.StoreButton_OnEvent(self, event, ...)
 
+function ION.MainMenuMicroButton_ShowAlert(alert, text, tutorialIndex)
+	if alert == TalentMicroButtonAlert then alert = IonTalentMicroButtonAlert end
+
+	alert.Text:SetText(text)
+	alert:SetHeight(alert.Text:GetHeight()+42)
+	alert.tutorialIndex = tutorialIndex
+	alert:Show()
+	return alert:IsShown()
 end
 
-function Ion.StoreButton_OnClick(self)
-
-	ToggleStoreUI()
-
-end
-
-function ION.HelpButton_OnLoad(self)
-
-	LoadMicroButtonTextures(self, "Help")
-	self.tooltipText = HELP_BUTTON
-	self.newbieText = NEWBIE_TOOLTIP_HELP
-
-	menuElements[#menuElements+1] = self
-end
-
-function ION.HelpButton_OnClick(self)
-	ToggleHelpFrame()
-end
 
 function ION.LatencyButton_OnLoad(self)
-
-	self.hover = nil
-	self.elapsed = 0
 	self.overlay = _G[self:GetName().."Overlay"]
 	self.overlay:SetWidth(self:GetWidth()+1)
 	self.overlay:SetHeight(self:GetHeight())
-	self.tooltipText = MicroButtonTooltipText(MAINMENU_BUTTON, "TOGGLEGAMEMENU")
-	self.newbieText = NEWBIE_TOOLTIP_MAINMENU
+
+	self.tooltipText = MicroButtonTooltipText(_G.MAINMENU_BUTTON, "TOGGLEGAMEMENU")
+	self.newbieText = _G.NEWBIE_TOOLTIP_MAINMENU
+
+	self.hover = nil
+	self.updateInterval = 0
+	--self.elapsed = 0
+
 	self:RegisterForClicks("LeftButtonDown", "RightButtonDown", "LeftButtonUp", "RightButtonUp")
 	self:RegisterEvent("ADDON_LOADED")
 	self:RegisterEvent("UPDATE_BINDINGS")
@@ -753,8 +596,8 @@ function ION.LatencyButton_OnLoad(self)
 
 end
 
-function ION.LatencyButton_OnEvent(self, event, ...)
 
+function ION.LatencyButton_OnEvent(self, event, ...)
 	if (event == "ADDON_LOADED" and ...=="Ion-MenuBar") then
 		self.lastStart = 0
 		if (GDB) then
@@ -764,32 +607,26 @@ function ION.LatencyButton_OnEvent(self, event, ...)
 		GameMenuFrame:HookScript("OnHide", ION.LatencyButton_SetNormal)
 	end
 
-	self.tooltipText = MicroButtonTooltipText(MAINMENU_BUTTON, "TOGGLEGAMEMENU")
+	self.tooltipText = MicroButtonTooltipText(_G.MAINMENU_BUTTON, "TOGGLEGAMEMENU")
 end
 
+
 function ION.LatencyButton_OnClick(self, button, down)
-
 	if (button == "RightButton") then
-
 		if (IsShiftKeyDown()) then
-
 			if (GDB.scriptProfile) then
-
 				SetCVar("scriptProfile", "0")
 				GDB.scriptProfile = false
 			else
-
 				SetCVar("scriptProfile", "1")
 				GDB.scriptProfile = true
 
 			end
 
 			ReloadUI()
-
 		end
 
 		if (not down) then
-
 			if (self.alt_tooltip) then
 				self.alt_tooltip = false
 			else
@@ -804,13 +641,11 @@ function ION.LatencyButton_OnClick(self, button, down)
 		ION.LatencyButton_OnEnter(self)
 
 	elseif (IsShiftKeyDown()) then
-
 		ReloadUI()
 
 	else
-
 		if (self.down) then
-			self.down = nil;
+			self.down = nil
 			if (not GameMenuFrame:IsShown()) then
 				CloseMenus()
 				CloseAllWindows()
@@ -821,81 +656,38 @@ function ION.LatencyButton_OnClick(self, button, down)
 				HideUIPanel(GameMenuFrame)
 				ION.LatencyButton_SetNormal()
 			end
+
 			if (InterfaceOptionsFrame:IsShown()) then
 				InterfaceOptionsFrameCancel:Click()
 			end
-			return;
+
+			return
 		end
+
 		if (self:GetButtonState() == "NORMAL") then
 			ION.LatencyButton_SetPushed()
-			self.down = 1;
+			self.down = 1
 		else
-
-			self.down = 1;
+			self.down = 1
 		end
 	end
 end
 
-function ION.LatencyButton_OnUpdate(self, elapsed)
-
-	self.elapsed = self.elapsed + elapsed
-
-	if (self.elapsed > 2.5) then
-
-		local r, g, rgbValue
-		local bandwidthIn, bandwidthOut, latency = GetNetStats()
-
-		if (latency <= 1000) then
-			rgbValue = math.floor((latency/1000)*100)
-		else
-			rgbValue = 100
-		end
-
-		if (rgbValue < 50) then
-			r=rgbValue/50; g=1-(rgbValue/100)
-		else
-			r=1; g=abs((rgbValue/100)-1)
-		end
-
-		self.overlay:SetVertexColor(r, g, 0)
-
-		if (self.hover) then
-			ION.LatencyButton_OnEnter(self)
-		end
-
-		if (self.enabled) then
-
-			UpdateAddOnCPUUsage()
-			UpdateAddOnMemoryUsage()
-
-			self.lastUsage = self.currUsage or 0
-
-			self.currUsage = GetScriptCPUUsage()
-
-			self.usage = self.currUsage - self.lastUsage
-		end
-
-		self.elapsed = 0
-	end
-end
 
 function ION.LatencyButton_OnEnter(self)
-
 	self.hover = 1
+	self.updateInterval = 0
 
 	if (self.alt_tooltip and not IonMenuBarTooltip.wasShown) then
-
 		ION.LatencyButton_AltOnEnter(self)
 		IonMenuBarTooltip:AddLine("\nLatency Button by LedMirage of MirageUI")
 		GameTooltip:Hide()
 		IonMenuBarTooltip:Show()
 
 	elseif (self:IsMouseOver()) then
-
 		MainMenuBarPerformanceBarFrame_OnEnter(self)
 
 		local objects = ION:GetParentKeys(GameTooltip)
-
 		local foundion, text
 
 		for k,v in pairs(objects) do
@@ -920,26 +712,23 @@ function ION.LatencyButton_OnEnter(self)
 		end
 
 		GameTooltip:AddLine("\nLatency Button by LedMirage of MirageUI")
-
 		IonMenuBarTooltip:Hide()
 		GameTooltip:Show()
 	end
 end
 
-function ION.LatencyButton_AltOnEnter(self)
 
+function ION.LatencyButton_AltOnEnter(self)
 	if (not IonMenuBarTooltip:IsVisible()) then
 		IonMenuBarTooltip:SetOwner(UIParent, "ANCHOR_PRESERVE")
 	end
 
 	if (self.enabled) then
-
 		IonMenuBarTooltip:SetText("Script Profiling is |cff00ff00Enabled|r", 1, 1, 1)
 		IonMenuBarTooltip:AddLine("(Shift-RightClick to Disable)", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		IonMenuBarTooltip:AddLine("\n|cfff00000Warning:|r Script Profiling Affects Game Performance\n", 1, 1, 1, 1)
 
 		for i=1, GetNumAddOns() do
-
 			local name,_,_,enabled = GetAddOnInfo(i)
 
 			if (not addonData[i]) then
@@ -957,7 +746,6 @@ function ION.LatencyButton_AltOnEnter(self)
 			local currCPU = GetAddOnCPUUsage(i)
 
 			if (addon.lastUsage) then
-
 				addon.currCPU = (currCPU - addon.lastUsage)/2.5
 
 				if (not addon.maxCPU or addon.maxCPU < addon.currCPU) then
@@ -987,13 +775,10 @@ function ION.LatencyButton_AltOnEnter(self)
 		wipe(sortData)
 
 		for i,v in ipairs(addonData) do
-
 			if (addonData[i].enabled) then
-
 				local addLine = ""
 
 				if (addonData[i].currCPU and addonData[i].currCPU > 0) then
-
 					addLine = addLine..format("%.2f", addonData[i].currCPU).."ms/"..format("%.1f", addonData[i].percentCPU).."%)|r "
 
 					local num = tonumber(addLine:match("^%d+"))
@@ -1017,33 +802,31 @@ function ION.LatencyButton_AltOnEnter(self)
 			IonMenuBarTooltip:AddLine(v, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		end
 	else
-
 		IonMenuBarTooltip:SetText("Script Profiling is |cfff00000Disabled|r", 1, 1, 1)
 		IonMenuBarTooltip:AddLine("(Shift-RightClick to Enable)", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		IonMenuBarTooltip:AddLine("\n|cfff00000Warning:|r Script Profiling Affects Game Performance\n", 1, 1, 1, 1)
 	end
 end
 
-function ION.LatencyButton_OnLeave(self)
 
-	if (GameTooltip:IsVisible()) then
-		self.hover = nil
-		GameTooltip:Hide()
-	end
+function ION.LatencyButton_OnLeave(self)
+	self.hover = nil
+	GameTooltip:Hide()
 end
+
 
 function ION.LatencyButton_SetPushed()
 	IonLatencyButtonOverlay:SetPoint("CENTER", IonLatencyButton, "CENTER", -1, -2)
 end
 
+
 function ION.LatencyButton_SetNormal()
 	IonLatencyButtonOverlay:SetPoint("CENTER", IonLatencyButton, "CENTER", 0, -0.5)
 end
 
+
 function ANCHOR:SetData(bar)
-
 	if (bar) then
-
 		self.bar = bar
 
 		self:SetFrameStrata(bar.gdata.objectStrata)
@@ -1053,21 +836,19 @@ function ANCHOR:SetData(bar)
 	self:SetFrameLevel(4)
 end
 
+
 function ANCHOR:SaveData()
-
 	-- empty
-
 end
 
-function ANCHOR:LoadData(spec, state)
 
+function ANCHOR:LoadData(spec, state)
 	local id = self.id
 
 	self.GDB = menubtnsGDB
 	self.CDB = menubtnsCDB
 
 	if (self.GDB and self.CDB) then
-
 		if (not self.GDB[id]) then
 			self.GDB[id] = {}
 		end
@@ -1085,45 +866,38 @@ function ANCHOR:LoadData(spec, state)
 		end
 
 		self.config = self.GDB [id].config
-
 		self.data = self.CDB[id].data
 	end
 end
 
+
 function ANCHOR:SetGrid(show, hide)
-
 	--empty
-
 end
+
 
 function ANCHOR:SetAux()
-
 	-- empty
-
 end
+
 
 function ANCHOR:LoadAux()
-
 	-- empty
-
 end
+
 
 function ANCHOR:SetDefaults()
-
 	-- empty
-
 end
+
 
 function ANCHOR:GetDefaults()
-
 	--empty
-
 end
 
+
 function ANCHOR:SetType(save)
-
 	if (menuElements[self.id]) then
-
 		self:SetWidth(menuElements[self.id]:GetWidth()*0.90)
 		self:SetHeight(menuElements[self.id]:GetHeight()/1.60)
 		self:SetHitRectInsets(self:GetWidth()/2, self:GetWidth()/2, self:GetHeight()/2, self:GetHeight()/2)
@@ -1146,14 +920,12 @@ function ANCHOR:SetType(save)
 		self.element:Show()
 		self.element:SetPoint("BOTTOM", self, "BOTTOM", 0, -1)
 		self.element:SetHitRectInsets(3, 3, 23, 3)
-
 	end
 end
 
+
 local function controlOnEvent(self, event, ...)
-
 	if (event == "ADDON_LOADED" and ... == "Ion-MenuBar") then
-
 		hooksecurefunc("UpdateMicroButtons", updateMicroButtons)
 
 		GDB = IonMenuGDB; CDB = IonMenuCDB
@@ -1177,11 +949,9 @@ local function controlOnEvent(self, event, ...)
 		menubtnsCDB = CDB.menubtns
 
 		ION:RegisterBarClass("menu", "Menu Bar", "Menu Button", menubarsGDB, menubarsCDB, MENUIndex, menubtnsGDB, "CheckButton", "IonAnchorButtonTemplate", { __index = ANCHOR }, #menuElements, false, STORAGE, gDef, nil, true)
-
 		ION:RegisterGUIOptions("menu", { AUTOHIDE = true, SHOWGRID = false, SPELLGLOW = false, SNAPTO = true, DUALSPEC = false, HIDDEN = true, LOCKBAR = false, TOOLTIPS = true }, false, false)
 
 		if (GDB.firstRun) then
-
 			local bar, object = ION:CreateNewBar("menu", 1, true)
 
 			for i=1,#menuElements do
@@ -1192,7 +962,6 @@ local function controlOnEvent(self, event, ...)
 			GDB.firstRun = false
 
 		else
-		
 			local count = 0
 
 			for id,data in pairs(menubarsGDB) do
@@ -1213,21 +982,46 @@ local function controlOnEvent(self, event, ...)
 				for i=count+1, #menuElements do
 					object = ION:CreateNewObject("menu", i)
 				end
-			end				
+			end
 		end
-
 		STORAGE:Hide()
-
 	elseif (event == "PLAYER_LOGIN") then
 
 	elseif (event == "PLAYER_ENTERING_WORLD" and not PEW) then
-
 		PEW = true
 	end
 end
+
+
+--- This will check the position of the menu bar and move the alert below bar if 
+-- to close to the top of the screen
+-- Prams: self  - alert frame to be repositioned
+-- Prams: parent - frame to be moved in relation to
+function ION.CheckAlertPosition(self, parent)
+	if not parent:GetTop() then return end
+
+	if ( self:GetHeight() > UIParent:GetTop() - parent:GetTop() ) then
+		self:ClearAllPoints()
+		self:SetPoint("TOP", parent, "BOTTOM", 0, -16)
+		self.Arrow:ClearAllPoints()
+		self.Arrow:SetPoint("BOTTOM", self, "TOP", 0, -4)
+		self.Arrow.Arrow:SetTexture("Interface\\AddOns\\Ion-MenuBar\\Images\\UpIndicator")
+		self.Arrow.Arrow:SetTexCoord(0, 1, 0, 1)
+		self.Arrow.Glow:Hide()
+	end
+end
+
 
 local frame = CreateFrame("Frame", nil, UIParent)
 frame:SetScript("OnEvent", controlOnEvent)
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+-- Hooks the Microbutton alerts that don't trigger of events  ie closing the talent frame
+hooksecurefunc("MainMenuMicroButton_ShowAlert", ION.MainMenuMicroButton_ShowAlert)
+
+-- Forces the default alert frames to auto hide if something tries to show them
+TalentMicroButtonAlert:SetScript("OnShow", function(self) self:Hide() end)
+CollectionsMicroButtonAlert:SetScript("OnShow", function(self) self:Hide() end)
+EJMicroButtonAlert:SetScript("OnShow", function(self) self:Hide() end)
