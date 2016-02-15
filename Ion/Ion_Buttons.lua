@@ -76,6 +76,7 @@ local IsSpellOverlayed = _G.IsSpellOverlayed
 local sIndex = ION.sIndex  --Spell index
 local cIndex = ION.cIndex  --Battle pet & Mount index
 local iIndex = ION.iIndex  --Items Index
+local tIndex = ION.tIndex  --Toys Index
 
 local ItemCache = IonItemCache
 
@@ -900,7 +901,10 @@ function BUTTON:MACRO_UpdateIcon(...)
 	self.updateMacroIcon = nil
 
 	local spell, item, show, texture = self.macrospell, self.macroitem, self.macroshow, self.macroicon
-
+--print(spell)
+--print(item)
+--print(show)
+--print(texture)
 	if (self.actionID) then
 
 		texture = self:ACTION_SetIcon(self.actionID)
@@ -1394,7 +1398,9 @@ function BUTTON:MACRO_UpdateUsableSpell(spell)
 end
 
 function BUTTON:MACRO_UpdateUsableItem(item)
-	local isUsable, notEnoughMana = IsUsableItem(item) or PlayerHasToy(ItemCache[item])
+	local isUsable, notEnoughMana = IsUsableItem(item)-- or PlayerHasToy(ItemCache[item])
+	--local isToy = tIndex[item] 
+	if tIndex[item:lower()] then isUsable = true end
 
 	if (notEnoughMana and self.manacolor) then
 
@@ -1459,11 +1465,11 @@ function BUTTON:MACRO_UpdateButton(...)
 
 	elseif (self.macroshow and #self.macroshow>0) then
 
-    		if(GetItemInfo(self.macroshow) or ItemCache[self.macroshow]) then
+		if(GetItemInfo(self.macroshow) or ItemCache[self.macroshow]) then
 			self:MACRO_UpdateUsableItem(self.macroshow)
-    		else
+		else
 			self:MACRO_UpdateUsableSpell(self.macroshow)
-    		end
+		end
 
 	elseif (self.macrospell and #self.macrospell>0) then
 
@@ -1478,8 +1484,8 @@ function BUTTON:MACRO_UpdateButton(...)
 	end
 end
 
-function BUTTON:MACRO_OnUpdate(elapsed)
 
+function BUTTON:MACRO_OnUpdate(elapsed)
 	if (self.mac_flash) then
 
 		self.mac_flashing = true
@@ -1495,7 +1501,6 @@ function BUTTON:MACRO_OnUpdate(elapsed)
 		end
 
 	elseif (self.mac_flashing) then
-
 		self.iconframeflash:Hide()
 		self.mac_flashing = false
 	end
@@ -1512,11 +1517,10 @@ function BUTTON:MACRO_OnUpdate(elapsed)
 			self.auraQueue = nil; self:MACRO_UpdateAuraWatch(unit, spell)
 		end
 	end
-
 end
 
-function BUTTON:MACRO_ShowGrid()
 
+function BUTTON:MACRO_ShowGrid()
 	if (not InCombatLockdown()) then
 		self:Show()
 	end
@@ -1524,8 +1528,8 @@ function BUTTON:MACRO_ShowGrid()
 	self:MACRO_UpdateState()
 end
 
-function BUTTON:MACRO_HideGrid()
 
+function BUTTON:MACRO_HideGrid()
 	if (not InCombatLockdown()) then
 
 		if (not self.showGrid and not self:MACRO_HasAction() and not ION.BarsShown and not ION.EditFrameShown) then
@@ -1536,24 +1540,24 @@ function BUTTON:MACRO_HideGrid()
 	self:MACRO_UpdateState()
 end
 
+
 function BUTTON:MACRO_ACTIONBAR_UPDATE_COOLDOWN(...)
-
 	self:MACRO_UpdateTimers(...)
-
 end
+
 
 BUTTON.MACRO_RUNE_POWER_UPDATE = BUTTON.MACRO_ACTIONBAR_UPDATE_COOLDOWN
 
 
 function BUTTON:MACRO_ACTIONBAR_UPDATE_STATE(...)
-
 	self:MACRO_UpdateState(...)
-
 end
+
 
 function BUTTON:MACRO_ACTIONBAR_UPDATE_USABLE(...)
     -- TODO
 end
+
 
 BUTTON.MACRO_COMPANION_UPDATE = BUTTON.MACRO_ACTIONBAR_UPDATE_STATE
 BUTTON.MACRO_TRADE_SKILL_SHOW = BUTTON.MACRO_ACTIONBAR_UPDATE_STATE
@@ -1566,18 +1570,16 @@ function BUTTON:MACRO_BAG_UPDATE_COOLDOWN(...)
 	if (self.macroitem) then
 		self:MACRO_UpdateState(...)
 	end
-
 end
+
 
 BUTTON.MACRO_BAG_UPDATE = BUTTON.MACRO_BAG_UPDATE_COOLDOWN
 
 
 function BUTTON:MACRO_UNIT_AURA(...)
-
 	local unit = select(2, ...)
 
 	if (unitAuras[unit]) then
-
 		self:MACRO_UpdateAuraWatch(unit, self.macrospell)
 
 		if (unit == "player") then
@@ -1586,6 +1588,7 @@ function BUTTON:MACRO_UNIT_AURA(...)
 		end
 	end
 end
+
 
 BUTTON.MACRO_UPDATE_MOUSEOVER_UNIT = BUTTON.MACRO_UNIT_AURA
 
@@ -1601,6 +1604,7 @@ function BUTTON:MACRO_UNIT_SPELLCAST_INTERRUPTED(...)
 
 end
 
+
 BUTTON.MACRO_UNIT_SPELLCAST_FAILED = BUTTON.MACRO_UNIT_SPELLCAST_INTERRUPTED
 BUTTON.MACRO_UNIT_PET = BUTTON.MACRO_UNIT_SPELLCAST_INTERRUPTED
 BUTTON.MACRO_UNIT_ENTERED_VEHICLE = BUTTON.MACRO_UNIT_SPELLCAST_INTERRUPTED
@@ -1609,7 +1613,6 @@ BUTTON.MACRO_UNIT_EXITED_VEHICLE = BUTTON.MACRO_UNIT_SPELLCAST_INTERRUPTED
 
 
 function BUTTON:MACRO_SPELL_ACTIVATION_OVERLAY_GLOW_SHOW(...)
-
 	local spellID = select(2, ...)
 
 	if (self.spellGlow and self.spellID and spellID == self.spellID) then
@@ -1620,19 +1623,18 @@ function BUTTON:MACRO_SPELL_ACTIVATION_OVERLAY_GLOW_SHOW(...)
 	end
 end
 
-function BUTTON:MACRO_SPELL_ACTIVATION_OVERLAY_GLOW_HIDE(...)
 
+function BUTTON:MACRO_SPELL_ACTIVATION_OVERLAY_GLOW_HIDE(...)
 	local spellID = select(2, ...)
 
 	if ((self.overlay or self.spellGlow) and self.spellID and spellID == self.spellID) then
 
 		self:MACRO_StopGlow()
-
 	end
 end
 
-function BUTTON:MACRO_ACTIVE_TALENT_GROUP_CHANGED(...)
 
+function BUTTON:MACRO_ACTIVE_TALENT_GROUP_CHANGED(...)
 	local spec
 
 	if (self.dualSpec) then
@@ -1649,19 +1651,22 @@ function BUTTON:MACRO_ACTIVE_TALENT_GROUP_CHANGED(...)
 	self:SetGrid()
 end
 
+
 function BUTTON:MACRO_PLAYER_ENTERING_WORLD(...)
 
 	self:MACRO_Reset()
 	self:MACRO_UpdateAll(true)
 	self.binder:ApplyBindings(self)
-
 end
+
 
 function BUTTON:MACRO_MODIFIER_STATE_CHANGED(...)
 	self:MACRO_UpdateAll(true)
 end
 
+
 BUTTON.MACRO_SPELL_UPDATE_USABLE = BUTTON.MACRO_MODIFIER_STATE_CHANGED
+
 
 function BUTTON:MACRO_ACTIONBAR_SLOT_CHANGED(...)
 	if (self.data.macro_Watch or self.data.macro_Equip) then
@@ -1669,48 +1674,48 @@ function BUTTON:MACRO_ACTIONBAR_SLOT_CHANGED(...)
 	end
 end
 
+
 function BUTTON:MACRO_PLAYER_TARGET_CHANGED(...)
 	self:MACRO_UpdateTimers()
 end
 
+
 BUTTON.MACRO_PLAYER_FOCUS_CHANGED = BUTTON.MACRO_PLAYER_TARGET_CHANGED
 
 function BUTTON:MACRO_ITEM_LOCK_CHANGED(...)
-
 end
+
 
 function BUTTON:MACRO_ACTIONBAR_SHOWGRID(...)
-
 	self:MACRO_ShowGrid()
-
 end
+
 
 function BUTTON:MACRO_ACTIONBAR_HIDEGRID(...)
-
 	self:MACRO_HideGrid()
-
 end
 
-function BUTTON:MACRO_UPDATE_MACROS(...)
 
+function BUTTON:MACRO_UPDATE_MACROS(...)
 	if (PEW and not InCombatLockdown() and self.data.macro_Watch) then
 		self:MACRO_PlaceBlizzMacro(self.data.macro_Watch)
 	end
 end
 
-function BUTTON:MACRO_EQUIPMENT_SETS_CHANGED(...)
 
+function BUTTON:MACRO_EQUIPMENT_SETS_CHANGED(...)
 	if (PEW and not InCombatLockdown() and self.data.macro_Equip) then
 		self:MACRO_PlaceBlizzEquipSet(self.data.macro_Equip)
 	end
 end
 
-function BUTTON:MACRO_PLAYER_EQUIPMENT_CHANGED(...)
 
+function BUTTON:MACRO_PLAYER_EQUIPMENT_CHANGED(...)
 	if (self.data.macro_Equip) then
 		self:MACRO_UpdateIcon()
 	end
 end
+
 
 function BUTTON:MACRO_UPDATE_VEHICLE_ACTIONBAR(...)
 
@@ -1718,6 +1723,7 @@ function BUTTON:MACRO_UPDATE_VEHICLE_ACTIONBAR(...)
 		self:MACRO_UpdateAll(true)
 	end
 end
+
 
 BUTTON.MACRO_UPDATE_POSSESS_BAR = BUTTON.MACRO_UPDATE_VEHICLE_ACTIONBAR
 BUTTON.MACRO_UPDATE_OVERRIDE_ACTIONBAR = BUTTON.MACRO_UPDATE_VEHICLE_ACTIONBAR
@@ -1729,18 +1735,18 @@ BUTTON.MACRO_UPDATE_BONUS_ACTIONBAR = BUTTON.MACRO_UPDATE_VEHICLE_ACTIONBAR
 
 function BUTTON:MACRO_SPELL_UPDATE_CHARGES(...)
 
-    local spell = self.macrospell
-    local charges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
+	local spell = self.macrospell
+	local charges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
 
-    if (maxCharges and maxCharges > 1) then
-        self.count:SetText(charges)
-        else
-        self.count:SetText("")
-    end
+	if (maxCharges and maxCharges > 1) then
+		self.count:SetText(charges)
+	else
+		self.count:SetText("")
+	end
 end
 
-function BUTTON:MACRO_OnEvent(...)
 
+function BUTTON:MACRO_OnEvent(...)
 	local event = "MACRO_"..select(1,...)
 
 	if (BUTTON[event]) then
@@ -1748,8 +1754,8 @@ function BUTTON:MACRO_OnEvent(...)
 	end
 end
 
-function BUTTON:MACRO_PlaceMacro()
 
+function BUTTON:MACRO_PlaceMacro()
 	self.data.macro_Text = MacroDrag[2]
 	self.data.macro_Icon = MacroDrag[3]
 	self.data.macro_Name = MacroDrag[4]
@@ -1764,23 +1770,20 @@ function BUTTON:MACRO_PlaceMacro()
 	end
 
 	MacroDrag[0] = false
-
 	ClearCursor(); SetCursor(nil)
-
 	self:UpdateFlyout()
-
 	ION:ToggleButtonGrid(nil, true)
 end
 
-function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 
+function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 	local _, modifier, spell, subName, spellID, texture = " "
 
 	if (action1 == 0) then
 		return
 	else
-	 	spell, _ = GetSpellBookItemName(action1, action2)
-	 	_, spellID = GetSpellBookItemInfo(action1, action2)
+		spell, _ = GetSpellBookItemName(action1, action2)
+		_, spellID = GetSpellBookItemInfo(action1, action2)
 		local spellInfoName , subName, icon, castTime, minRange, maxRange= GetSpellInfo(spellID)
 
 		if AlternateSpellNameList[spellID] then
@@ -1791,7 +1794,7 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 			self.data.macro_Auto = spell..";"..subName
 		end
 
-	 	self.data.macro_Icon = false
+		self.data.macro_Icon = false
 		self.data.macro_Name = ""
 		self.data.macro_Watch = false
 		self.data.macro_Equip = false
@@ -1808,8 +1811,8 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 	end
 end
 
-function BUTTON:MACRO_PlaceItem(action1, action2, hasAction)
 
+function BUTTON:MACRO_PlaceItem(action1, action2, hasAction)
 	local item, link = GetItemInfo(action2)
 
 	if (IsEquippableItem(item)) then
@@ -1831,31 +1834,29 @@ function BUTTON:MACRO_PlaceItem(action1, action2, hasAction)
 	end
 
 	MacroDrag[0] = false
-
 	ClearCursor(); SetCursor(nil)
-
 end
 
-function BUTTON:MACRO_PlaceBlizzMacro(action1)
 
+function BUTTON:MACRO_PlaceBlizzMacro(action1)
 	if (action1 == 0) then
 		return
 	else
 	
-	 	local name, icon, body = GetMacroInfo(action1)
+		local name, icon, body = GetMacroInfo(action1)
 
-	 	if (body) then
+		if (body) then
 
-	 		self.data.macro_Text = body
-	 		self.data.macro_Name = name
-	 		self.data.macro_Watch = name
-	 		self.data.macro_Icon = icon:upper()
-	 	else
-	 		self.data.macro_Text = ""
-	 		self.data.macro_Name = ""
-	 		self.data.macro_Watch = false
-	 		self.data.macro_Icon = false
-	 	end
+			self.data.macro_Text = body
+			self.data.macro_Name = name
+			self.data.macro_Watch = name
+			self.data.macro_Icon = icon:upper()
+		else
+			self.data.macro_Text = ""
+			self.data.macro_Name = ""
+			self.data.macro_Watch = false
+			self.data.macro_Icon = false
+		end
 
 		self.data.macro_Equip = false
 		self.data.macro_Auto = false
@@ -1872,24 +1873,23 @@ function BUTTON:MACRO_PlaceBlizzMacro(action1)
 	end
 end
 
-function BUTTON:MACRO_PlaceBlizzEquipSet(action1)
 
+function BUTTON:MACRO_PlaceBlizzEquipSet(action1)
 	if (action1 == 0) then
 		return
 	else
 
-	 	local icon = GetEquipmentSetInfoByName(action1)
+		local icon = GetEquipmentSetInfoByName(action1)
+		if (icon) then
 
-	 	if (icon) then
-
-	 		self.data.macro_Text = "/equipset "..action1
-	 		self.data.macro_Equip = action1
-	 		self.data.macro_Icon = iIndex[icon:upper()] or "INTERFACE\\ICONS\\"..icon:upper()
-	 	else
-	 		self.data.macro_Text = ""
+			self.data.macro_Text = "/equipset "..action1
+			self.data.macro_Equip = action1
+			self.data.macro_Icon = iIndex[icon:upper()] or "INTERFACE\\ICONS\\"..icon:upper()
+		else
+			self.data.macro_Text = ""
 			self.data.macro_Equip = false
-	 		self.data.macro_Icon = false
-	 	end
+			self.data.macro_Icon = false
+		end
 
  		self.data.macro_Name = ""
  		self.data.macro_Watch = false
@@ -1907,6 +1907,7 @@ function BUTTON:MACRO_PlaceBlizzEquipSet(action1)
 	end
 end
 
+
 --Hooks mount journal mount buttons on enter to pull spellid from tooltip--
 --Based on discusion thread http://www.wowinterface.com/forums/showthread.php?t=49599&page=2
 --More dynamic than the manual list that was originally implemented
@@ -1914,6 +1915,7 @@ local CurrentMountSpellID = nil
 local function HookOnEnter(self)
 	CurrentMountSpellID = self:GetParent().spellID
 end
+
 
 local MountButtonsHookIsSet
 hooksecurefunc("ToggleCollectionsJournal", function()
@@ -1933,8 +1935,8 @@ hooksecurefunc("ToggleCollectionsJournal", function()
 	end
 end)
 
-function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 
+function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 	if (action1 == 0) then
 		return
 	else
@@ -1967,27 +1969,24 @@ function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 
 		ClearCursor(); SetCursor(nil)
 	end
-
 end
 
 
 function BUTTON:MACRO_PlaceCompanion(action1, action2, hasAction)
-
 	if (action1 == 0) then
 		return
+
 	else
-
 		local _, _, spellID = GetCompanionInfo(action2, action1)
-	 	local name = GetSpellInfo(spellID)
+		local name = GetSpellInfo(spellID)
 
-	 	if (name) then
-
-	 		self.data.macro_Text = self:AutoWriteMacro(name)
-	 		self.data.macro_Auto = name
-	 	else
-	 		self.data.macro_Text = ""
-	 		self.data.macro_Auto = false
-	 	end
+		if (name) then
+			self.data.macro_Text = self:AutoWriteMacro(name)
+			self.data.macro_Auto = name
+		else
+			self.data.macro_Text = ""
+			self.data.macro_Auto = false
+		end
 
 		self.data.macro_Icon = false
 		self.data.macro_Name = ""
@@ -2006,12 +2005,11 @@ function BUTTON:MACRO_PlaceCompanion(action1, action2, hasAction)
 	end
 end
 
-function BUTTON:MACRO_PlaceFlyout(action1, action2, hasAction)
 
+function BUTTON:MACRO_PlaceFlyout(action1, action2, hasAction)
 	if (action1 == 0) then
 		return
 	else
-
 		local count = self.bar.objCount
 		local columns = self.bar.gdata.columns or count
 		local rows = count/columns
@@ -2046,8 +2044,8 @@ function BUTTON:MACRO_PlaceFlyout(action1, action2, hasAction)
 		end
 
 		self.data.macro_Text = "/flyout blizz:"..action1..":l:"..point..":c"
-	 	self.data.macro_Icon = false
-	 	self.data.macro_Name = ""
+		self.data.macro_Icon = false
+		self.data.macro_Name = ""
 		self.data.macro_Auto = false
 		self.data.macro_Watch = false
 		self.data.macro_Equip = false
@@ -2066,18 +2064,18 @@ function BUTTON:MACRO_PlaceFlyout(action1, action2, hasAction)
 	end
 end
 
-function BUTTON:MACRO_PlaceBattlePet(action1, action2, hasAction)
 
+function BUTTON:MACRO_PlaceBattlePet(action1, action2, hasAction)
 	local _, petName
 
 	if (action1 == 0) then
 		return
 	else
-	 	_, _, _, _, _, _, _,petName, petIcon = C_PetJournal.GetPetInfoByPetID(action1)
+		_, _, _, _, _, _, _,petName, petIcon = C_PetJournal.GetPetInfoByPetID(action1)
 
-	 	self.data.macro_Text = "#autowrite\n/summonpet "..petName
-	 	self.data.macro_Auto = petName..";"
-	 	self.data.macro_Icon = petIcon
+		self.data.macro_Text = "#autowrite\n/summonpet "..petName
+		self.data.macro_Auto = petName..";"
+		self.data.macro_Icon = petIcon
 		self.data.macro_Name = petName
 		self.data.macro_Watch = false
 		self.data.macro_Equip = false
@@ -2092,11 +2090,10 @@ function BUTTON:MACRO_PlaceBattlePet(action1, action2, hasAction)
 
 		ClearCursor(); SetCursor(nil)
 	end
-
 end
 
-function BUTTON:MACRO_PickUpMacro()
 
+function BUTTON:MACRO_PickUpMacro()
 	local pickup = nil
 
 	if (not self.barLock) then
@@ -2110,9 +2107,7 @@ function BUTTON:MACRO_PickUpMacro()
 	end
 
 	if (pickup or currMacro[0]) then
-
 		local texture, move = self.iconframeicon:GetTexture()
-
 		wipe(MacroDrag)
 
 		if (currMacro[0]) then
@@ -2122,11 +2117,9 @@ function BUTTON:MACRO_PickUpMacro()
 			end
 
 			wipe(currMacro)
-
 			SetCursor(MacroDrag.texture)
 
 		elseif (self:MACRO_HasAction()) then
-
 			MacroDrag[0] = self:MACRO_GetDragAction()
 			MacroDrag[1] = self
 			MacroDrag[2] = self.data.macro_Text
@@ -2163,8 +2156,8 @@ function BUTTON:MACRO_PickUpMacro()
 	end
 end
 
-function BUTTON:MACRO_OnReceiveDrag(preclick)
 
+function BUTTON:MACRO_OnReceiveDrag(preclick)
 	if (InCombatLockdown()) then return end
 
 	local cursorType, action1, action2, ID = GetCursorInfo()
@@ -2191,13 +2184,10 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 		currMacro[9] = self.data.macro_UseNote
 
 		currMacro.texture = texture
-
 	end
 
 	if  (action1 == 0) then
-
 		-- do nothing for now
-
 	else
 
 		if (MacroDrag[0]) then
@@ -2205,37 +2195,28 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 			self:MACRO_PlaceMacro(); PlaySound("igSpellBookSpellIconDrop")
 
 		elseif (cursorType == "spell") then
-
 			self:MACRO_PlaceSpell(action1, action2, self:MACRO_HasAction())
 
 		elseif (cursorType == "item") then
-
 			self:MACRO_PlaceItem(action1, action2, self:MACRO_HasAction())
 
 		elseif (cursorType == "macro") then
-
 			self:MACRO_PlaceBlizzMacro(action1)
 
 		elseif (cursorType == "equipmentset") then
-
 			self:MACRO_PlaceBlizzEquipSet(action1)
 
 		elseif (cursorType == "mount") then
-
 			self:MACRO_PlaceMount(action1, action2, self:MACRO_HasAction())
 
 		elseif (cursorType == "flyout") then
-
 			self:MACRO_PlaceFlyout(action1, action2, self:MACRO_HasAction())
 
 		elseif (cursorType == "battlepet") then
-
 			self:MACRO_PlaceBattlePet(action1, action2, self:MACRO_HasAction())
-
 		end
 
 		--self:MACRO_SetTooltip()
-
 	end
 
 	if (StartDrag and currMacro[0]) then
@@ -2243,19 +2224,16 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 	end
 
 	self:MACRO_UpdateAll(true)
-
 	self.elapsed = 0.2
-
 	StartDrag = false
 
 	if (IonObjectEditor and IonObjectEditor:IsVisible()) then
 		ION:UpdateObjectGUI()
 	end
-
 end
 
-function BUTTON:MACRO_OnDragStart(button)
 
+function BUTTON:MACRO_OnDragStart(button)
 	if (InCombatLockdown() or not self.bar or self.vehicle_edit or self.actionID) then
 		StartDrag = false; return
 	end
@@ -2273,15 +2251,12 @@ function BUTTON:MACRO_OnDragStart(button)
 	end
 
 	if (self.drag) then
-
 		StartDrag = self:GetParent():GetAttribute("activestate")
 
 		self.dragbutton = button
-
 		self:MACRO_PickUpMacro()
 
 		if (MacroDrag[0]) then
-
 			PlaySound("igSpellBookSpellIconPickup"); self.sound = true
 
 			if (MacroDrag[1] ~= self) then
@@ -2322,22 +2297,19 @@ function BUTTON:MACRO_OnDragStart(button)
 	end
 end
 
+
 function BUTTON:MACRO_OnDragStop()
-
 	self.drag = nil
-
 end
 
-function BUTTON:MACRO_PreClick(button)
 
+function BUTTON:MACRO_PreClick(button)
 	self.cursor = nil
 
 	if (not InCombatLockdown() and MouseIsOver(self)) then
-
 		local cursorType = GetCursorInfo()
 
 		if (cursorType or MacroDrag[0]) then
-
 			self.cursor = true
 
 			StartDrag = self:GetParent():GetAttribute("activestate")
@@ -2349,7 +2321,6 @@ function BUTTON:MACRO_PreClick(button)
 			self:MACRO_OnReceiveDrag(true)
 
 		elseif (button == "MiddleButton") then
-
 			self.middleclick = self:GetAttribute("type")
 
 			self:SetAttribute("type", "")
@@ -2360,30 +2331,26 @@ function BUTTON:MACRO_PreClick(button)
 	ION.ClickedButton = self
 end
 
-function BUTTON:MACRO_PostClick(button)
 
+function BUTTON:MACRO_PostClick(button)
 	if (not InCombatLockdown() and MouseIsOver(self)) then
 
 		if (self.cursor) then
-
 			self:SetType(true)
 
 			self.cursor = nil
 
 		elseif (self.middleclick) then
-
 			self:SetAttribute("type", self.middleclick)
 
 			self.middleclick = nil
 		end
 	end
-
 	self:MACRO_UpdateState()
-
 end
 
-function BUTTON:MACRO_SetSpellTooltip(spell)
 
+function BUTTON:MACRO_SetSpellTooltip(spell)
 	if (sIndex[spell]) then
 		local spell_id = sIndex[spell].spellID
 		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
@@ -2418,24 +2385,27 @@ function BUTTON:MACRO_SetSpellTooltip(spell)
 	end
 end
 
-function BUTTON:MACRO_SetItemTooltip(item)
 
+function BUTTON:MACRO_SetItemTooltip(item)
 	local name, link = GetItemInfo(item)
-	local itemID =ItemCache[item]
-	if (link) then
+
+	if (tIndex[item:lower()]) then
 		if (self.UberTooltips) then
-			if (PlayerHasToy(itemID)) then
-				GameTooltip:ClearLines()
-				GameTooltip:SetToyByItemID(itemID)
-			else
-				GameTooltip:SetHyperlink(link)
-			end
+			local itemID = tIndex[item:lower()]
+			GameTooltip:ClearLines()
+			GameTooltip:SetToyByItemID(itemID)
+		else
+			GameTooltip:SetText(name, 1, 1, 1)
+		end
+
+	elseif (link) then
+		if (self.UberTooltips) then
+			GameTooltip:SetHyperlink(link)
 		else
 			GameTooltip:SetText(name, 1, 1, 1)
 		end
 
 	elseif (ItemCache[item]) then
-
 		if (self.UberTooltips) then
 			GameTooltip:SetHyperlink("item:"..ItemCache[item]..":0:0:0:0:0:0:0")
 		else
@@ -2444,8 +2414,8 @@ function BUTTON:MACRO_SetItemTooltip(item)
 	end
 end
 
-function BUTTON:ACTION_SetTooltip(action)
 
+function BUTTON:ACTION_SetTooltip(action)
 	local actionID = tonumber(action)
 
 	if (actionID) then
@@ -2458,18 +2428,16 @@ function BUTTON:ACTION_SetTooltip(action)
 	end
 end
 
-function BUTTON:MACRO_SetTooltip(edit)
 
+function BUTTON:MACRO_SetTooltip(edit)
 	self.UpdateTooltip = nil
 
 	local spell, item, show = self.macrospell, self.macroitem, self.macroshow
 
 	if (self.actionID) then
-
 		self:ACTION_SetTooltip(self.actionID)
 
 	elseif (show and #show>0) then
-
 		if(GetItemInfo(show) or ItemCache[show]) then
 			self:MACRO_SetItemTooltip(show)
 		else
@@ -2477,15 +2445,12 @@ function BUTTON:MACRO_SetTooltip(edit)
 		end
 
 	elseif (spell and #spell>0) then
-
 		self:MACRO_SetSpellTooltip(spell:lower())
 
 	elseif (item and #item>0) then
-
 		self:MACRO_SetItemTooltip(item)
 
 	elseif (self:GetAttribute("macroShow")) then
-
 		show = self:GetAttribute("macroShow")
 
 		if(GetItemInfo(show) or ItemCache[show]) then
@@ -2495,7 +2460,6 @@ function BUTTON:MACRO_SetTooltip(edit)
 		end
 
 	elseif (self.data.macro_Text and #self.data.macro_Text > 0) then
-
 		local equipset = self.data.macro_Text:match("/equipset%s+(%C+)")
 
 		if (equipset) then
@@ -2507,16 +2471,14 @@ function BUTTON:MACRO_SetTooltip(edit)
 	end
 end
 
+
 function BUTTON:MACRO_OnEnter(...)
-
 	if (self.bar) then
-
 		if (self.tooltipsCombat and InCombatLockdown()) then
 			return
 		end
 
 		if (self.tooltips) then
-
 			if (self.tooltipsEnhanced) then
 				self.UberTooltips = true
 				GameTooltip_SetDefaultAnchor(GameTooltip, self)
@@ -2537,8 +2499,8 @@ function BUTTON:MACRO_OnEnter(...)
 	end
 end
 
-function BUTTON:MACRO_OnLeave(...)
 
+function BUTTON:MACRO_OnLeave(...)
 	self.UpdateTooltip = nil
 
 	GameTooltip:Hide()
@@ -2548,15 +2510,15 @@ function BUTTON:MACRO_OnLeave(...)
 	end
 end
 
-function BUTTON:MACRO_OnShow(...)
 
+function BUTTON:MACRO_OnShow(...)
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
-    	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
+	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
 
-    	self:RegisterEvent("SPELL_UPDATE_CHARGES")
-    	self:RegisterEvent("SPELL_UPDATE_USABLE")
+	self:RegisterEvent("SPELL_UPDATE_CHARGES")
+	self:RegisterEvent("SPELL_UPDATE_USABLE")
 
 	self:RegisterEvent("RUNE_POWER_UPDATE")
 
@@ -2601,20 +2563,19 @@ function BUTTON:MACRO_OnShow(...)
 	self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR")
 	self:RegisterEvent("UPDATE_EXTRA_ACTIONBAR")
 	self:RegisterEvent("UPDATE_BONUS_ACTIONBAR")
-
 end
 
-function BUTTON:MACRO_OnHide(...)
 
+function BUTTON:MACRO_OnHide(...)
 	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED")
 	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:UnregisterEvent("ACTIONBAR_UPDATE_STATE")
-    	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE")
+	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE")
 
-    	self:UnregisterEvent("SPELL_UPDATE_CHARGES")
-    	self:UnregisterEvent("SPELL_UPDATE_USABLE")
+	self:UnregisterEvent("SPELL_UPDATE_CHARGES")
+	self:UnregisterEvent("SPELL_UPDATE_USABLE")
 
-   	self:UnregisterEvent("RUNE_POWER_UPDATE")
+	self:UnregisterEvent("RUNE_POWER_UPDATE")
 
 	self:UnregisterEvent("TRADE_SKILL_SHOW")
 	self:UnregisterEvent("TRADE_SKILL_CLOSE")
@@ -2657,23 +2618,16 @@ function BUTTON:MACRO_OnHide(...)
 	self:UnregisterEvent("UPDATE_OVERRIDE_ACTIONBAR")
 	self:UnregisterEvent("UPDATE_EXTRA_ACTIONBAR")
 	self:UnregisterEvent("UPDATE_BONUS_ACTIONBAR")
-
 end
 
+
 function BUTTON:MACRO_OnAttributeChanged(name, value)
---print(self.bar)
---print("bar")
-
 	if (value and self.data) then
-
 		if (name == "activestate") then
-
 			if (self:GetAttribute("HasActionID")) then
-
 				self.actionID = self:GetAttribute("*action*")
 
 			else
-
 				if (not self.statedata) then
 					self.statedata = { homestate = CopyTable(stateData) }
 				end
@@ -2714,24 +2668,24 @@ function BUTTON:MACRO_OnAttributeChanged(name, value)
 	end
 end
 
+
 function BUTTON:MACRO_build()
-local button = CopyTable(stateData)
-print(button.macro_Text)
-return button
+	local button = CopyTable(stateData)
+	--print(button.macro_Text)
+	return button
 end
 
-function BUTTON:MACRO_Reset()
 
+function BUTTON:MACRO_Reset()
 	self.macrospell = nil
 	self.spellID = nil
 	self.macroitem = nil
 	self.macroshow = nil
 	self.macroicon = nil
-
 end
 
-function BUTTON:MACRO_UpdateParse()
 
+function BUTTON:MACRO_UpdateParse()
 	self.macroparse = self.data.macro_Text
 
 	if (#self.macroparse > 0) then
@@ -2740,17 +2694,14 @@ function BUTTON:MACRO_UpdateParse()
 	else
 		self.macroparse = nil
 	end
-
 end
 
+
 function BUTTON:SetSkinned(flyout)
-
 	if (SKIN) then
-
 		local bar = self.bar
 
 		if (bar) then
-
 			local btnData = {
 				Normal = self.normaltexture,
 				Icon = self.iconframeicon,
@@ -2775,14 +2726,12 @@ function BUTTON:SetSkinned(flyout)
 	end
 end
 
+
 function BUTTON:GetSkinned()
-
 	if (self.__MSQ_NormalTexture) then
-
 		local Skin = self.__MSQ_NormalSkin
 
 		if (Skin) then
-
 			self.hasAction = Skin.Texture or false
 			self.noAction = Skin.EmptyTexture or false
 
@@ -2808,10 +2757,9 @@ function BUTTON:GetSkinned()
 	end
 end
 
+
 function BUTTON:SetData(bar)
-
 	if (bar) then
-
 		self.bar = bar
 
 		self.barLock = bar.cdata.barLock
@@ -2899,7 +2847,6 @@ function BUTTON:SetData(bar)
 		self:SetFrameStrata(bar.gdata.objectStrata)
 
 		self:SetScale(bar.gdata.scale)
-
 	end
 
 	if (self.bindText) then
@@ -2960,6 +2907,7 @@ function BUTTON:SetData(bar)
 	self:MACRO_UpdateTimers()
 end
 
+
 function BUTTON:GetSpec()
 	if self.dualSpec then
 		return GetActiveSpecGroup()
@@ -2968,8 +2916,8 @@ function BUTTON:GetSpec()
 	end
 end
 
-function BUTTON:SaveData(state)
 
+function BUTTON:SaveData(state)
 	local index, spec = self.id, self:GetSpec()
 
 	if (not state) then
@@ -3026,8 +2974,8 @@ function BUTTON:SaveData(state)
 	end
 end
 
-function BUTTON:LoadData(spec, state)
 
+function BUTTON:LoadData(spec, state)
 	local id = self.id
 
 	self.GDB = btnGDB
@@ -3109,9 +3057,9 @@ function BUTTON:LoadData(spec, state)
 		self.data = self.statedata[state]
 
 		self:BuildStateData()
-
 	end
 end
+
 
 function BUTTON:BuildStateData()
 	for state, data in pairs(self.statedata) do
@@ -3119,6 +3067,7 @@ function BUTTON:BuildStateData()
 		self:SetAttribute(state.."-actionID", data.actionID)
 	end
 end
+
 
 function BUTTON:Reset()
 	self:SetAttribute("unit", nil)
@@ -3148,8 +3097,8 @@ function BUTTON:Reset()
 	self:MACRO_Reset()
 end
 
-function BUTTON:SetGrid(show, hide)
 
+function BUTTON:SetGrid(show, hide)
 	if (not InCombatLockdown()) then
 
 		self:SetAttribute("isshown", self.showGrid)
@@ -3164,10 +3113,8 @@ function BUTTON:SetGrid(show, hide)
 end
 
 function BUTTON:SetAux()
-
 	self:SetSkinned()
 	self:UpdateFlyout(true)
-
 end
 
 
@@ -3178,8 +3125,8 @@ function BUTTON:LoadAux()
 
 end
 
-function BUTTON:SetDefaults(config, keys)
 
+function BUTTON:SetDefaults(config, keys)
 	if (config) then
 		for k,v in pairs(config) do
 			self.config[k] = v
@@ -3193,14 +3140,13 @@ function BUTTON:SetDefaults(config, keys)
 	end
 end
 
+
 function BUTTON:GetDefaults()
-
 	return nil, keyDefaults[self.id]
-
 end
 
-function BUTTON:SetType(save, kill, init)
 
+function BUTTON:SetType(save, kill, init)
 	local state = self:GetParent():GetAttribute("activestate")
 
 	self:Reset()
@@ -3212,7 +3158,6 @@ function BUTTON:SetType(save, kill, init)
 		self:SetScript("OnAttributeChanged", function() end)
 
 	else
-
 		SecureHandler_OnLoad(self)
 
 		self:RegisterEvent("ITEM_LOCK_CHANGED")
@@ -3286,7 +3231,6 @@ function BUTTON:SetType(save, kill, init)
 								self:SetAttribute("*action*", 0)
 
 							else
-
 								self:SetAttribute("type", "action")
 
 								self:SetAttribute("*action*", self:GetAttribute("barPos")+self:GetAttribute("vehicleID_Offset"))
@@ -3294,43 +3238,30 @@ function BUTTON:SetType(save, kill, init)
 						end
 
 						self:SetAttribute("SpecialAction", "vehicle")
-
 						self:SetAttribute("HasActionID", true)
-
 						self:Show()
 
 					elseif (msg:find("possess")) then
-
 						if (self:GetAttribute(msg.."-actionID")) then
 
 						else
-
 							if (self:GetAttribute("lastPos")) then
-
 								self:SetAttribute("type", "macro")
-
 								self:SetAttribute("*macrotext*", self:GetAttribute("possessExit_Macro"))
-
 								self:SetAttribute("*action*", 0)
 
 							else
-
 								self:SetAttribute("type", "action")
-
 								self:SetAttribute("*action*", self:GetAttribute("barPos")+self:GetAttribute("vehicleID_Offset"))
 							end
 						end
 
 						self:SetAttribute("SpecialAction", "possess")
-
 						self:SetAttribute("HasActionID", true)
-
 						self:Show()
 
 					elseif (msg:find("override")) then
-
 						if (self:GetAttribute(msg.."-actionID")) then
-
 						else
 
 							--if (self:GetAttribute("lastPos")) then
@@ -3358,15 +3289,11 @@ function BUTTON:SetType(save, kill, init)
 						self:Show()
 
 					else
-
 						if (self:GetAttribute(msg.."-actionID")) then
-
 							self:SetAttribute("HasActionID", true)
 
 						else
-
 							self:SetAttribute("type", "macro")
-
 							self:SetAttribute("*macrotext*", self:GetAttribute(msg.."-macro_Text"))
 
 							if ((self:GetAttribute("*macrotext*") and #self:GetAttribute("*macrotext*") > 0) or (self:GetAttribute("showgrid"))) then
@@ -3382,7 +3309,6 @@ function BUTTON:SetType(save, kill, init)
 					end
 
 					self:SetAttribute("useparent-unit", nil)
-
 					self:SetAttribute("activestate", msg)
 
 				end
@@ -3402,58 +3328,38 @@ function BUTTON:SetType(save, kill, init)
 	end
 end
 
-function BUTTON:SetFauxState(state)
 
+function BUTTON:SetFauxState(state)
 	if (state)  then
 
 		local msg = (":"):split(state)
 
 		if (msg:find("vehicle")) then
-
 			if (self:GetAttribute(msg.."-actionID")) then
-
 			else
-
 				if (self:GetAttribute("lastPos")) then
-
 					self:SetAttribute("type", "macro")
-
 					self:SetAttribute("*macrotext*", self:GetAttribute("vehicleExit_Macro"))
-
 					self:SetAttribute("*action*", 0)
-
 				else
-
 					self:SetAttribute("type", "action")
-
 					self:SetAttribute("*action*", self:GetAttribute("barPos")+self:GetAttribute("vehicleID_Offset"))
-
 					self:SetAttribute("HasActionID", true)
 				end
 			end
 
 			self:Show()
-
 		elseif (msg:find("possess")) then
-
 			if (self:GetAttribute(msg.."-actionID")) then
-
 			else
-
 				if (self:GetAttribute("lastPos")) then
-
 					self:SetAttribute("type", "macro")
-
 					self:SetAttribute("*macrotext*", self:GetAttribute("possessExit_Macro"))
-
 					self:SetAttribute("*action*", 0)
 
 				else
-
 					self:SetAttribute("type", "action")
-
 					self:SetAttribute("*action*", self:GetAttribute("barPos")+self:GetAttribute("vehicleID_Offset"))
-
 					self:SetAttribute("HasActionID", true)
 				end
 			end
@@ -3461,9 +3367,7 @@ function BUTTON:SetFauxState(state)
 			self:Show()
 
 		elseif (msg:find("override")) then
-
 			if (self:GetAttribute(msg.."-actionID")) then
-
 			else
 
 				--if (self:GetAttribute("lastPos")) then
@@ -3487,7 +3391,6 @@ function BUTTON:SetFauxState(state)
 			self:Show()
 
 		else
-
 			if (self:GetAttribute(msg.."-actionID")) then
 
 			else
@@ -3508,6 +3411,7 @@ function BUTTON:SetFauxState(state)
 		self:SetAttribute("activestate", msg)
 	end
 end
+
 
 --this will generate a spell macro
 --spell: name of spell to use
@@ -3545,6 +3449,7 @@ function BUTTON:AutoWriteMacro(spell, subName)
 		return "#autowrite\n/cast"..modifier..spell.."()"
 	end
 end
+
 
 --This will update the modifier value in a macro when a bar is set twith a target condiional
 --@spell:  this is hte macro text to be updated
@@ -3607,6 +3512,7 @@ end
 
 --callback(arg and arg, Group, SkinID, Gloss, Backdrop, Colors, Fonts)
 
+
 function ION:SKINCallback(group,...)
 
 	if (group) then
@@ -3618,8 +3524,8 @@ function ION:SKINCallback(group,...)
 	end
 end
 
-local function controlOnEvent(self, event, ...)
 
+local function controlOnEvent(self, event, ...)
 	if (event:find("UNIT_")) then
 
 		if (unitAuras[select(1,...)]) then
@@ -3709,6 +3615,7 @@ local function controlOnEvent(self, event, ...)
 	end
 end
 
+
 local frame = CreateFrame("Frame", nil, UIParent)
 frame:SetScript("OnUpdate", cooldownsOnUpdate)
 
@@ -3727,6 +3634,7 @@ frame:RegisterEvent("UNIT_SPELLCAST_START")
 frame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 frame:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
 
+
 function IONButtonProfileUpdate()
 		GDB, CDB = IonGDB, IonCDB
 
@@ -3734,6 +3642,7 @@ function IONButtonProfileUpdate()
 
 		btnCDB = CDB.buttons
 end
+
 
 --- This will itterate through a set of buttons. For any buttons that have the #autowrite flag in its macro, that
 -- macro will then be updated to via AutoWriteMacro to include selected target macro option, or via AutoUpdateMacro 
