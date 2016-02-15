@@ -124,38 +124,48 @@ function SBTN:STANCE_UpdateCooldown()
 	local texture, name, isActive, isCastable, spell, spellID;
 	local button, icon, cooldown;
 	local start, duration, enable;
+	local display = false
 
-		if ( i <= numForms ) then
-			texture, spell, isActive, isCastable = GetShapeshiftFormInfo(i);
-			_, _, _, _, _, _, spellID = GetSpellInfo(spell)
+	if ( i <= numForms ) then
+		texture, spell, isActive, isCastable = GetShapeshiftFormInfo(i);
+		_, _, _, _, _, _, spellID = GetSpellInfo(spell)
 
-			start, duration, enable = GetShapeshiftFormCooldown(i);
+		start, duration, enable = GetShapeshiftFormCooldown(i);
 
-			if ( isActive ) then
-				self:SetChecked(true);
-			else
-				self:SetChecked(false);
-			end
+		if ( isActive ) then
+			self:SetChecked(true);
+		else
+			self:SetChecked(false);
+		end
 
-			if (duration and duration >= IonGDB.timerLimit and self.iconframeaurawatch.active) then
-				self.auraQueue = self.iconframeaurawatch.queueinfo
-				self.iconframeaurawatch.duration = 0
-				self.iconframeaurawatch:Hide()
-			end
+		if (duration and duration >= IonGDB.timerLimit and self.iconframeaurawatch.active) then
+			self.auraQueue = self.iconframeaurawatch.queueinfo
+			self.iconframeaurawatch.duration = 0
+			self.iconframeaurawatch:Hide()
+		end
 
-			self:SetTimer(self.iconframecooldown, start, duration, enable, self.cdText, self.cdcolor1, self.cdcolor2, self.cdAlpha)
+		self:SetTimer(self.iconframecooldown, start, duration, enable, self.cdText, self.cdcolor1, self.cdcolor2, self.cdAlpha)
 
-			if (not state) then
-				self.spellID = spellID
-				self.actionSpell = spell
+		if (not state) then
+			self.spellID = spellID
+			self.actionSpell = spell
 
-				self:STANCE_UpdateTexture()
-				self:STANCE_UpdateIcon(spell, nil, texture, false)
-			end
+			self:STANCE_UpdateTexture()
+			self:STANCE_UpdateIcon(spell, nil, texture, false)
+		end
+		display = true
+		
+	else
+		display = false
+	end
+
+	if (not InCombatLockdown()) then
+		if display then
 			self:Show();
 		else
 			self:Hide();
 		end
+	end
 end
 
 
@@ -275,12 +285,6 @@ function SBTN:OnEnter(...)
 		end
 	end
 end
-
-
-function SBTN:OnLeave ()
-	GameTooltip:Hide()
-end
-
 
 function SBTN:SetData(bar)
 
@@ -449,7 +453,7 @@ function SBTN:SetType(save)
 
 	self:SetScript("OnEvent", SBTN.STANCE_OnEvent)
 	self:SetScript("OnEnter", SBTN.OnEnter)
-	self:SetScript("OnLeave", SBTN.OnLeave)
+	self:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	self:SetScript("OnUpdate", SBTN.OnUpdate)
 	self:SetScript("OnAttributeChanged", nil)
 end
@@ -473,16 +477,16 @@ local function controlOnEvent(self, event, ...)
 
 		ION:RegisterBarClass("stancebar", "Stance Bar", "Stance Button", sbarsGDB, sbarsCDB, SBTNIndex, sbtnsGDB, "CheckButton", "IonStanceButtonTemplate", { __index = SBTN }, ION.maxStanceID, false, STORAGE, gDef, nil, false)
 
-		ION:RegisterGUIOptions("stancebar", { AUTOHIDE = false,
+		ION:RegisterGUIOptions("stancebar", { AUTOHIDE = true,
 		                                SHOWGRID = true,
 		                                SNAPTO = true,
 		                                UPCLICKS = true,
 		                                DOWNCLICKS = true,
-		                                HIDDEN = false,
-		                                LOCKBAR = true,
+		                                HIDDEN = true,
+		                                LOCKBAR = false,
 		                                TOOLTIPS = true,
 							  BINDTEXT = true,
-							  RANGEIND = true,
+							  RANGEIND = false,
 							  CDTEXT = true,
 							  CDALPHA = true }, false, 65)
 
