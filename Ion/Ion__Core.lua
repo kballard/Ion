@@ -40,6 +40,7 @@ Ion = {
 	sIndex = {},
 	iIndex = {[1] = "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK"},
 	cIndex = {},
+	tIndex = {},
 	StanceIndex = {},
 	ShowGrids = {},
 	HideGrids = {},
@@ -284,6 +285,18 @@ local options = {
 			type = "group",
 			order = 1000,
 			args = {
+				g1 = {
+					type = "group",
+					name = "|cffffd200" .. L.LINE1 .. "|r",
+					order = 1,
+					args = {
+						line1a = {
+						type = "description",
+						name = "|cffffd200" .. L.LINE1 .. "|r",
+						order = 1,
+						},
+					},
+				},
 				line1 = {
 					type = "description",
 					name = "|cffffd200" .. L.LINE1 .. "|r",
@@ -755,20 +768,65 @@ local function SetCompanionData(creatureType, index, creatureID, creatureName, s
 end
 
 
+--- Compiles a list of toys a player has.  This table is used to refrence macro spell info to generate tooltips and cooldowns.
+-- toy cache is backwards due to bugs with secure action buttons' inability to
+-- cast a toy by item:id (and inability to SetMacroItem from a name /sigh)
+-- cache is indexed by the toyName and equals the itemID
+-- the attribValue for toys will be the toyName, and unsecure stuff can pull
+-- the itemID from toyCache where needed
+function ION:UpdateToyData()
+	-- note filter settings
+	local filterCollected = C_ToyBox.GetFilterCollected()
+	local filterUncollected = C_ToyBox.GetFilterUncollected()
+	local sources = {}
+	for i=1,10 do
+		sources[i] = C_ToyBox.IsSourceTypeFiltered(i)
+	end
+	-- set filters to all toys
+	C_ToyBox.SetFilterCollected(true)
+	C_ToyBox.SetFilterUncollected(false) -- we don't need to uncollected toys
+	C_ToyBox.ClearAllSourceTypesFiltered()
+	C_ToyBox.SetFilterString("")
+
+	-- fill cache with itemIDs = name
+	for i=1,C_ToyBox.GetNumFilteredToys() do
+		local itemID = C_ToyBox.GetToyFromIndex(i)
+		local name = GetItemInfo(itemID) or "UNKNOWN"
+		ION.tIndex[name:lower()] = itemID
+	end
+
+	-- restore filters
+	C_ToyBox.SetFilterCollected(filterCollected)
+	C_ToyBox.SetFilterUncollected(filterUncollected)
+	for i=1,10 do
+		C_ToyBox.SetFilterSourceType(i,sources[i])
+	end
+end
+
+
 --- Compiles a list of battle pets & mounts a player has.  This table is used to refrence macro spell info to generate tooltips and cooldowns.
 ---	If a companion is not displaying its tooltip or cooldown, then the item in the macro probably is not in the database 
 function ION:UpdateCompanionData()
-	for i=1,GetNumCompanions("CRITTER") do
-		local creatureID, creatureName, spellID, icon = GetCompanionInfo("CRITTER", i)
 
-		if (spellID) then
-			local spell = GetSpellInfo(spellID)
+	_G.C_PetJournal.ClearAllPetSourcesFilter()
+	_G.C_PetJournal.ClearAllPetTypesFilter()
+	_G.C_PetJournal.ClearSearchFilter()
+	_G.C_PetJournal.AddAllPetSourcesFilter()
+	_G.C_PetJournal.AddAllPetTypesFilter()
+	local numpet = select(1, C_PetJournal.GetNumPets())
+	
+	for i=1,numpet do
+
+		local petID, speciesID, owned, customName, level, favorite, isRevoked, speciesName, icon, petType, companionID, tooltip, description, isWild, canBattle, isTradeable, isUnique, obtainable = C_PetJournal.GetPetInfoByIndex(i)
+
+		if (petID) then
+			spell = speciesName
 
 			if (spell) then
-				local companionData = SetCompanionData("CRITTER", i, creatureID, creatureName, spellID, icon)
+				local companionData = SetCompanionData("CRITTER", i, speciesID, speciesName, petID, icon)
 				ION.cIndex[spell:lower()] = companionData
 				ION.cIndex[spell:lower().."()"] = companionData
-				ION.cIndex[spellID] = companionData
+				ION.cIndex[petID] = companionData
 
 				if (icon and not icons[icon:upper()]) then
 					ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
@@ -2060,6 +2118,7 @@ local function control_OnEvent(self, event, ...)
 		ION:UpdatePetSpellIndex()
 		ION:UpdateStanceStrings()
 		ION:UpdateCompanionData()
+		ION:UpdateToyData()
 		ION:UpdateIconIndex()
 		--Fix for Titan causing the Main Bar to not be hidden
 		if (IsAddOnLoaded("Titan")) then TitanUtils_AddonAdjust("MainMenuBar", true) end
@@ -2095,7 +2154,11 @@ local function control_OnEvent(self, event, ...)
 
 	elseif (event == "UNIT_LEVEL" and ... == "player") then
 		ION.level = UnitLevel("player")
+
+	elseif ( event == "TOYS_UPDATED" )then
+		ION:UpdateToyData()
 	end
+
 end
 
 local frame = CreateFrame("Frame", "IonControl", UIParent)
@@ -2121,11 +2184,12 @@ frame:RegisterEvent("COMPANION_UPDATE")
 frame:RegisterEvent("UNIT_LEVEL")
 frame:RegisterEvent("UNIT_PET")
 --Needed to check to hide the garrison button
-frame:RegisterUnitEvent("UNIT_AURA", "player");
-frame:RegisterEvent("SPELL_UPDATE_COOLDOWN");
-frame:RegisterEvent("SPELL_UPDATE_USABLE");
-frame:RegisterEvent("SPELL_UPDATE_CHARGES");
-frame:RegisterEvent("ACTIONBAR_SLOT_CHANGED");
+frame:RegisterUnitEvent("UNIT_AURA", "player")
+frame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+frame:RegisterEvent("SPELL_UPDATE_USABLE")
+frame:RegisterEvent("SPELL_UPDATE_CHARGES")
+frame:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
+frame:RegisterEvent("TOYS_UPDATED")
 
 
 frame = CreateFrame("GameTooltip", "IonTooltipScan", UIParent, "GameTooltipTemplate")
