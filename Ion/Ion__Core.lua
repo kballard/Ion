@@ -287,12 +287,12 @@ local options = {
 			args = {
 				g1 = {
 					type = "group",
-					name = "|cffffd200" .. L.LINE1 .. "|r",
+					name = "|cffffd200" .. L.FLYOUT .. "|r",
 					order = 1,
 					args = {
 						line1a = {
 						type = "description",
-						name = "|cffffd200" .. L.LINE1 .. "|r",
+						name = L.FLYOUT_FAQ ,
 						order = 1,
 						},
 					},
