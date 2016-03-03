@@ -181,7 +181,7 @@ local stateData = {
 }
 
 
-ION.SpecialActions = { vehicle = "Interface\\AddOns\\Ion\\Images\\new_vehicle_exit", possess = "Interface\\Icons\\Spell_Shadow_SacrificialShield" }
+ION.SpecialActions = { vehicle = "Interface\\AddOns\\Ion\\Images\\new_vehicle_exit", possess = "Interface\\Icons\\Spell_Shadow_SacrificialShield", taxi = "Interface\\Vehicles\\UI-Vehicles-Button-Exit-Up",}
 
 local SpecialActions = ION.SpecialActions
 

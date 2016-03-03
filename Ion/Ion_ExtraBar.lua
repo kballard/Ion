@@ -318,24 +318,35 @@ function XBTN:SetExtraButtonTex()
 	end
 end
 
-local function vlOnEvent(self, event, ...)
 
+local function vlOnEvent(self, event, ...)
 	if (event == "UPDATE_EXTRA_ACTIONBAR") then
 		self:Hide(); return
 	end
 
 	if (ActionBarController_GetCurrentActionBarState) then
-
 		if (CanExitVehicle() and ActionBarController_GetCurrentActionBarState() == 1) then
 			self:Show()
+			self:Enable();
+			if UnitOnTaxi("player") then
+				self.iconframeicon:SetTexture(ION.SpecialActions.taxi)
+			else
+				self.iconframeicon:SetTexture(ION.SpecialActions.vehicle)
+			end
 		else
+			self:SetHighlightTexture([[Interface\Buttons\ButtonHilight-Square]], "ADD");
+			self:UnlockHighlight();
 			self:Hide()
 		end
 	end
 end
 
-function XBTN:CreateVehicleLeave(index)
 
+local MainMenuBarVehicleLeaveButton_OnEnter = _G.MainMenuBarVehicleLeaveButton_OnEnter
+local MainMenuBarVehicleLeaveButton_OnClicked = _G.MainMenuBarVehicleLeaveButton_OnClicked
+
+
+function XBTN:CreateVehicleLeave(index)
 	self.vlbtn = CreateFrame("Button", self:GetName().."VLeave", UIParent, "IonNonSecureButtonTemplate")
 
 	self.vlbtn:SetAllPoints(self)
@@ -351,8 +362,8 @@ function XBTN:CreateVehicleLeave(index)
 	self.vlbtn:RegisterEvent("VEHICLE_UPDATE")
 
 	self.vlbtn:SetScript("OnEvent", vlOnEvent)
-	self.vlbtn:SetScript("OnClick", VehicleExit)
-	self.vlbtn:SetScript("OnEnter", function(self) GameTooltip_AddNewbieTip(self, LEAVE_VEHICLE, 1.0, 1.0, 1.0, nil) end)
+	self.vlbtn:SetScript("OnClick", MainMenuBarVehicleLeaveButton_OnClicked)
+	self.vlbtn:SetScript("OnEnter", MainMenuBarVehicleLeaveButton_OnEnter)
 	self.vlbtn:SetScript("OnLeave", GameTooltip_Hide)
 
 	local objects = ION:GetParentKeys(self.vlbtn)
