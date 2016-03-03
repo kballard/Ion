@@ -561,7 +561,8 @@ function ION:UpdateBarGUI(newBar)
 				IBE.baropt.colorpicker:Hide()
 			end
 
-			if (editor.presets:IsVisible()) then
+			if (editor:IsVisible()) then
+
 				if (GUIData[bar.class].stateOpt) then
 
 					editor.tab1:Enable()
@@ -660,7 +661,8 @@ for index,state in pairs(bar.cdata.customNames) do
 		barOpt.customstate:SetText(customStateList)
 	end
 --Set visisbility buttons
-	ION.VisEditorScrollFrameUpdate(frame, tableList, alt)
+	ION.VisEditorScrollFrameUpdate()
+	Ion.SecondaryPresetsScrollFrameUpdate()
 	LibStub("AceConfigDialog-3.0"):Open(addonName, IBE.ACEmenu , "moreoptions")
 
 end
@@ -1557,6 +1559,8 @@ local function remapToOnTextChanged(frame)
 	end
 end
 
+local IsDruid = false
+
 function ION:ActionEditor_OnLoad(frame)
 
 	ION.SubFrameHoneycombBackdrop_OnLoad(frame)
@@ -1649,6 +1653,7 @@ function ION:ActionEditor_OnLoad(frame)
 
 			if (state == "stance" and ION.class == "DRUID") then
 				prowl = f
+				IsDruid = f
 			end
 
 			tinsert(barOpt.pri, f)
@@ -1656,7 +1661,7 @@ function ION:ActionEditor_OnLoad(frame)
 	end
 
 	anchor, last, count = nil, nil, 1
-
+--[[
 	for index,state in ipairs(states) do
 
 		if (not MAS[state].homestate and state ~= "custom" and state ~= "extrabar" and state ~= "prowl") then
@@ -1711,6 +1716,18 @@ function ION:ActionEditor_OnLoad(frame)
 
 		tinsert(barOpt.sec, f)
 	end
+]]--
+
+			f = CreateFrame("CheckButton", nil, frame.custom, "IonOptionsCheckButtonTemplate")
+			--f:SetID(index)
+			f:SetWidth(18)
+			f:SetHeight(18)
+			f:SetScript("OnClick", setBarActionState)
+			f.text:SetText(L["GUI_CUSTOM"])
+			f.option = "custom"
+			f:SetPoint("TOPLEFT", frame.custom, "TOPLEFT", 10, -10)
+			tinsert(barOpt.sec, f)
+
 
 	f = CreateFrame("EditBox", "$parentRemap", frame.presets, "IonDropDownOptionFull")
 	f:SetWidth(165)
@@ -1943,6 +1960,128 @@ function ION:StateList_OnLoad(frame)
 
 	ION.SubFrameHoneycombBackdrop_OnLoad(frame)
 
+end
+
+
+local numStatesShown = 12
+
+function ION.SecondaryPresetsScrollFrame_OnLoad(self)
+	--ION.SubFrameHoneycombBackdrop_OnLoad(frame)
+	self.offset = 0
+	self.scrollChild = _G[self:GetName().."ScrollChildFrame"]
+
+	self:SetBackdropBorderColor(0.5, 0.5, 0.5)
+	self:SetBackdropColor(0,0,0,0.5)
+
+	local anchor, button, lastButton, rowButton, count, script = false, false, false, false, 1
+
+	for i=1,numStatesShown do
+		button = CreateFrame("CheckButton", "PresetsScrollFrameButton"..i, self:GetParent(), "IonOptionsCheckButtonTemplate")
+
+		button.frame = self:GetParent()
+		button.numShown = numStatesShown
+		--button:SetCheckedTexture("Interface\\Addons\\Ion\\Images\\RoundCheckGreen.tga")
+		button:SetScript("OnClick", setBarActionState)
+
+
+		button:SetScript("OnShow",
+			function(self)
+				self:SetHeight((self.frame:GetHeight()-10)/self.numShown)
+			end)
+
+			--f = CreateFrame("CheckButton", nil, frame.visscroll, "IonOptionsCheckButtonTemplate")
+			--f:SetID(index)
+			button:SetWidth(18)
+			button:SetHeight(18)
+			button:SetHitRectInsets(0, 0, 0, 0)
+
+		--button:SetID(i)
+		button:SetFrameLevel(self:GetFrameLevel()+2)
+
+		if (not anchor) then
+			button:SetPoint("TOPLEFT", 10, -8)
+			anchor = button; lastButton = button
+		elseif (count == 5) then
+			button:SetPoint("LEFT", anchor, "RIGHT", 90, 0)
+			anchor = button; lastButton = button; count = 1
+		else
+			button:SetPoint("TOPLEFT", lastButton, "BOTTOMLEFT", 0, -8)
+			lastButton = button
+		end
+		count = count + 1
+	end
+
+	ION.SecondaryPresetsScrollFrameUpdate()
+end
+
+local SecondaryPresetsList = {}
+
+function ION.SecondaryPresetsScrollFrameUpdate(frame, tableList, alt)
+
+	if (not IonBarEditorBarStatesActionEditor:IsVisible()) then return end
+	local bar = Ion.CurrentBar
+
+	if (not tableList) then
+
+		wipe(SecondaryPresetsList)
+
+		tableList = ION.MANAGED_ACTION_STATES
+	end
+
+	if (not frame) then
+		frame = IonBarEditorBarStatesActionEditorPresetsSecondaryScrollFrame
+	end
+
+	local dataOffset, count, data, button, text, datum = FauxScrollFrame_GetOffset(frame), 1, {}
+
+	for k in pairs(tableList) do
+
+		if (not MAS[k].homestate and (k ~= "prowl") and (k ~= "extrabar") and (k ~= "custom")) then
+		--print(
+			data[count] = k; count = count + 1
+
+		end
+	end
+
+	if(IsDruid ) then
+		data[count] = "prowl"; count = count + 1
+	end
+
+	table.sort(data)
+
+	frame:Show()
+
+	for i=1,numStatesShown do
+
+		button = _G["PresetsScrollFrameButton"..i] --"IonBarEditorBarStatesSecondaryPresetsScrollFrameButton"..i]
+		button:SetChecked(nil)
+
+		count = dataOffset + i
+
+		if (data[count]) then
+			text = (L["GUI_"..data[count]:upper()])
+
+			button.option = data[count]
+			button:SetChecked(bar.cdata[button.option ])
+			button.text:SetText(text)
+
+			button:Enable()
+			button:Show()
+			button:SetWidth(18)
+			button:SetHeight(18)
+
+			if(data[count] == "prowl" and IsDruid ) then
+				f.option = "prowl"
+				f.stance = IsDruid
+			end
+			--else
+		else
+
+			button:Hide()
+		end
+	end
+
+	FauxScrollFrame_Update(frame, #data, numStatesShown, 18)
 end
 
 function ION:BarStates_OnLoad(frame)

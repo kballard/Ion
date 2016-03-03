@@ -855,7 +855,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 											</OnLoad>
 										</Scripts>
 									</Frame>
-									<Frame parentKey="secondary">
+									<Frame name="$parentSecondary" parentKey="secondary">
 										<Anchors>
 											<Anchor point="TOPLEFT">
 												<Offset x="111" y="-6"/>
@@ -864,6 +864,48 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 												<Offset x="-5" y="50"/>
 											</Anchor>
 										</Anchors>
+
+										<Frames>
+							<ScrollFrame name="$parentScrollFrame" inherits="IonScrollFrameTemplate1">
+								<Anchors>
+									<Anchor point="TOPLEFT">
+										<Offset x="5" y="-5"/>
+									</Anchor>
+									<Anchor point="BOTTOMRIGHT">
+										<Offset x="-27" y="5"/>
+									</Anchor>
+								</Anchors>
+								<ScrollChild>
+									<Frame name="$parentScrollChildFrame">
+										<Anchors>
+											<Anchor point="TOPLEFT">
+												<Offset x="5" y="-5"/>
+											</Anchor>
+											<Anchor point="BOTTOMRIGHT">
+												<Offset x="-5" y="5"/>
+											</Anchor>
+										</Anchors>
+									</Frame>
+									<Scripts>
+										<OnShow>
+											--self:SetValue(0)
+										</OnShow>
+									</Scripts>
+								</ScrollChild>
+								<Scripts>
+									<OnLoad>
+										Ion.SecondaryPresetsScrollFrame_OnLoad(self)
+									</OnLoad>
+									<OnShow>
+										Ion.SecondaryPresetsScrollFrameUpdate()
+									</OnShow>
+									<OnVerticalScroll>
+										FauxScrollFrame_OnVerticalScroll(self, offset, 18, Ion.SecondaryPresetsScrollFrameUpdate)
+									</OnVerticalScroll>
+								</Scripts>
+							</ScrollFrame>
+						</Frames>
+
 										<Scripts>
 											<OnLoad>
 												Ion.SubFrameBlackBackdrop_OnLoad(self)
