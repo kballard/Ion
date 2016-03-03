@@ -2,7 +2,7 @@
 ## Title: Ion: GUI
 ## Author: Maul
 ## X-Credits-Maintainer: SLOKnightfall
-## Version: Hydrogen 11.1
+## Version: Helium  1.0
 ## Notes: GUI for Ion
 ## DefaultState: enabled
 ## Dependencies: Ion
