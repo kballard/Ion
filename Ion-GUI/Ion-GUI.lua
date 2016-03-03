@@ -2874,7 +2874,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f:SetNormalTexture("Interface\\AddOns\\Ion\\Images\\UI-RotationRight-Button-Up")
 	f:SetPushedTexture("Interface\\AddOns\\Ion\\Images\\UI-RotationRight-Button-Down")
 	f:SetHighlightTexture("Interface\\AddOns\\Ion\\Images\\UI-Common-MouseHilight")
-	f.tooltipText = "Reset" -- Localize
+	f.tooltipText = _G.RESET
 	frame.reset_button = f
 
 	local function SpecOnClick(cTab, silent)
@@ -2901,7 +2901,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f:SetScript("OnClick", function(self) SpecOnClick(self); specoveride = 1 ; ION.ButtonEditorUpdate() end)
 	f:SetChecked(nil)
 	f.text:SetText("Spec1")
-	f.tooltipText = "Display button for spec 1" -- Localize
+	f.tooltipText = L.GUI_SPEC1
 	frame.spec1 = f; frame.specs[f] = frame.spec1
 
 	f = CreateFrame("frame", nil, frame.spec1)
@@ -2922,7 +2922,7 @@ function ION:ButtonEditor_OnLoad(frame)
 	f:SetScript("OnClick", function(self) SpecOnClick(self); specoveride = 2 ; ION.ButtonEditorUpdate() end)
 	f:SetChecked(nil)
 	f.text:SetText("Spec2")
-	f.tooltipText = "Display button for spec 2" -- Localize
+	f.tooltipText = L.GUI_SPEC2
 	frame.spec2 = f; frame.specs[f] = frame.spec2
 
 	f = CreateFrame("Button", nil, frame.macro, "UIPanelButtonTemplate")--"IonCheckButtonTemplate1")
@@ -2934,8 +2934,8 @@ function ION:ButtonEditor_OnLoad(frame)
 						frame.nameedit:ClearFocus()
 						frame.noteedit:ClearFocus()
 						end)
-	f:SetText("Save")
-	f.tooltipText = "Save" -- Localize
+	f:SetText(_G.SAVE)
+	f.tooltipText = _G.SAVE
 	frame.savestate = f
 
 	f = CreateFrame("EditBox", nil, frame.macro)
@@ -3386,8 +3386,8 @@ local target_options = {
 				selfCast = {
 					order = 10,
 					type = "toggle",
-					name = L["Self-Cast by modifier"],
-					desc = L["Toggle the use of the modifier-based self-cast functionality."],
+					name = L.SPELL_TARGETING_SELF_CAST_MODIFIER,
+					desc = L.SPELL_TARGETING_SELF_CAST_MODIFIER_TOGGLE,
 					get = function(info)  return settingGetter(info) end, --getFunc,
 					set = function(info, value) SetBarCastTarget("selfCast", value) end,
 				
@@ -3395,11 +3395,11 @@ local target_options = {
 				setselfcastmod = {
 					order = 20,
 					type = "select",
-					name = L["Self-Cast Modifier"],
-					desc = L["Select the Self-Cast Modifier"],
+					name = L.SPELL_TARGETING_SELF_CAST_MODIFIER,
+					desc = L.SPELL_TARGETING_SELF_CAST_MODIFIER_SELECT,
 					get = function(info) return GetModifiedClick("SELFCAST") end,
 					set = function(info, value) SetModifiedClick("SELFCAST", value); SaveBindings(GetCurrentBindingSet() or 1); ION.BUTTON:UpdateMacroCastTargets(true) end,
-					values = { NONE = L["None"], ALT = L["ALT"], SHIFT = L["SHIFT"], CTRL = L["CTRL"] },
+					values = { NONE = _G.NONE, ALT = _G.ALT_KEY_TEXT, SHIFT = _G.SHIFT_KEY_TEXT, CTRL = _G.CTRL_KEY_TEXT },
 				},
 				selfcast_nl = {
 					order = 30,
@@ -3409,19 +3409,19 @@ local target_options = {
 				focusCast = {
 					order = 50,
 					type = "toggle",
-					name = L["Focus-Cast by modifier"],
-					desc = L["Toggle the use of the modifier-based focus-cast functionality."],
+					name = L.SPELL_TARGETING_FOCUS_CAST_MODIFIER,
+					desc = L.SPELL_TARGETING_FOCUS_CAST_MODIFIER_TOGGLE,
 					get = function(info)  return settingGetter(info) end, --getFunc,
 					set = function(info, value) SetBarCastTarget("focusCast", value) end,
 					},
 				setfocuscastmod = {
 					order = 60,
 					type = "select",
-					name = L["Focus-Cast Modifier"],
-					desc = L["Select the Focus-Cast Modifier"],
+					name = L.SPELL_TARGETING_FOCUS_CAST_MODIFIER,
+					desc = L.SPELL_TARGETING_FOCUS_CAST_MODIFIER_SELECT,
 					get = function(info) return GetModifiedClick("FOCUSCAST") end,
 					set = function(info, value) SetModifiedClick("FOCUSCAST", value); SaveBindings(GetCurrentBindingSet() or 1); ION.BUTTON:UpdateMacroCastTargets(true) end,
-					values = { NONE = L["None"], ALT = L["ALT"], SHIFT = L["SHIFT"], CTRL = L["CTRL"] },
+					values = { NONE = _G.NONE, ALT = _G.ALT_KEY_TEXT, SHIFT = _G.SHIFT_KEY_TEXT, CTRL = _G.CTRL_KEY_TEXT },
 				},
 				focuscast_nl = {
 					order = 70,
@@ -3431,8 +3431,8 @@ local target_options = {
 				rightClickTarget = {
 					order = 80,
 					type = "toggle",
-					name = L["Right-click Self-Cast"],
-					desc = L["Toggle the use of the right-click self-cast functionality."],
+					name = L.SPELL_TARGETING_SELF_CAST_RIGHTCLICK,
+					desc = L.SPELL_TARGETING_SELF_CAST_RIGHTCLICK_TOGGLE,
 					get = function(info)  return settingGetter(info) end, --getFunc,
 					set = function(info, value) SetBarCastTarget("rightClickTarget", value) end,
 					},
@@ -3444,24 +3444,24 @@ local target_options = {
 				mouseOverCast = {
 					order = 180,
 					type = "toggle",
-					name = "Mouseobe togge", --Localize
-					desc = "Mouseobe togge", --Localize
+					name = L.SPELL_TARGETING_MOUSEOVER_CAST,
+					desc = L.SPELL_TARGETING_MOUSEOVER_CAST_MODIFIER_TOGGLE,
 					get = function(info)  return settingGetter(info) end, --getFunc,
 					set = function(info, value) SetBarCastTarget("mouseOverCast", value) end,
 					},
 				mouseovermod = {
 					order = 301,
 					type = "select",
-					name = L["Mouse-Over Casting Modifier"],
-					desc = L["Select a modifier for Mouse-Over Casting"],
+					name = L.SPELL_TARGETING_MOUSEOVER_CAST_MODIFIER,
+					desc = L.SPELL_TARGETING_MOUSEOVER_CAST_MODIFIER_SELECT,
 					get = function() return IonCDB.mouseOverMod end, --getFunc,
 					set = function(info, value) IonCDB.mouseOverMod = value; ION.BUTTON:UpdateMacroCastTargets(true) end,
-					values = { NONE = L["None"], ALT = L["ALT"], SHIFT = L["SHIFT"], CTRL = L["CTRL"] },
+					values = { NONE = _G.NONE, ALT = _G.ALT_KEY_TEXT, SHIFT = _G.SHIFT_KEY_TEXT, CTRL = _G.CTRL_KEY_TEXT },
 				},
 				mouseovermod_desc = {
 					order = 302,
 					type = "description",
-					name = "\n" .. L["\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."],
+					name = "\n" .. L.SPELL_TARGETING_MODIFIER_NONE_REMINDER,
 				},
 			},
 		},

@@ -2085,10 +2085,10 @@ local function control_OnEvent(self, event, ...)
 				end)
 
 		StaticPopupDialogs["ION_BETA_WARNING"] = {
-			text = L.BETA_WARNING,
+			text = L.HE_UPDATE_WARNING,
 			button1 = OKAY,
 			timeout = 0,
-			OnAccept = function() GDB.betaWarning = false end,
+			OnAccept = function() GDB.betaWarning = "HE1.0" end,
 		}
 
 	elseif (event == "VARIABLES_LOADED") then
@@ -2128,7 +2128,7 @@ local function control_OnEvent(self, event, ...)
 
 		collectgarbage(); PEW = true
 
-		if (GDB.betaWarning) then
+		if (GDB.betaWarning ~= "HE1.0") then
 			StaticPopup_Show("ION_BETA_WARNING")
 		end
 

@@ -362,6 +362,8 @@ L.GUI_EXTRABAR = "Extra Bar"
 L.GUI_CUSTOM = "Custom"
 L.GUI_PROWL = "Prowl"
 
+
+
 L.REMAP = "Primary State to Remap"
 L.REMAPTO = "Remap State To"
 
@@ -410,46 +412,61 @@ Only use Ion right now if you do not mind the occasional bug and not being able 
 
 -Maul]]
 
+--NEW
+
+L.HE_UPDATE_WARNING = [[Thank you for updateing Ion!!!
+
+Ion is now in a "|cffffff00release|r" state. Woot!  =)
+
+A lot of functionality has been added with this version and a few things have changed slightly.
+Please take a moment to look over the change log to famalariaze your self with the changes.
+
+Hope that you enjoy the addon and thanks for being patient with the wait.
+
+-Maul & SLOKnightfall]]
+
 L.OPTIONS_BLIZZBAR = "Show Blizzard's Action Bar"
 L.OPTIONS_ANIMATE = "Enable Ion's Orb Animation"
 L.OPTIONS_DRAENORBAR = "Show the Draenor Garrison Action Icon"
 
---NEW
 L.BAR_VISABLE_STATES = "Bar Visibility Toggles"
-L.TARGET = "target"
+L.TARGET = "Target"
 L.TARGET1 = "Has Target"
 L.TARGET0 = "No Target"
 L.GUI_TARGET = "Target"
-L.GUI_INDOORS = "INdoors"
-L.GUI_OUTDOORS = "outdoors"
+L.GUI_INDOORS = "Indoors"
+L.GUI_OUTDOORS = "Outdoors"
 L.GUI_MOUNTED = "Mounted"
 L.GUI_FLYING = "Flying"
 L.GUI_RESTING = "Resting"
 L.GUI_SWIMMING = "Swimming"
-L.GUI_HARM = "Haarm"
+L.GUI_HARM = "Harm"
 L.GUI_HELP = "Help"
+L.GUI_SPEC1 = "Display button for spec 1"
+L.GUI_SPEC2 = "Display button for spec 2"
+
 
 L.SPELL_TARGETING_OPTIONS = "Spell Target Options"
 
-L["None"] = "None"
-L["ALT"] = "ALT"
-L["SHIFT"] = "SHIFT"
-L["CTRL"] =  "CTRL"
+L.SPELL_TARGETING_SELF_CAST_MODIFIER = "Self-Cast by modifier"
+L.SPELL_TARGETING_SELF_CAST_MODIFIER_TOGGLE = "Toggle the use of the modifier-based self-cast functionality."
+L.SPELL_TARGETING_SELF_CAST_MODIFIER_SELECT = "Select the Self-Cast Modifier"
 
-L["Self-Cast by modifier"] = "Self-Cast by modifier"
-L["Toggle the use of the modifier-based self-cast functionality."] = true
+L.SPELL_TARGETING_FOCUS_CAST_MODIFIER ="Focus-Cast by modifier"
+L.SPELL_TARGETING_FOCUS_CAST_MODIFIER_TOGGLE = "Toggle the use of the modifier-based focus-cast functionality."
+L.SPELL_TARGETING_FOCUS_CAST_MODIFIER_SELECT = "Select the Focus-Cast Modifier"
 
-L["Right-click Self-Cast"] = "Right-click Self-Cast"
-L["Toggle the use of the right-click self-cast functionality."] = "Toggle the use of the right-click self-cast functionality."
- L["Self-Cast Modifier"] = "Self-Cast Modifier"
- L["Select the Self-Cast Modifier"] ="Select the Self-Cast Modifier"
-L["Focus-Cast by modifier"] ="Focus-Cast by modifier"
-L["Toggle the use of the modifier-based focus-cast functionality."] = "Toggle the use of the modifier-based focus-cast functionality."
- L["Focus-Cast Modifier"] ="Focus-Cast Modifier"
-L["Select the Focus-Cast Modifier"] ="Select the Focus-Cast Modifier"
-L["Mouse-Over Casting Modifier"] = "Mouse-Over Casting Modifier"
-L["Select a modifier for Mouse-Over Casting"] = "Select a modifier for Mouse-Over Casting"
-L["\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."] = "\"None\" as modifier means its always active, and no modifier is required.\n\nRemember to enable Mouse-Over Casting for the individual bars, on the \"State Configuration\" tab, if you want it to be active for a specific bar."
+L.SPELL_TARGETING_SELF_CAST_RIGHTCLICK = "Right-click Self-Cast"
+L.SPELL_TARGETING_SELF_CAST_RIGHTCLICK_TOGGLE = "Toggle the use of the right-click self-cast functionality."
+
+L.SPELL_TARGETING_MOUSEOVER_CAST = "Mouse-Over Casting"
+L.SPELL_TARGETING_MOUSEOVER_CAST_MODIFIER_TOGGLE = "Toggle the use of the modifier-based mouse-over cast functionality."
+L.SPELL_TARGETING_MOUSEOVER_CAST_MODIFIER_SELECT = "Select a modifier for Mouse-Over Casting"
+L.SPELL_TARGETING_MOUSEOVER_CAST_MODIFIER = "Mouse-Over Casting Modifier"
+
+L.SPELL_TARGETING_SELF_CAST_RIGHTCLICK_SELECT = "Select the Self-Cast Modifier"
+
+L.SPELL_TARGETING_MODIFIER_NONE_REMINDER = "\"None\" as modifier for Self & Focus Casting means its disabled. \nFor Mouse-Over Casting it means its always active, and no modifier is required."
 
 L.LINE1 = "TEST"
 L.LINE2 = "TEST"
