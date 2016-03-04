@@ -2,15 +2,15 @@ ION Helium v1.0 Update Changes
 
 Bug Fixes
 -Fixed issue where mounts would not display proper tooltip.
--Fixed issue where toys would not display porper tooltip.
+-Fixed issue where toys would not display proper tooltip.
 -Fixed issue where toys would not correct usability shade.
 -Fixed issue where auto cast could not be toggled on pet bar.
--Fixed issee where high rank in the Brawler Guild would break the status bars.
+-Fixed issue where high rank in the Brawler Guild would break the status bars.
 -Fixed issue where Bar Editor state list would not display after selection a non action bar.
 -Fixed issues with the Macro Editor icon selector and its interaction with spces.
 -Fixed issue where a user could not re-add a special bar (Extra Action, Menu) if deleted.
--Updated spell cooldown display to not display cooldown on spells with charges untill all charges have been used.
--Tweaked spell detection code to hopefully fix some of the tooltip & cooldown displays issues that are still floating arround.
+-Updated spell cooldown display to not display cooldown on spells with charges until all charges have been used.
+-Tweaked spell detection code to hopefully fix some of the tooltip & cooldown displays issues that are still floating around.
 -Various code fixes to help prevent taint errors.
 
 Updates & Additions
@@ -24,20 +24,20 @@ Updates & Additions
 -Added spell target options to the bars.  Bars can now be set so spells on them have Self, Focus, & Mouse over casting options.  Only spells that contain the #autowrite line in the macro editor will be affected by the settings. 
 
 *Macro Editor*
--Added a "Reset" button to completly reset the current macro to a fresh state.
+-Added a "Reset" button to completely reset the current macro to a fresh state.
 -Added a "Save" button to verify that changes have been saved.
--Added spec selection buttons for bars that are set to dual spec.  This allows a user to view a buttons macro info for alternate specs with out haveing to switch.
+-Added spec selection buttons for bars that are set to dual spec.  This allows a user to view a buttons macro info for alternate specs with out having to switch.
 -Updated state list to include custom states
 
 *Extra Action Bar*
 -Updated button to allow stop requests when a character is on a Taxi.
 
 *Draenor Action Button*
--This has been completely overhalled. The default Blizzard verion of the button has been disabled and a new ION specific version has been implemented.  This version has the same functionality as the default button but with the added functionaltiy of ION bars.
--An option to hide the decrative border of the button has been added under its Bar Editor Options.
+-This has been completely overhauled. The default Blizzard version of the button has been disabled and a new ION specific version has been implemented.  This version has the same functionality as the default button but with the added functionality of ION bars.
+-An option to hide the decorative border of the button has been added under its Bar Editor Options.
 
 *Stance Bar*
 -A stance bar has been added to ION for classes/specs that have them. 
 
 *Flyouts*
--Flyouts have been updated to provide additonal functionaly and to fix some bugs.  Some of the flyout commands have either changed or have been removed.  Please see the Flyout section of the FAQ for full infomation.
+-Flyouts have been updated to provide additional functional and to fix some bugs.  Some of the flyout commands have either changed or have been removed.  Please see the Flyout section of the FAQ for full information.
