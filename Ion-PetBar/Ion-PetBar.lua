@@ -333,6 +333,7 @@ end
 
 
 function PETBTN:PLAYER_ENTERING_WORLD(event, ...)
+	if InCombatLockdown() then return end
 	self.binder:ApplyBindings(self)
 	self.updateRightClick = true
 end
