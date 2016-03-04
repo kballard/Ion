@@ -12,4 +12,6 @@
 	<Script file="Localizations\Ion_X-zhCN.lua"/>
 	<Script file="Localizations\Ion_X-zhTW.lua"/>
 
+	<Script file="Localizations\Ion_FAQ-enUS.lua"/>
+
 </Ui>

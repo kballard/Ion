@@ -285,10 +285,113 @@ local options = {
 			type = "group",
 			order = 1000,
 			args = {
+
+				line1 = {
+					type = "description",
+					name = "|cffffd200" .. L.WHATS_NEW_TITLE .. "|r",
+					order = 1,
+				},
+				line2 = {
+					type = "description",
+					name = L.WHATS_NEW_INFO,
+					order = 2,
+				},
 				g1 = {
 					type = "group",
-					name = "|cffffd200" .. L.FLYOUT .. "|r",
+					name = "|cffffd200" .. L.FAQ_BAR_CONFIGURE .. "|r",
 					order = 1,
+					args = {
+						g1 = {
+							type = "group",
+							name = "|cffffd200" .. L.FAQ_BAR_CONFIGURE_GENERAL_OPTIONS_TITLE .. "|r",
+							order = 1,
+							args = {
+								line1a = {
+								type = "description",
+								name = L.LINE1 ,
+								order = 1,
+								},
+							},
+						},
+
+						g2 = {
+							type = "group",
+							name = "|cffffd200" .. L.FAQ_BAR_CONFIGURE_BAR_STATES_TITLE .. "|r",
+							order = 2,
+							args = {
+								line1a = {
+								type = "description",
+								name = L.LINE1 ,
+								order = 1,
+								},
+							},
+						},
+
+						g3 = {
+							type = "group",
+							name = "|cffffd200" .. L.FAQ_BAR_CONFIGURE_SPELL_TARGET_TITLE .. "|r",
+							order = 3,
+							args = {
+								line1a = {
+								type = "description",
+								name = L.LINE1 ,
+								order = 1,
+								},
+							},
+						},
+					},
+				},
+
+				g2 = {
+					type = "group",
+					name = "|cffffd200" .. L.FAQ_MACRO_EDITOR .. "|r",
+					order = 1,
+					args = {
+						g1 = {
+							type = "group",
+							name = "|cffffd200" .. L.LINE1 .. "|r",
+							order = 1,
+							args = {
+								line1a = {
+								type = "description",
+								name = L.LINE1 ,
+								order = 1,
+								},
+							},
+						},
+
+						g2 = {
+							type = "group",
+							name = "|cffffd200" .. L.LINE1 .. "|r",
+							order = 2,
+							args = {
+								line1a = {
+								type = "description",
+								name = L.LINE1 ,
+								order = 1,
+								},
+							},
+						},
+
+						g3 = {
+							type = "group",
+							name = "|cffffd200" .. L.LINE1 .. "|r",
+							order = 3,
+							args = {
+								line1a = {
+								type = "description",
+								name = L.LINE1 ,
+								order = 1,
+								},
+							},
+						},
+					},
+				},
+
+				g3 = {
+					type = "group",
+					name = "|cffffd200" .. L.FLYOUT .. "|r",
+					order = 3,
 					args = {
 						line1a = {
 						type = "description",
@@ -297,16 +400,7 @@ local options = {
 						},
 					},
 				},
-				line1 = {
-					type = "description",
-					name = "|cffffd200" .. L.LINE1 .. "|r",
-					order = 1,
-				},
-				line2 = {
-					type = "description",
-					name = L.LINE2,
-					order = 2,
-				},
+
 			},
 		},
 	},
