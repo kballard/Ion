@@ -24,7 +24,6 @@ L.FAQ_LONG = "Frequently Asked Questions"
 
 L.WHATS_NEW_TITLE = "ION Helium v1.0 Update Changes"
 L.WHATS_NEW_INFO = [[
-
 Bug Fixes
 -Fixed issue where mounts would not display proper tooltip.
 -Fixed issue where toys would not display proper tooltip.
@@ -115,6 +114,10 @@ Shapes:
     linear
     circular
 
+Flyout Anchor Point is going to be the anchor point on first button of the flyout and influences the direction it goes. IE if you set it "BOTTOM" then the flyout will be anchored on the bottom row and display the rest of the buttons in a upward direction.
+
+Macro Button Anchor Point is where the flyout will appear in relation to button the macro is in and determines what side of the macro the little flyout indicator arrow will be on if enabled. IE if you set it to RIGHT then the indicator will be on the right side and the flyout will be displayed to the right of the macro button.
+
 Points:
     left
     right
@@ -145,7 +148,7 @@ Examples -
 This will show all trinkets in a 6 column flyout that displays on a button click
 
 /flyout mount:invincible, phoenix, !dark:circular:center:center:15:mouse:hide
-Thiw will display any mounts with invincible & phoenix in the title excluding mounts with the word dark
+This will display any mounts with invincible & phoenix in the title excluding mounts with the word dark
 
 /flyout companion:Favorite:linear:right:left:4:click:show
 This will dislay any companions that are marked as favorite

@@ -143,7 +143,7 @@ ION.GameVersion, ION.GameBuild, ION.GameDate, ION.TOCVersion = GetBuildInfo()
 
 ION.GameVersion = tonumber(ION.GameVersion); ION.TOCVersion = tonumber(ION.TOCVersion)
 
-ION.Points = {R = "RIGHT", L = "LEFT", T = "TOP", B = "BOTTOM", TL = "TOPLEFT", TR = "TOPRIGHT", BL = "BOTTOMLEFT", BR = "BOTTOMRIGHT", C = "CENTER"}
+ION.Points = {R = "RIGHT", L = "LEFT", T = "TOP", B = "BOTTOM", TL = "TOPLEFT", TR = "TOPRIGHT", BL = "BOTTOMLEFT", BR = "BOTTOMRIGHT", C = "CENTER", RIGHT = "RIGHT", LEFT = "LEFT", TOP = "TOP", BOTTOM = "BOTTOM", TOPLEFT = "TOPLEFT", TOPRIGHT = "TOPRIGHT", BOTTOMLEFT = "BOTTOMLEFT", BOTTOMRIGHT = "BOTTOMRIGHT", CENTER = "CENTER"}
 
 ION.Stratas = {"BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "TOOLTIP"}
 

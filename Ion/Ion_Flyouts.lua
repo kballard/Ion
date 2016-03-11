@@ -426,15 +426,16 @@ function BUTTON:filter_profession(data)
 		for index,profession in pairs(f.professions) do
 			if profession then
 				local name, _, _, _, numSpells, offset = GetProfessionInfo(profession)
-				
 				if (name:lower()):match(arg) and excluded then
 					exclusions[name:lower()] = true
-				elseif (index<3 and primaryOnly) or (index>2 and secondaryOnly) or any or compare(arg,"secondary") then
+				elseif (index<3 and primaryOnly) or (index>2 and secondaryOnly) or any or (name:lower()):match(arg) then
 					for i=1,numSpells do
 						local _, spellID = GetSpellBookItemInfo(offset+i,"professions")
 						local spellName = GetSpellInfo(spellID)
+						local isPassive = IsPassiveSpell(offset+i,"professions")
+						if not isPassive then
 							data[spellName:lower()] = "spell"
-
+						end
 					end
 				end
 			end
