@@ -669,9 +669,13 @@ function ION:UpdateSpellIndex()
 			if (spellID) then
 				ION.sIndex[spellID] = spellData
 			end
-
+--[[
 			if (icon and not icons[icon:upper()]) then
 				ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+			end
+			--]]
+				if (icon and not icons[icon]) then
+				ICONS[#ICONS+1] = icon; icons[icon] = true
 			end
 		end
 	end
@@ -775,8 +779,11 @@ function ION:UpdateSpellIndex()
 						ION.sIndex[spellID] = spellData
 					end
 
-					if (icon and not icons[icon:upper()]) then
-						ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+					--if (icon and not icons[icon:upper()]) then
+						--ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+					--end
+					if (icon and not icons[icon]) then
+						ICONS[#ICONS+1] = icon; icons[icon] = true
 					end
 				end
 			end
@@ -813,9 +820,12 @@ function ION:UpdatePetSpellIndex()
 				ION.sIndex[spellID] = spellData
 			end
 
-			if (icon and not icons[icon:upper()]) then
-				ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
-			end
+			if (icon and not icons[icon]) then
+				ICONS[#ICONS+1] = icon; icons[icon] = true
+			end			
+			--if (icon and not icons[icon:upper()]) then
+			--	ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+			--end
 		end
 
 		i = i + 1
@@ -870,16 +880,17 @@ end
 -- the itemID from toyCache where needed
 function ION:UpdateToyData()
 	-- note filter settings
-	local filterCollected = C_ToyBox.GetFilterCollected()
-	local filterUncollected = C_ToyBox.GetFilterUncollected()
+	local filterCollected = C_ToyBox.GetCollectedShown()
+	local filterUncollected = C_ToyBox.GetUncollectedShown()
 	local sources = {}
 	for i=1,10 do
-		sources[i] = C_ToyBox.IsSourceTypeFiltered(i)
+		sources[i] = C_ToyBox.IsSourceTypeFilterChecked(i)
 	end
 	-- set filters to all toys
-	C_ToyBox.SetFilterCollected(true)
-	C_ToyBox.SetFilterUncollected(false) -- we don't need to uncollected toys
-	C_ToyBox.ClearAllSourceTypesFiltered()
+	C_ToyBox.SetCollectedShown(true)
+	C_ToyBox.SetUncollectedShown(true) -- we don't need to uncollected toys
+	--C_ToyBox.ClearAllSourceTypesFiltered()
+	C_ToyBox.SetAllSourceTypeFilters(true)
 	C_ToyBox.SetFilterString("")
 
 	-- fill cache with itemIDs = name
@@ -890,10 +901,10 @@ function ION:UpdateToyData()
 	end
 
 	-- restore filters
-	C_ToyBox.SetFilterCollected(filterCollected)
-	C_ToyBox.SetFilterUncollected(filterUncollected)
+	C_ToyBox.SetCollectedShown(filterCollected)
+	C_ToyBox.SetUncollectedShown(filterUncollected)
 	for i=1,10 do
-		C_ToyBox.SetFilterSourceType(i,sources[i])
+		C_ToyBox.SetSourceTypeFilter(i, not sources[i])
 	end
 end
 
@@ -902,11 +913,16 @@ end
 ---	If a companion is not displaying its tooltip or cooldown, then the item in the macro probably is not in the database 
 function ION:UpdateCompanionData()
 
-	_G.C_PetJournal.ClearAllPetSourcesFilter()
-	_G.C_PetJournal.ClearAllPetTypesFilter()
+	--_G.C_PetJournal.ClearAllPetSourcesFilter()  
+	--_G.C_PetJournal.ClearAllPetTypesFilter()
+
 	_G.C_PetJournal.ClearSearchFilter()
-	_G.C_PetJournal.AddAllPetSourcesFilter()
-	_G.C_PetJournal.AddAllPetTypesFilter()
+
+	--_G.C_PetJournal.AddAllPetSourcesFilter()
+	--_G.C_PetJournal.AddAllPetTypesFilter()
+
+	_G.C_PetJournal.SetAllPetSourcesChecked(true)
+	_G.C_PetJournal.SetAllPetTypesChecked(true)
 	local numpet = select(1, C_PetJournal.GetNumPets())
 	
 	for i=1,numpet do
@@ -922,38 +938,35 @@ function ION:UpdateCompanionData()
 				ION.cIndex[spell:lower().."()"] = companionData
 				ION.cIndex[petID] = companionData
 
-				if (icon and not icons[icon:upper()]) then
-					ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+				if(type(icon) == "number") then
+					if (icon and not icons[icon]) then
+						ICONS[#ICONS+1] = icon; icons[icon] = true
+					end
 				end
 			end
 		end
 	end
 
-	for i=1,C_MountJournal.GetNumMounts() do
-		local creatureName, creatureID, _, active, summonable, source, isFavorite, isFactionSpecific, faction, unknown, owned = C_MountJournal.GetMountInfo(i)
+	local mountIDs = C_MountJournal.GetMountIDs()
+	for i,id in pairs(mountIDs) do
+		local creatureName , spellID = C_MountJournal.GetMountInfoByID(id) --, creatureID, _, active, summonable, source, isFavorite, isFactionSpecific, faction, unknown, owned = C_MountJournal.GetMountInfoByID(i)
 		local link = GetSpellLink(creatureName)
-		local spellID
-		if (link) then
-			_, spellID = link:match("(spell:)(%d+)")
-			spellID = tonumber(spellID)
-		end
 
 		if (spellID) then
 			local spell, _, icon = GetSpellInfo(spellID)
 			if (spell) then
-				local companionData = SetCompanionData("MOUNT", i, creatureID, creatureName, spellID, icon)
+				local companionData = SetCompanionData("MOUNT", i, spellID, creatureName, spellID, icon)
 				ION.cIndex[spell:lower()] = companionData
 				ION.cIndex[spell:lower().."()"] = companionData
 				ION.cIndex[spellID] = companionData
 
-				if (icon and not icons[icon:upper()]) then
-					ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
+				if (icon and not icons[icon]) then
+					ICONS[#ICONS+1] = icon; icons[icon] = true
 				end
 			end
 		end
 	end
 end
-
 
 local temp = {}
 
@@ -967,7 +980,12 @@ function ION:UpdateIconIndex()
 	wipe(temp)
 	GetMacroIcons(temp)
 
-	for k,v in ipairs(temp) do
+	--for k,v in ipairs(temp) do
+	for k,icon in ipairs(temp) do
+		if (not icons[icon]) then
+			ICONS[#ICONS+1] = icon; icons[icon] = true
+		end
+	--[[
 		if(type(v) == "number") then
 			TempTexture:SetToFileData(v);
 			icon = TempTexture:GetTexture()
@@ -978,6 +996,7 @@ function ION:UpdateIconIndex()
 		if (not icons[icon:upper()]) then
 			ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
 		end
+		--]]
 	end
 
 	--wipe(temp)
@@ -1847,7 +1866,7 @@ function ION:CreateNewObject(class, id, firstRun)
 		object:SetID(0)
 		object.objTIndex = index
 		object.objType = data.objType:gsub("%s", ""):upper()
-
+		--object:LoadData(GetSpecialization(), "homestate")
 		object:LoadData(GetActiveSpecGroup(), "homestate")
 
 		if (firstRun) then
@@ -2227,7 +2246,7 @@ local function control_OnEvent(self, event, ...)
 		end
 
 	elseif (event == "PLAYER_SPECIALIZATION_CHANGED" or event == "PLAYER_TALENT_UPDATE" or event == "PLAYER_LOGOUT" or event == "PLAYER_LEAVING_WORLD") then
-		SPEC.cSpec = GetActiveSpecGroup()
+		SPEC.cSpec = GetSpecialization()
 
 	elseif (event == "ACTIVE_TALENT_GROUP_CHANGED" or
 		  event == "LEARNED_SPELL_IN_TAB" or
@@ -2250,7 +2269,8 @@ local function control_OnEvent(self, event, ...)
 		ION.level = UnitLevel("player")
 
 	elseif ( event == "TOYS_UPDATED" )then
-		ION:UpdateToyData()
+		
+		if not ToyBox:IsShown() then print("TVS"); ION:UpdateToyData() end
 	end
 
 end
@@ -2305,7 +2325,7 @@ StaticPopupDialogs["ReloadUI"] = {
 function IonProfile:RefreshConfig()
 	IonCDB = self.db.profile["IonCDB"]
 	IonGDB = self.db.profile["IonGDB"]
-	IonSpec = {cSpec = GetActiveSpecGroup()}
+	IonSpec = {cSpec = GetSpecialization()}
 	defGDB, GDB, defCDB, CDB, defSPEC, SPEC = CopyTable(IonGDB), CopyTable(IonGDB), CopyTable(IonCDB), CopyTable(IonCDB), CopyTable(IonSpec), CopyTable(IonSpec)
 	IONButtonProfileUpdate()
 --IONBarProfileUpdate()

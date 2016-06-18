@@ -554,7 +554,8 @@ function BUTTON:SetTimer(cd, start, duration, enable, timer, color1, color2, cdA
 
 		cd:SetAlpha(1)
 
-		CooldownFrame_SetTimer(cd, start, duration, enable)
+		CooldownFrame_Set(cd, start, duration, enable)
+		--CooldownFrame_SetTimer(cd, start, duration, enable)
 
 		if (duration >= GDB.timerLimit) then
 
@@ -580,7 +581,7 @@ function BUTTON:SetTimer(cd, start, duration, enable, timer, color1, color2, cdA
 			cd.duration = 1
 		end
 	else
-		cd.duration = 0; cd.start = 0; CooldownFrame_SetTimer(cd, 0, 0, 0)
+		cd.duration = 0; cd.start = 0;_G.CooldownFrame_Set(cd, 0, 0, 0)--_G.CooldownFrame_SetTimer(cd, 0, 0, 0)
 	end
 end
 
@@ -1198,7 +1199,7 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 
 	if (sIndex[spell]) then
 		spell_id = sIndex[spell].spellID
-		local DraenorZoneAbilityID = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+		local DraenorZoneAbilityID = ZoneAbilityFrame.SpellButton.currentSpellID
 		local FairyFireID = 770
 		local FairySwarmID = 102355
 		local GarrisonAbilityID = 161691
@@ -1638,7 +1639,8 @@ function BUTTON:MACRO_ACTIVE_TALENT_GROUP_CHANGED(...)
 	local spec
 
 	if (self.dualSpec) then
-		spec = select(2,...)
+		--spec = select(2,...)
+		spec = GetSpecialization()
 	else
 		spec = 1
 	end
@@ -2353,7 +2355,7 @@ end
 function BUTTON:MACRO_SetSpellTooltip(spell)
 	if (sIndex[spell]) then
 		local spell_id = sIndex[spell].spellID
-		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+		local draenor_id = ZoneAbilityFrame.SpellButton.currentSpellID
 
 		if spell_id == 161691 and draenor_id then spell_id = draenor_id end
 
@@ -2910,7 +2912,8 @@ end
 
 function BUTTON:GetSpec()
 	if self.dualSpec then
-		return GetActiveSpecGroup()
+		--return GetActiveSpecGroup()
+		return GetSpecialization()
 	else
 		return 1
 	end
