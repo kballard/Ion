@@ -72,8 +72,6 @@ end
 
 --UPDATE?
 function DRAENORBTN:STANCE_UpdateButton(actionID)
---print("USECJH")
-
 	if (self.editmode) then
 		self.iconframeicon:SetVertexColor(0.2, 0.2, 0.2)
 	elseif (self.spellName) then
@@ -109,7 +107,12 @@ local function DraenorZoneAbilityFrame_Update(self)
 
 	self.CurrentTexture = tex;
 	self.CurrentSpell = name;
-	self.style:SetTexture(DRAENOR_ZONE_SPELL_ABILITY_TEXTURES_BASE[spellID]);
+	self.style:SetTexture(ZONE_SPELL_ABILITY_TEXTURES_BASE[spellID] or ZONE_SPELL_ABILITY_TEXTURES_BASE_FALLBACK);
+	self.iconframeicon:SetTexture(tex);
+
+	--self.SpellButton.Style:SetTexture(ZONE_SPELL_ABILITY_TEXTURES_BASE[spellID] or ZONE_SPELL_ABILITY_TEXTURES_BASE_FALLBACK);
+	--self.SpellButton.Icon:SetTexture(tex);
+
 
 	if draenorbarsGDB[1].border then 
 
@@ -118,7 +121,7 @@ local function DraenorZoneAbilityFrame_Update(self)
 		self.style:Hide()
 	end
 
-	self.iconframeicon:SetTexture(tex);
+
 	local charges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spellID);
 
 	local usesCharges = false;
@@ -154,26 +157,34 @@ local function DraenorZoneAbilityFrame_Update(self)
 end
 
 function DRAENORBTN:OnEvent(event, ...)
-	
-	if (event == "SPELLS_CHANGED") then
-		if (not self.baseName) then
-			self.baseName = GetSpellInfo(DraenorZoneAbilitySpellID);
-		end
+	local spellID, garrisonType = GetZoneAbilitySpellInfo();
+
+	--if (event == "SPELLS_CHANGED") then
+	if ((event == "SPELLS_CHANGED" or event=="UNIT_AURA") and self.spellID ~= spellID) then
+		--if (not self.baseName) then
+			self.baseName = GetSpellInfo(spellID);
+		--end
 	end
 
 	if (not self.baseName) then
 		return;
 	end
 
+	self.spellID = spellID;
 	local lastState = self.BuffSeen;
-	local display = false
-	self:SetChecked(nil)
-	self.BuffSeen = HasDraenorZoneAbility();
+	self.BuffSeen = (spellID ~= 0);
+
+	--local display = false
+	--self:SetChecked(nil)
+	--self.BuffSeen = HasDraenorZoneAbility();
+
 	if (self.BuffSeen) then
-		if ( not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY) ) then
-			DraenorZoneAbilityButtonAlert:SetParent("IonDraenorActionButton1")
-			DraenorZoneAbilityButtonAlert:SetPoint("BOTTOM" ,"IonDraenorActionButton1" ,"TOP" ,0,8)
-			DraenorZoneAbilityButtonAlert:SetHeight(DraenorZoneAbilityButtonAlert.Text:GetHeight()+42);
+		--if ( not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY) ) then
+		if ( not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY) and garrisonType == LE_GARRISON_TYPE_6_0 ) then
+
+			ZoneAbilityButtonAlert:SetParent("IonDraenorActionButton1")
+			ZoneAbilityButtonAlert:SetPoint("BOTTOM" ,"IonDraenorActionButton1" ,"TOP" ,0,8)
+			ZoneAbilityButtonAlert:SetHeight(ZoneAbilityButtonAlert.Text:GetHeight()+42);
 			
 			SetCVarBitfield( "closedInfoFrames", LE_FRAME_TUTORIAL_GARRISON_ZONE_ABILITY, true );
 		end
@@ -189,10 +200,10 @@ function DRAENORBTN:OnEvent(event, ...)
 
 	if (not InCombatLockdown() and display) then
 		self:Show();
-		DraenorZoneAbilityButtonAlert:Show();
+		ZoneAbilityButtonAlert:Show();
 	elseif (not InCombatLockdown() and not display) then
 		self:Hide();
-		DraenorZoneAbilityButtonAlert:Hide();
+		ZoneAbilityButtonAlert:Hide();
 	end
 end
 
@@ -387,7 +398,8 @@ function DRAENORBTN:LoadAux()
 	self.style:SetWidth(190)
 	self.style:SetHeight(95)
 	self.hotkey:SetPoint("TOPLEFT", -4, -6)
-	self.style:SetTexture("Interface\\ExtraButton\\GarrZoneAbility-BarracksAlliance")
+	self.style:SetTexture("Interface\\ExtraButton\\GarrZoneAbility-Armory")
+	self:Hide()
 end
 
 
@@ -537,8 +549,8 @@ frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 --hooking original bar check to hide
-DraenorZoneAbilityFrame:SetScript('OnEvent', nil)
-DraenorZoneAbilityFrame:Hide()
+ZoneAbilityFrame:SetScript('OnEvent', nil)
+ZoneAbilityFrame:Hide()
 
 
 function BAR:HideDraenorBorder(msg, gui, checked, query)

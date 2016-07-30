@@ -444,6 +444,8 @@ L.GUI_HARM = "Harm"
 L.GUI_HELP = "Help"
 L.GUI_SPEC1 = "Display button for spec 1"
 L.GUI_SPEC2 = "Display button for spec 2"
+L.GUI_SPEC3 = "Display button for spec 3"
+L.GUI_SPEC4 = "Display button for spec 4"
 
 
 L.SPELL_TARGETING_OPTIONS = "Spell Target Options"
