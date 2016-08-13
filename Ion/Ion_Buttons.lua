@@ -3002,7 +3002,13 @@ function BUTTON:LoadData(spec, state)
 		end
 
 		if (not self.CDB[id]) then
-			self.CDB[id] = { [1] = { homestate = CopyTable(stateData) }, [2] = { homestate = CopyTable(stateData) } }
+			self.CDB[id] = {}
+		end
+
+		for i=1,4 do
+			if (not self.CDB[id][i]) then
+				self.CDB[id][i] = { homestate = CopyTable(stateData) }
+			end
 		end
 
 		if (not self.CDB[id].keys) then
