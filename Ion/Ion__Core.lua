@@ -2269,8 +2269,8 @@ local function control_OnEvent(self, event, ...)
 		ION.level = UnitLevel("player")
 
 	elseif ( event == "TOYS_UPDATED" )then
-		
-		if not ToyBox:IsShown() then print("TVS"); ION:UpdateToyData() end
+
+		if not ToyBox or not ToyBox:IsShown() then print("TVS"); ION:UpdateToyData() end
 	end
 
 end
