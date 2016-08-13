@@ -1947,7 +1947,7 @@ function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 	else
 		--The Summon Random Mount from the Mount Journal 
 		if action1 == 268435455 then
-			self.data.macro_Text = "#autowrite\n/run C_MountJournal.Summon(0);"
+			self.data.macro_Text = "#autowrite\n/run C_MountJournal.SummonByID(0);"
 			self.data.macro_Auto = "Random Mount;"
 			self.data.macro_Icon = "Interface\\ICONS\\ACHIEVEMENT_GUILDPERK_MOUNTUP"
 			self.data.macro_Name = "Random Mount"
