@@ -2270,7 +2270,7 @@ local function control_OnEvent(self, event, ...)
 
 	elseif ( event == "TOYS_UPDATED" )then
 
-		if not ToyBox or not ToyBox:IsShown() then print("TVS"); ION:UpdateToyData() end
+		if not ToyBox or not ToyBox:IsShown() then ION:UpdateToyData() end
 	end
 
 end
